@@ -1,0 +1,23 @@
+# -*- encoding: utf-8 -*-
+require File.expand_path('../lib/reel/version', __FILE__)
+
+Gem::Specification.new do |gem|
+  gem.authors       = ["Tony Arcieri"]
+  gem.email         = ["tony.arcieri@gmail.com"]
+  gem.description   = "A Celluloid::IO-powered HTTP server"
+  gem.summary       = "A reel good HTTP server"
+  gem.homepage      = "https://github.com/tarcieri/reel"
+
+  gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  gem.files         = `git ls-files`.split("\n")
+  gem.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  gem.name          = "reel"
+  gem.require_paths = ["lib"]
+  gem.version       = Reel::VERSION
+  
+  gem.add_dependency 'celluloid-io', '>= 0.8.0'
+  gem.add_dependency 'http_parser'
+  
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'rspec', '~> 2.7.0'
+end
