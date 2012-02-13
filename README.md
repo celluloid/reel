@@ -1,29 +1,17 @@
-# Reel
+![Reel](https://github.com/tarcieri/reel/raw/master/logo.png)
+=======
 
-TODO: Write a gem description
+A reel good web server!
 
-## Installation
+TODO
+----
 
-Add this line to your application's Gemfile:
+Write a README!
 
-    gem 'reel'
+Contributing
+------------
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install reel
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+* Fork this repository on github
+* Make your changes and send me a pull request
+* If I like them I'll merge them
+* If I've accepted a patch, feel free to ask for commit access
