@@ -20,7 +20,7 @@ module Reel
       connection.read_header
       @callback.(connection)
     rescue EOFError
-      puts "*** #{host}:#{port} disconnected"
+      # Client disconnected prematurely      
     ensure
       socket.close
     end
