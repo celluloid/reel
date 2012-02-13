@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'reel'
+
+host, port = "0.0.0.0", 3000
+
+Reel::Logger.info "A Reel good HTTP server!"
+Reel::Logger.info "Listening on #{host}:#{port}"
+
+Reel::Server.supervise("0.0.0.0", 3000) do |connection|
+  p connection
+end
+
+sleep

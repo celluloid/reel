@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.version       = Reel::VERSION
   
   gem.add_dependency 'celluloid-io', '>= 0.8.0'
-  gem.add_dependency 'http_parser'
+  gem.add_dependency 'http_parser.rb'
   
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec', '~> 2.7.0'
