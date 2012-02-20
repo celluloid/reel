@@ -1,7 +1,12 @@
 module Reel
+  # Parses incoming HTTP requests
   class RequestParser
+    attr_reader :headers
+    
     def initialize
       @parser = Http::Parser.new(self)
+      @headers = nil
+      @read_body = false
     end
 
     def add(data)
@@ -9,16 +14,36 @@ module Reel
     end
     alias_method :<<, :add
 
-    def on_headers_complete(headers)
-      puts "Got headers: #{headers.inspect}"
+    def headers?
+      !!@headers
+    end
+    
+    def http_method
+      @parser.http_method.downcase.to_sym
+    end
+    
+    def http_version
+      @parser.http_version.join(".")
+    end
+    
+    def url
+      @parser.request_url
     end
 
+    #
+    # Http::Parser callbacks
+    #
+    
+    def on_headers_complete(headers)
+      @headers = headers
+    end
+    
     def on_body(chunk)
-      puts "[BODY] #{chunk}"
+      # FIXME: handle request bodies
     end
 
     def on_message_complete
-      puts "DONE!"
+      @read_body = true
     end    
   end
 end

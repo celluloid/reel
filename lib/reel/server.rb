@@ -3,11 +3,9 @@ module Reel
     include Celluloid::IO
     
     def initialize(host, port, &callback)
-      # What looks at first glance to be a normal TCPServer is in fact an
-      # "evented" Celluloid::IO::TCPServer
+      # This is actually an evented Celluloid::IO::TCPServer
       @server = TCPServer.new(host, port)
       @callback = callback
-      
       run!
     end
     
@@ -17,12 +15,11 @@ module Reel
     
     def handle_connection(socket)
       connection = Connection.new(socket)
-      connection.read_header
-      @callback.(connection)
+      connection.read_request
+      @callback[connection]
     rescue EOFError
-      # Client disconnected prematurely      
-    ensure
-      socket.close
+      # Client disconnected prematurely
+      # FIXME: should probably do something here
     end
   end
 end
