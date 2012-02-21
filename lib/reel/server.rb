@@ -9,6 +9,10 @@ module Reel
       run!
     end
     
+    def finalize
+      @server.close
+    end
+    
     def run
       loop { handle_connection! @server.accept }
     end
