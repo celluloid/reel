@@ -24,6 +24,8 @@ module Reel
     
     def respond(response)
       response.render(@socket)
+    rescue Errno::ECONNRESET, Errno::EPIPE
+      # The client disconnected early
     ensure
       # FIXME: Keep-Alive support
       @socket.close 
