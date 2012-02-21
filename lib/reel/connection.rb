@@ -22,7 +22,14 @@ module Reel
       @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, @parser.headers)
     end
     
-    def respond(response)
+    def respond(response, body = nil)
+      case response
+      when Symbol
+        response = Response.new(response, body)
+      when Response
+      else raise TypeError, "invalid response: #{response.inspect}"
+      end
+      
       response.render(@socket)
     rescue Errno::ECONNRESET, Errno::EPIPE
       # The client disconnected early

@@ -13,7 +13,7 @@ describe Reel::Server do
       request.version.should eq "1.1"
       request.url.should eq example_url
       
-      connection.respond Reel::Response.new(:ok, response_body)
+      connection.respond :ok, response_body
       handler_called = true
     end
     
