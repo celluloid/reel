@@ -25,7 +25,7 @@ module Reel
     def respond(response, body = nil)
       case response
       when Symbol
-        response = Response.new(response, body)
+        response = Response.new(response, {'Connection' => 'close'}, body)
       when Response
       else raise TypeError, "invalid response: #{response.inspect}"
       end

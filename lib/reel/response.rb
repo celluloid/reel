@@ -1,11 +1,18 @@
 module Reel
   class Response
     attr_reader :status
+    CRLF = "\r\n"
     
-    def initialize(status, body = '')
+    def initialize(status, body_or_headers = nil, body = nil)
       self.status = status
-      @body = body
-      @headers = {}
+      
+      if body_or_headers and not body
+        @body = body_or_headers
+        @headers = {}
+      else
+        @body = body
+        @headers = body_or_headers
+      end
       
       # hax
       @version = "HTTP/1.1"
@@ -44,11 +51,15 @@ module Reel
     # Convert headers into a string
     # FIXME: this should probably be factored elsewhere, SRP and all
     def render_header
-      header = "#{@version} #{@status} #{@reason}\r\n"
-      header << @headers.map do |header, value|
-        "#{header}: #{value}"
-      end.join("\r\n")
-      header << "\r\n"
+      response_header = "#{@version} #{@status} #{@reason}#{CRLF}"
+      
+      unless @headers.empty?
+        response_header << @headers.map do |header, value|
+          "#{header}: #{value}"
+        end.join(CRLF) << CRLF
+      end
+      
+      response_header << CRLF
     end
   end
 end
