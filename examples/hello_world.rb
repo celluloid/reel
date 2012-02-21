@@ -2,7 +2,10 @@ require 'rubygems'
 require 'bundler/setup'
 require 'reel'
 
-Reel::Server.new('127.0.0.1', 1234) do |connection|
+addr, port = '127.0.0.1', 1234
+
+puts "*** Starting server on #{addr}:#{port}"
+Reel::Server.new(addr, port) do |connection|
   connection.respond :ok, "hello, world!"
 end
 
