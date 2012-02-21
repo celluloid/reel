@@ -1,6 +1,6 @@
 ![Reel](https://github.com/tarcieri/reel/raw/master/logo.png)
 =======
-[![Build Status](https://secure.travis-ci.org/tarcieri/reel.png?branch=master)](http://travis-ci.org/tarcieri/celluloid)
+[![Build Status](https://secure.travis-ci.org/tarcieri/reel.png?branch=master)](http://travis-ci.org/tarcieri/reel)
 
 A reel good web server!
 
