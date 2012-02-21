@@ -24,11 +24,13 @@ Yes, but it has room for improvement. A "hello world" web server benchmark,
 done on a 2GHz i7 w\ ApacheBench, 64 concurrent connections:
 
 ```
-Reel        5189 reqs/s (6.1 ms/req)
-Goliath     492  reqs/s (129 ms/req)
-Thin        7627 reqs/s (8.4 ms/req)
-Node.js     9023 reqs/s (7.1 ms/req)
+Reel    (HEAD)        5189 reqs/s (6.1 ms/req)
+Goliath (0.9.4)       492  reqs/s (129 ms/req)
+Thin    (1.2.11)      7627 reqs/s (8.4 ms/req)
+Node.js (0.6.5)       9023 reqs/s (7.1 ms/req)
 ```
+
+(All Ruby benchmarks done on Ruby 1.9.3)
 
 Usage
 -----
