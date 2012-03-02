@@ -24,13 +24,15 @@ Yes, but it has room for improvement. A "hello world" web server benchmark,
 done on a 2GHz i7 w\ ApacheBench, 64 concurrent connections:
 
 ```
+Web Server            Throughput  Latency
+----------            ----------- -------
 Reel    (HEAD)        5189 reqs/s (6.1 ms/req)
 Goliath (0.9.4)       3495 reqs/s (18.3 ms/req)
 Thin    (1.2.11)      8747 reqs/s (7.3 ms/req)
 Node.js (0.6.5)       9023 reqs/s (7.1 ms/req)
 ```
 
-All Ruby benchmarks done on Ruby 1.9.3. Means given are average-per-request
+All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
 and are not amortized across all concurrent requests.
 
 Usage
