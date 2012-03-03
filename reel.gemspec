@@ -6,7 +6,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["tony.arcieri@gmail.com"]
   gem.description   = "A Celluloid::IO-powered HTTP server"
   gem.summary       = "A reel good HTTP server"
-  gem.homepage      = "https://github.com/tarcieri/reel"
+  gem.homepage      = "https://github.com/celluloid/reel"
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   gem.files         = `git ls-files`.split("\n")
