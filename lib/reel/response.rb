@@ -55,11 +55,9 @@ module Reel
     510  => 'Not Extended',
   }
 
-  HTTP_STATUS_SYMBOLS = HTTP_STATUS_CODES.inject({}) do |hash, (code, reason)|
-    code_sym = reason.sub("'", '').gsub(/[- ]/, '_').downcase.to_sym
-    hash[code_sym] = code
-    hash
-  end
+  SYMBOL_TO_STATUS_CODE = Hash[*HTTP_STATUS_CODES.map { |code, message|
+                                 [message.downcase.gsub(/\s|-/, '_').to_sym, code]
+                               }.flatten]
 
   class Response
     attr_reader :status
@@ -87,10 +85,10 @@ module Reel
         @status = status
         @reason = reason || HTTP_STATUS_CODES[status]
       when Symbol
-        if HTTP_STATUS_SYMBOLS.include?(status)
-          @status = HTTP_STATUS_SYMBOLS[status]
+        if SYMBOL_TO_STATUS_CODE.include?(status)
+          @status = SYMBOL_TO_STATUS_CODE[status]
         else
-          raise ArgumentError, "unrecognized status symbol :/"
+          raise ArgumentError, "unrecognized status symbol :#{status}"
         end
         @reason = reason || HTTP_STATUS_CODES[@status]
       else
