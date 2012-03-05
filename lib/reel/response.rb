@@ -19,7 +19,7 @@ module Reel
         @headers = body_or_headers
       end
 
-      # hax
+      # FIXME: real HTTP versioning
       @version = "HTTP/1.1"
     end
 
