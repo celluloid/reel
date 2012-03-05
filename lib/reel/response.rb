@@ -3,9 +3,10 @@ module Reel
     # Use status code tables from the Http gem
     STATUS_CODES          = Http::Response::STATUS_CODES
     SYMBOL_TO_STATUS_CODE = Http::Response::SYMBOL_TO_STATUS_CODE
-    
-    attr_reader :status
     CRLF = "\r\n"
+    
+    attr_reader   :status # Status has a special setter to coerce symbol names
+    attr_accessor :reason
 
     def initialize(status, body_or_headers = nil, body = nil)
       self.status = status
@@ -23,33 +24,27 @@ module Reel
     end
 
     # Set the status
-    def set_status(status, reason=nil)
+    def status=(status, reason=nil)
       case status
       when Integer
         @status = status
-        @reason = reason || STATUS_CODES[status]
-      when Symbol
-        if SYMBOL_TO_STATUS_CODE.include?(status)
-          @status = SYMBOL_TO_STATUS_CODE[status]
+        @reason ||= STATUS_CODES[status]
+      when Symbol 
+        if code = SYMBOL_TO_STATUS_CODE[status]
+          self.status = code
         else
-          raise ArgumentError, "unrecognized status symbol :#{status}"
+          raise ArgumentError, "unrecognized status symbol: #{status}"
         end
-        @reason = reason || STATUS_CODES[@status]
       else
-        raise ArgumentError, "invalid status: #{status}"
+        raise TypeError, "invalid status type: #{status.inspect}"
       end
     end
-    alias_method :status=, :set_status
 
     # Write the response out to the wire
     def render(socket)
       socket << render_header
       socket << @body
     end
-
-    #######
-    private
-    #######
 
     # Convert headers into a string
     # FIXME: this should probably be factored elsewhere, SRP and all
@@ -64,5 +59,6 @@ module Reel
 
       response_header << CRLF
     end
+    private :render_header
   end
 end
