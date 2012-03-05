@@ -10,6 +10,7 @@ module Reel
       @socket = socket
       @parser = Request::Parser.new
       @request = nil
+      @keepalive = true
     end
     
     def read_request
@@ -19,7 +20,12 @@ module Reel
         @parser << @socket.readpartial(BUFFER_SIZE)
       end
       
-      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, @parser.headers)
+      headers = {}
+      @parser.headers.each do |header, value|
+        headers[Http.canonicalize_header(header)] = value
+      end
+      @keepalive = false if headers['Connection'] == 'close'
+      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers)
     end
     
     def respond(response, body = nil)
