@@ -8,7 +8,7 @@ module Reel
     
     def initialize(socket)
       @socket = socket
-      @parser = RequestParser.new
+      @parser = Request::Parser.new
       @request = nil
     end
     

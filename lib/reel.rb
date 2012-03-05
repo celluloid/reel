@@ -1,12 +1,13 @@
-require 'celluloid/io'
 require 'http/parser'
+require 'http'
+require 'celluloid/io'
 
 require 'reel/version'
 
 require 'reel/connection'
 require 'reel/logger'
 require 'reel/request'
-require 'reel/request_parser'
+require 'reel/request/parser'
 require 'reel/response'
 require 'reel/server'
 
