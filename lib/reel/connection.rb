@@ -25,7 +25,19 @@ module Reel
         headers[Http.canonicalize_header(header)] = value
       end
       @keepalive = false if headers['Connection'] == 'close'
-      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers)
+      @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
+      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers) do
+        read_request_body
+      end
+    end
+    
+    def read_request_body
+      if @body_remaining and @body_remaining > 0
+        str = @socket.readpartial(BUFFER_SIZE)
+        @body_remaining -= str.length
+        @body_remaining = nil if @body_remaining < 1
+        str
+      end
     end
     
     def respond(response, body = nil)
