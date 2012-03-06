@@ -21,15 +21,18 @@ primarily I/O bound, and threads for where you're compute bound.
 ### Is It Good?
 
 Yes, but it has room for improvement. A "hello world" web server benchmark,
-done on a 2GHz i7 w\ ApacheBench, 64 concurrent connections:
+run on a 2GHz i7 (OS X 10.7.3). All servers used in a single-threaded mode.
+Ruby 1.9.3 was used for all Ruby benchmarks.
 
 ```
-Web Server            Throughput  Latency
-----------            ----------- -------
-Reel    (HEAD)        5189 reqs/s (6.1 ms/req)
-Goliath (0.9.4)       3495 reqs/s (18.3 ms/req)
-Thin    (1.2.11)      8747 reqs/s (7.3 ms/req)
-Node.js (0.6.5)       9023 reqs/s (7.1 ms/req)
+httperf --num-conns=50 --num-calls=1000
+
+Web Server            Throughput   Latency
+----------            ----------   -------
+Reel    (HEAD)         5027 reqs/s  (0.2 ms/req)
+Goliath (0.9.4)        2058 reqs/s  (0.5 ms/req)
+Thin    (1.2.11)       7502 reqs/s  (0.1 ms/req)
+Node.js (0.6.5)       11735 reqs/s  (0.1 ms/req)
 ```
 
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
