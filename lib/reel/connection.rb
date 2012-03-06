@@ -11,6 +11,10 @@ module Reel
       @parser = Request::Parser.new
       @request = nil
       @keepalive = true
+      
+      # FIXME: Use an FSM here?
+      @request_state  = :awaiting_header
+      @response_state = :nothing_sent
     end
     
     def read_request
@@ -26,19 +30,18 @@ module Reel
       end
       @keepalive = false if headers['Connection'] == 'close'
       @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
-      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers) do
-        read_request_body
-      end
+      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers, self)
     end
     
-    def read_request_body
+    def readpartial(size = BUFFER_SIZE)
       if @body_remaining and @body_remaining > 0
-        str = @socket.readpartial(BUFFER_SIZE)
+        str = @socket.readpartial(size)
         @body_remaining -= str.length
         @body_remaining = nil if @body_remaining < 1
         str
       end
     end
+    alias_method :read, :readpartial
     
     def respond(response, body = nil)
       case response

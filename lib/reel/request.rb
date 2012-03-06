@@ -3,12 +3,11 @@ module Reel
     attr_accessor :method, :version, :url
     METHODS = [:get, :head, :post, :put, :delete, :trace, :options, :connect, :patch]
     
-    def initialize(method, url, version = "1.1", headers = {}, &body_chunk)
+    def initialize(method, url, version = "1.1", headers = {}, connection = nil)
       @method = method.to_s.downcase.to_sym
       raise UnsupportedArgumentError, "unknown method: #{method}" unless METHODS.include? @method
       
-      @url, @version, @headers = url, version, headers
-      @body_proc = body_chunk
+      @url, @version, @headers, @connection = url, version, headers, connection
     end
     
     def [](header)
@@ -17,8 +16,10 @@ module Reel
     
     def body
       @body ||= begin
+        raise "no connection given" unless @connection
+        
         body = "" unless block_given?
-        while chunk = @body_proc.call
+        while chunk = @connection.read
           if block_given?
             yield chunk
           else
