@@ -22,18 +22,28 @@ primarily I/O bound, and threads for where you're compute bound.
 
 Yes, but it has room for improvement. A "hello world" web server benchmark,
 run on a 2GHz i7 (OS X 10.7.3). All servers used in a single-threaded mode.
-Ruby 1.9.3 was used for all Ruby benchmarks.
+
+Reel performance on various Ruby VMs:
 
 ```
-httperf --num-conns=50 --num-calls=1000
+# httperf --num-conns=50 --num-calls=1000
 
-Web Server            Throughput   Latency
-----------            ----------   -------
-Reel    (HEAD)         5027 reqs/s  (0.2 ms/req)
-Reel    (HEAD/JRuby)   4024 reqs/s  (0.2 ms/req)
-Goliath (0.9.4)        2058 reqs/s  (0.5 ms/req)
-Thin    (1.2.11)       7502 reqs/s  (0.1 ms/req)
-Node.js (0.6.5)       11735 reqs/s  (0.1 ms/req)
+Ruby Version        Throughput    Latency
+------------        ----------    -------
+Ruby 1.9.3          5027 reqs/s   (0.2 ms/req)
+JRuby 1.6.7         4024 reqs/s   (0.2 ms/req)
+JRuby HEAD          5478 reqs/s   (0.2 ms/req)
+rbx HEAD            2288 reqs/s   (0.4 ms/req)
+```
+
+Comparison with other web servers:
+
+```
+Web Server          Throughput    Latency
+----------          ----------    -------
+Goliath (0.9.4)     2058 reqs/s   (0.5 ms/req)
+Thin    (1.2.11)    7502 reqs/s   (0.1 ms/req)
+Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
 ```
 
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
