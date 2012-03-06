@@ -1,6 +1,8 @@
 module Reel
   # A connection to the HTTP server
   class Connection
+    class StateError < RuntimeError; end # wrong state for a given request
+    
     attr_reader :request
     
     # Attempt to read this much data
@@ -8,27 +10,32 @@ module Reel
     
     def initialize(socket)
       @socket = socket
-      @parser = Request::Parser.new
-      @request = nil
       @keepalive = true
+      reset
       
-      # FIXME: Use an FSM here?
-      @request_state  = :awaiting_header
-      @response_state = :nothing_sent
+      @response_state = :header
     end
     
+    # Is the connection still active?
+    def alive?; @keepalive; end
+    
     def read_request
-      return if @request
+      raise StateError, "can't read header" unless @request_state == :header
       
       until @parser.headers
         @parser << @socket.readpartial(BUFFER_SIZE)
       end
+      @request_state = :body
       
       headers = {}
       @parser.headers.each do |header, value|
         headers[Http.canonicalize_header(header)] = value
       end
-      @keepalive = false if headers['Connection'] == 'close'
+      
+      if @parser.http_version == "1.0" or headers['Connection'] == 'close'
+        @keepalive = false
+      end
+      
       @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
       @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers, self)
     end
@@ -44,9 +51,15 @@ module Reel
     alias_method :read, :readpartial
     
     def respond(response, body = nil)
+      if @keepalive
+        headers = {'Connection' => 'Keep-Alive'}
+      else
+        headers = {'Connection' => 'close'}
+      end
+      
       case response
       when Symbol
-        response = Response.new(response, {'Connection' => 'close'}, body)
+        response = Response.new(response, headers, body)
       when Response
       else raise TypeError, "invalid response: #{response.inspect}"
       end
@@ -54,9 +67,21 @@ module Reel
       response.render(@socket)
     rescue Errno::ECONNRESET, Errno::EPIPE
       # The client disconnected early
+      @keepalive = false
     ensure
-      # FIXME: Keep-Alive support
-      @socket.close 
+      if @keepalive
+        reset
+        @request_state = :header
+      else
+        @socket.close 
+        @request_state = :closed
+      end
+    end
+    
+    def reset
+      @request_state = :header
+      @parser = Request::Parser.new
+      @request = nil
     end
   end
 end

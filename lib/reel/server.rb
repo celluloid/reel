@@ -19,8 +19,10 @@ module Reel
     
     def handle_connection(socket)
       connection = Connection.new(socket)
-      connection.read_request
-      @callback[connection]
+      begin
+        connection.read_request
+        @callback[connection]
+      end while connection.alive?
     rescue EOFError
       # Client disconnected prematurely
       # FIXME: should probably do something here

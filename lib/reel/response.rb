@@ -19,6 +19,10 @@ module Reel
         @headers = body_or_headers
       end
 
+      if @body
+        @headers['Content-Length'] ||= @body.length
+      end
+
       # FIXME: real HTTP versioning
       @version = "HTTP/1.1"
     end
