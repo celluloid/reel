@@ -37,6 +37,7 @@ describe Reel::Server do
     with_reel(handler) do
       http = Net::HTTP.new(endpoint.host, endpoint.port)
       request = Net::HTTP::Post.new(endpoint.request_uri)
+      request['connection'] = 'close'
       request.body = response_body
       response = http.request(request)
       response.should be_a Net::HTTPOK
