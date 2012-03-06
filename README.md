@@ -30,6 +30,7 @@ httperf --num-conns=50 --num-calls=1000
 Web Server            Throughput   Latency
 ----------            ----------   -------
 Reel    (HEAD)         5027 reqs/s  (0.2 ms/req)
+Reel    (HEAD/JRuby)   4024 reqs/s  (0.2 ms/req)
 Goliath (0.9.4)        2058 reqs/s  (0.5 ms/req)
 Thin    (1.2.11)       7502 reqs/s  (0.1 ms/req)
 Node.js (0.6.5)       11735 reqs/s  (0.1 ms/req)
