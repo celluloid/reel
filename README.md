@@ -1,6 +1,6 @@
 ![Reel](https://github.com/celluloid/reel/raw/master/logo.png)
 =======
-[![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/tarcieri/reel)
+[![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
 
 Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
 [Celluloid::IO][celluloidio], and [nio4r][nio4r]. It's probably most similar to
