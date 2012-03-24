@@ -9,8 +9,7 @@ describe Reel::Connection do
     client = TCPSocket.new(host, port)
     socket = Reel::Connection.new(server.accept)
 
-    header_path = File.expand_path('../../fixtures/chrome.txt', __FILE__)
-    client << File.read(header_path)
+    client << ExampleRequest.new.to_s
     request = socket.read_request
 
     request.url.should     eq "/"
