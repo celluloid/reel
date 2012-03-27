@@ -14,6 +14,7 @@ module Reel
       reset
 
       @response_state = :header
+      @body_remaining = nil
     end
 
     # Is the connection still active?
@@ -51,13 +52,19 @@ module Reel
 
     def readpartial(size = BUFFER_SIZE)
       if @body_remaining and @body_remaining > 0
-        str = @socket.readpartial(size)
-        @body_remaining -= str.length
+        chunk = @parser.chunk
+        unless chunk
+          @parser << @socket.readpartial(size)
+          chunk = @parser.chunk
+          return unless chunk
+        end
+
+        @body_remaining -= chunk.length
         @body_remaining = nil if @body_remaining < 1
-        str
+
+        chunk
       end
     end
-    alias_method :read, :readpartial
 
     def respond(response, body = nil)
       if @keepalive

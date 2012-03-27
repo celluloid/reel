@@ -3,11 +3,12 @@ module Reel
   class Request
     class Parser
       attr_reader :headers
-    
+
       def initialize
         @parser = Http::Parser.new(self)
         @headers = nil
-        @read_body = false
+        @finished = false
+        @chunk = nil
       end
 
       def add(data)
@@ -18,15 +19,15 @@ module Reel
       def headers?
         !!@headers
       end
-    
+
       def http_method
         @parser.http_method.downcase.to_sym
       end
-    
+
       def http_version
         @parser.http_version.join(".")
       end
-    
+
       def url
         @parser.request_url
       end
@@ -34,18 +35,29 @@ module Reel
       #
       # Http::Parser callbacks
       #
-    
+
       def on_headers_complete(headers)
         @headers = headers
       end
-    
+
       def on_body(chunk)
-        # FIXME: handle request bodies
+        if @chunk
+          @chunk << chunk
+        else
+          @chunk = chunk
+        end
+      end
+
+      def chunk
+        if (chunk = @chunk)
+          @chunk = nil
+          chunk
+        end
       end
 
       def on_message_complete
-        @read_body = true
-      end    
+        @finished = true
+      end
     end
   end
 end

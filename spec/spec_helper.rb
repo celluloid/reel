@@ -35,6 +35,10 @@ class ExampleRequest
   end
 
   def to_s
+    if @body && !@headers['Content-Length']
+      @headers['Content-Length'] = @body.length
+    end
+
     "#{@verb} #{@path} HTTP/#{@version}\r\n" <<
     @headers.map { |k, v| "#{k}: #{v}" }.join("\r\n") << "\r\n\r\n" <<
     (@body ? @body : '')

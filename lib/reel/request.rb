@@ -19,7 +19,7 @@ module Reel
         raise "no connection given" unless @connection
         
         body = "" unless block_given?
-        while chunk = @connection.read
+        while (chunk = @connection.readpartial)
           if block_given?
             yield chunk
           else
