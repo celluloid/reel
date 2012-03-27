@@ -71,9 +71,9 @@ end
 Status
 ------
 
-Reel is mostly in the proof of concept stage, working well enough you can
-point your favorite benchmarking utility at it, but not exactly speaking
-valid HTTP yet.
+Reel is still in an extremely early stage of development and may be
+missing a lot of features. It seems to be doing a rudimentary job of
+speaking HTTP and has basic keep-alive support.
 
 Contributing
 ------------
