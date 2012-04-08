@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Reel::Connection do
+  let(:fixture_path) { File.expand_path("../../fixtures/example.txt", __FILE__) }
+
   it "reads requests without bodies" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
@@ -30,8 +32,23 @@ describe Reel::Connection do
 
       request.url.should     eq "/"
       request.version.should eq "1.1"
-      request['Content-Length'].should == body.length.to_s
-      request.body.should == example_request.body
+      request['Content-Length'].should eq body.length.to_s
+      request.body.should eq example_request.body
+    end
+  end
+
+  it "serves static files" do
+    with_socket_pair do |client, connection|
+      client << ExampleRequest.new.to_s
+      request = connection.read_request
+
+      fixture_text = File.read(fixture_path)
+      File.open(fixture_path) do |file|
+        connection.respond :ok, file
+      end
+
+      response = client.readpartial(4096)
+      response[(response.length - fixture_text.length)..-1].should eq fixture_text
     end
   end
 

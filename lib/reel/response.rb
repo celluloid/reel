@@ -4,7 +4,7 @@ module Reel
     STATUS_CODES          = Http::Response::STATUS_CODES
     SYMBOL_TO_STATUS_CODE = Http::Response::SYMBOL_TO_STATUS_CODE
     CRLF = "\r\n"
-    
+
     attr_reader   :status # Status has a special setter to coerce symbol names
     attr_accessor :reason
 
@@ -19,8 +19,11 @@ module Reel
         @headers = body_or_headers
       end
 
-      if @body
+      case @body
+      when String
         @headers['Content-Length'] ||= @body.length
+      when IO
+        @headers['Content-Length'] ||= @body.stat.size
       end
 
       # FIXME: real HTTP versioning
@@ -33,7 +36,7 @@ module Reel
       when Integer
         @status = status
         @reason ||= STATUS_CODES[status]
-      when Symbol 
+      when Symbol
         if code = SYMBOL_TO_STATUS_CODE[status]
           self.status = code
         else
@@ -47,7 +50,20 @@ module Reel
     # Write the response out to the wire
     def render(socket)
       socket << render_header
-      socket << @body
+
+      case @body
+      when String
+        socket << @body
+      when IO
+        # TODO: chunked encoding support if needed
+
+        if socket.respond_to?(:evented?) && socket.evented?
+          # Avoid blocking the main event loop
+          Celluloid.defer { IO.copy_stream(@body, socket) }
+        else
+          IO.copy_stream(@body, socket)
+        end
+      end
     end
 
     # Convert headers into a string
