@@ -55,13 +55,9 @@ module Reel
       when String
         socket << @body
       when IO
-        # TODO: chunked encoding support if needed
-
-        if socket.respond_to?(:evented?) && socket.evented?
-          # Avoid blocking the main event loop
-          Celluloid::Actor.current.defer { IO.copy_stream(@body, socket) }
-        else
-          IO.copy_stream(@body, socket)
+        # TODO: IO.copy_stream when it works cross-platform
+        while data = @body.read(4096)
+          socket << data
         end
       end
     end
