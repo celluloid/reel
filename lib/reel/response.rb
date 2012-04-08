@@ -59,7 +59,7 @@ module Reel
 
         if socket.respond_to?(:evented?) && socket.evented?
           # Avoid blocking the main event loop
-          Celluloid.defer { IO.copy_stream(@body, socket) }
+          Celluloid::Actor.current.defer { IO.copy_stream(@body, socket) }
         else
           IO.copy_stream(@body, socket)
         end
