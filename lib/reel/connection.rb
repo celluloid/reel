@@ -98,6 +98,7 @@ module Reel
     def reset
       @request_state = :header
       @request = nil
+      @parser.reset
     end
   end
 end

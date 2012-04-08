@@ -6,9 +6,7 @@ module Reel
 
       def initialize
         @parser = Http::Parser.new(self)
-        @headers = nil
-        @finished = false
-        @chunk = nil
+        reset
       end
 
       def add(data)
@@ -57,6 +55,12 @@ module Reel
 
       def on_message_complete
         @finished = true
+      end
+
+      def reset
+        @finished = false
+        @headers  = nil
+        @chunk    = nil
       end
     end
   end
