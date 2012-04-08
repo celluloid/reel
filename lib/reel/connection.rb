@@ -11,6 +11,7 @@ module Reel
     def initialize(socket)
       @socket = socket
       @keepalive = true
+      @parser = Request::Parser.new
       reset
 
       @response_state = :header
@@ -96,7 +97,6 @@ module Reel
 
     def reset
       @request_state = :header
-      @parser = Request::Parser.new
       @request = nil
     end
   end
