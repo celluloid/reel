@@ -21,7 +21,7 @@ module Reel
 
       case @body
       when String
-        @headers['Content-Length'] ||= @body.length
+        @headers['Content-Length'] ||= @body.bytesize
       when IO
         @headers['Content-Length'] ||= @body.stat.size
       end
