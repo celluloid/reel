@@ -33,6 +33,10 @@ module Reel
         @headers['Content-Length'] ||= @body.bytesize
       when IO
         @headers['Content-Length'] ||= @body.stat.size
+      when Enumerable
+        @headers['Transfer-Encoding'] ||= 'chunked'
+      when NilClass
+      else raise ArgumentError, "can't render #{@body.class} as a response body"
       end
 
       # Prevent modification through the accessor
@@ -71,6 +75,14 @@ module Reel
         while data = @body.read(4096)
           socket << data
         end
+      when Enumerable
+        @body.each do |chunk|
+          chunk_header = chunk.bytesize.to_s(16) + CRLF
+          socket << chunk_header
+          socket << chunk
+        end
+
+        socket << "0" << CRLF * 2
       end
     end
 

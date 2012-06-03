@@ -132,7 +132,7 @@ module Reel
     # Finish the response and reset the response state to header
     def finish_response
       raise StateError, "not in body state" if @response_state != :chunked_body
-      @socket << "0#{Response::CRLF * 2}"
+      @socket << "0" << Response::CRLF * 2
       @response_state = :header
     end
 
