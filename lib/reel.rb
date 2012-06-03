@@ -9,8 +9,6 @@ require 'reel/logger'
 require 'reel/request'
 require 'reel/request/parser'
 require 'reel/response'
-require 'reel/response/chunked_body'
-require 'reel/streaming_response'
 require 'reel/server'
 
 # A Reel good HTTP server
