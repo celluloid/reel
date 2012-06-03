@@ -68,7 +68,7 @@ describe Reel::Connection do
       response = client.readpartial(4096)
 
       crlf = "\r\n"
-      fixture = "5#{crlf}Hello5#{crlf}World"
+      fixture = "5#{crlf}Hello5#{crlf}World0#{crlf*2}"
       response[(response.length - fixture.length)..-1].should eq fixture
     end
   end
