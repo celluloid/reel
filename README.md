@@ -15,7 +15,7 @@ applications and provides traditional multithreaded blocking I/O support too.
 Connections to Reel can be either non-blocking and handled entirely within
 the Reel::Server thread, or the same connections can be dispatched to worker
 threads where they will perform ordinary blocking IO. Reel provides no
-built-in thread pool, however you can build one yourself using Celluloid::Pool,
+built-in thread pool, however you can build one yourself using Celluloid.pool,
 or because Celluloid already pools threads to begin with, you can simply use
 an actor per connection.
 
