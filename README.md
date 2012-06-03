@@ -22,9 +22,10 @@ an actor per connection.
 This gives you the best of both worlds: non-blocking I/O for when you're
 primarily I/O bound, and threads for where you're compute bound.
 
-### Is It Good?
+### Is it any good?
 
-Yes, but it has room for improvement. A "hello world" web server benchmark,
+[Yes](http://news.ycombinator.com/item?id=3067434),
+but it has room for improvement. A "hello world" web server benchmark,
 run on a 2GHz i7 (OS X 10.7.3). All servers used in a single-threaded mode.
 
 Reel performance on various Ruby VMs:
