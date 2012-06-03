@@ -1,7 +1,7 @@
 module Reel
   # A connection to the HTTP server
   class Connection
-    class StateError < RuntimeError; end # wrong state for a given request
+    class StateError < RuntimeError; end # wrong state for a given operation
 
     attr_reader :request
 
@@ -12,7 +12,7 @@ module Reel
       @socket = socket
       @keepalive = true
       @parser = Request::Parser.new
-      reset
+      reset_request
 
       @response_state = :header
       @body_remaining = nil
@@ -21,6 +21,14 @@ module Reel
     # Is the connection still active?
     def alive?; @keepalive; end
 
+    # Reset the current request state
+    def reset_request
+      @request_state = :header
+      @request = nil
+      @parser.reset
+    end
+
+    # Read a request object from the connection
     def read_request
       raise StateError, "can't read header" unless @request_state == :header
 
@@ -51,6 +59,7 @@ module Reel
       @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers, self)
     end
 
+    # Read a chunk from the request
     def readpartial(size = BUFFER_SIZE)
       if @body_remaining and @body_remaining > 0
         chunk = @parser.chunk
@@ -67,11 +76,22 @@ module Reel
       end
     end
 
-    def respond(response, body = nil)
-      if @keepalive
-        headers = {'Connection' => 'Keep-Alive'}
+    # Send a response back to the client
+    # Response can be a symbol indicating the status code or a Reel::Response
+    def respond(response, headers_or_body = {}, body = nil)
+      raise StateError "not in header state" if @response_state != :header
+
+      if headers_or_body.is_a? Hash
+        headers = headers_or_body
       else
-        headers = {'Connection' => 'close'}
+        headers = {}
+        body = headers_or_body
+      end
+
+      if @keepalive
+        headers['Connection'] = 'Keep-Alive'
+      else
+        headers['Connection'] = 'close'
       end
 
       case response
@@ -82,12 +102,17 @@ module Reel
       end
 
       response.render(@socket)
+
+      # Enable streaming mode
+      if response.headers['Transfer-Encoding'] == "chunked" and response.body.nil?
+        @response_state = :chunked_body
+      end
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       # The client disconnected early
       @keepalive = false
     ensure
       if @keepalive
-        reset
+        reset_request
         @request_state = :header
       else
         @socket.close unless @socket.closed?
@@ -95,10 +120,20 @@ module Reel
       end
     end
 
-    def reset
-      @request_state = :header
-      @request = nil
-      @parser.reset
+    # Write body chunks directly to the connection
+    def write(chunk)
+      raise StateError, "not in chunked body mode" unless @response_state == :chunked_body
+      chunk_header = chunk.bytesize.to_s(16) + Response::CRLF
+      @socket << chunk_header
+      @socket << chunk
+    end
+    alias_method :<<, :write
+
+    # Finish the response and reset the response state to header
+    def finish_response
+      raise StateError, "not in body state" if @response_state != :chunked_body
+      @socket << "0#{Response::CRLF * 2}"
+      @response_state = :header
     end
   end
 end

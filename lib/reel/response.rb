@@ -6,17 +6,26 @@ module Reel
     CRLF = "\r\n"
 
     attr_reader   :status # Status has a special setter to coerce symbol names
-    attr_accessor :reason
+    attr_accessor :reason # Reason can be set explicitly if desired
+    attr_reader   :headers, :body
 
     def initialize(status, body_or_headers = nil, body = nil)
       self.status = status
 
-      if body_or_headers and not body
-        @body = body_or_headers
-        @headers = {}
-      else
+      if body_or_headers.is_a?(Hash)
+        headers = body_or_headers
         @body = body
-        @headers = body_or_headers
+      else
+        headers = {}
+        @body = body_or_headers
+      end
+
+      @headers = {}
+      headers.each do |name, value|
+        name = name.to_s
+        key = name[Http::CANONICAL_HEADER]
+        key ||= canonicalize_header(name)
+        @headers[key] = value.to_s
       end
 
       case @body
@@ -25,6 +34,9 @@ module Reel
       when IO
         @headers['Content-Length'] ||= @body.stat.size
       end
+
+      # Prevent modification through the accessor
+      @headers.freeze
 
       # FIXME: real HTTP versioning
       @version = "HTTP/1.1"
@@ -76,5 +88,11 @@ module Reel
       response_header << CRLF
     end
     private :render_header
+
+    # Transform to canonical HTTP header capitalization
+    def canonicalize_header(header)
+      header.to_s.split(/[\-_]/).map(&:capitalize).join('-')
+    end
+    private :canonicalize_header
   end
 end

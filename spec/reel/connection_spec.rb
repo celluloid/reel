@@ -52,6 +52,27 @@ describe Reel::Connection do
     end
   end
 
+  it "streams responses when transfer-encoding is chunked" do
+    with_socket_pair do |client, connection|
+      client << ExampleRequest.new.to_s
+      request = connection.read_request
+
+      # Sending transfer_encoding chunked without a body enables streaming mode
+      connection.respond :ok, :transfer_encoding => :chunked
+
+      # This will send individual chunks
+      connection << "Hello"
+      connection << "World"
+      connection.finish_response # Write trailer and reset connection to header mode
+
+      response = client.readpartial(4096)
+
+      crlf = "\r\n"
+      fixture = "5#{crlf}Hello5#{crlf}World"
+      response[(response.length - fixture.length)..-1].should eq fixture
+    end
+  end
+
   def with_socket_pair
     host = '127.0.0.1'
     port = 10103
