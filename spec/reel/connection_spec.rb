@@ -64,8 +64,16 @@ describe Reel::Connection do
       connection << "Hello"
       connection << "World"
       connection.finish_response # Write trailer and reset connection to header mode
+      connection.close
 
-      response = client.readpartial(4096)
+      response = ""
+
+      begin
+        while chunk = client.readpartial(4096)
+          response << chunk
+        end
+      rescue EOFError
+      end
 
       crlf = "\r\n"
       fixture = "5#{crlf}Hello5#{crlf}World0#{crlf*2}"
@@ -81,10 +89,12 @@ describe Reel::Connection do
     client = TCPSocket.new(host, port)
     peer   = server.accept
 
-    yield client, Reel::Connection.new(peer)
-
-    server.close
-    client.close
-    peer.close
+    begin
+      yield client, Reel::Connection.new(peer)
+    ensure
+      server.close rescue nil
+      client.close rescue nil
+      peer.close   rescue nil
+    end
   end
 end

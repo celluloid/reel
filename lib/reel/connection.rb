@@ -135,5 +135,11 @@ module Reel
       @socket << "0#{Response::CRLF * 2}"
       @response_state = :header
     end
+
+    # Close the connection
+    def close
+      @keepalive = false
+      @socket.close
+    end
   end
 end
