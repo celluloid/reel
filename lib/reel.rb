@@ -7,7 +7,7 @@ require 'reel/version'
 require 'reel/connection'
 require 'reel/logger'
 require 'reel/request'
-require 'reel/request/parser'
+require 'reel/request_parser'
 require 'reel/response'
 require 'reel/server'
 
