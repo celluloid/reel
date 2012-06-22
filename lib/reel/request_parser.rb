@@ -1,5 +1,4 @@
 module Reel
-  # Parses incoming HTTP requests
   class Request
     class Parser
       attr_reader :headers
