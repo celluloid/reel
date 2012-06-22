@@ -33,9 +33,7 @@ module Reel
       raise StateError, "can't read header" unless @request_state == :header
 
       begin
-        until @parser.headers
-          @parser << @socket.readpartial(BUFFER_SIZE)
-        end
+        @parser << @socket.readpartial(BUFFER_SIZE) until @parser.headers
       rescue IOError, Errno::ECONNRESET, Errno::EPIPE
         @keepalive = false
         @socket.close unless @socket.closed?
