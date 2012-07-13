@@ -43,8 +43,8 @@ module Reel
       @request_state = :body
 
       headers = {}
-      @parser.headers.each do |header, value|
-        headers[Http.canonicalize_header(header)] = value
+      @parser.headers.each do |field, value|
+        headers[Http.canonicalize_header(field)] = value
       end
 
       if headers['Connection']
