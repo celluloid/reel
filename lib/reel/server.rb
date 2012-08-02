@@ -21,7 +21,7 @@ module Reel
       connection = Connection.new(socket)
       begin
         connection.read_request
-        @callback[connection]
+        @callback[connection] if connection.request
       end while connection.alive?
     rescue EOFError
       # Client disconnected prematurely

@@ -45,9 +45,10 @@ describe Reel::Connection do
       fixture_text = File.read(fixture_path)
       File.open(fixture_path) do |file|
         connection.respond :ok, file
+        connection.close
       end
 
-      response = client.readpartial(4096)
+      response = client.read(4096)
       response[(response.length - fixture_text.length)..-1].should eq fixture_text
     end
   end

@@ -36,7 +36,7 @@ module Reel
       when Enumerable
         @headers['Transfer-Encoding'] ||= 'chunked'
       when NilClass
-      else raise ArgumentError, "can't render #{@body.class} as a response body"
+      else raise TypeError, "can't render #{@body.class} as a response body"
       end
 
       # Prevent modification through the accessor
@@ -71,9 +71,13 @@ module Reel
       when String
         socket << @body
       when IO
-        # TODO: IO.copy_stream when it works cross-platform
-        while data = @body.read(4096)
-          socket << data
+        if !defined?(JRUBY_VERSION)
+          IO.copy_stream(@body, socket)
+        else
+          # JRuby 1.6.7 doesn't support IO.copy_stream :(
+          while data = @body.read(4096)
+            socket << data
+          end
         end
       when Enumerable
         @body.each do |chunk|

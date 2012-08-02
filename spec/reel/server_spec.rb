@@ -4,36 +4,42 @@ require 'net/http'
 describe Reel::Server do
   let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_url}") }
   let(:response_body) { "ohai thar" }
-  
+
   it "receives HTTP requests and sends responses" do
-    handler_called = false
+    ex = nil
+
     handler = proc do |connection|
-      handler_called = true
-      request = connection.request
-      request.method.should eq :get
-      request.version.should eq "1.1"
-      request.url.should eq example_url
-      
-      connection.respond :ok, response_body
+      begin
+        request = connection.request
+        request.method.should eq :get
+        request.version.should eq "1.1"
+        request.url.should eq example_url
+
+        connection.respond :ok, response_body
+      rescue => ex
+      end
     end
-    
+
     with_reel(handler) do
       response = Net::HTTP.get endpoint
       response.should eq response_body
     end
-    
-    handler_called.should be_true
+
+    raise ex if ex
   end
-  
+
   it "echoes request bodies as response bodies" do
-    handler_called = false
+    ex = nil
+
     handler = proc do |connection|
-      handler_called = true
-      request = connection.request
-      request.method.should eq :post
-      connection.respond :ok, request.body
+      begin
+        request = connection.request
+        request.method.should eq :post
+        connection.respond :ok, request.body
+      rescue => ex
+      end
     end
-    
+
     with_reel(handler) do
       http = Net::HTTP.new(endpoint.host, endpoint.port)
       request = Net::HTTP::Post.new(endpoint.request_uri)
@@ -43,7 +49,7 @@ describe Reel::Server do
       response.should be_a Net::HTTPOK
       response.body.should == response_body
     end
-    
-    handler_called.should be_true
+
+    raise ex if ex
   end
 end
