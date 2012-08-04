@@ -29,7 +29,7 @@ module Reel
     end
 
     def peer_address
-      @socket.peeraddr
+      @socket.peeraddr(false)
     end
 
     def local_address
