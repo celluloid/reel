@@ -6,7 +6,6 @@ module Reel
   class Configuration
     attr_reader :options
 
-    DEFAULT_RACKUP =
     DEFAULT_OPTIONS = {
       :host    => "0.0.0.0",
       :port    => 3000,
@@ -89,7 +88,7 @@ module Reel
     def rack_app
       return @options[:app] if @options[:app]
 
-      path = @options[:rackup] || DEFAULT_RACKUP
+      path = @options[:rackup]
 
       unless File.exists?(path)
         raise ConfigurationError.new("Missing rackup file '#{path}'")
