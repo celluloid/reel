@@ -15,7 +15,7 @@ module Reel
       :rackup  => "config.ru"
     }
 
-    def initialize(argv)
+    def initialize(argv = [])
       @argv = argv
       @options = DEFAULT_OPTIONS.dup
 

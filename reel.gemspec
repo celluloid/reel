@@ -14,11 +14,12 @@ Gem::Specification.new do |gem|
   gem.name          = "reel"
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
-  
+
   gem.add_dependency 'celluloid-io',   '>= 0.8.0'
   gem.add_dependency 'http',           '>= 0.2.0'
   gem.add_dependency 'http_parser.rb', '>= 0.5.3'
-  
+  gem.add_dependency 'rack',        '>= 1.4.0'
+
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
 end

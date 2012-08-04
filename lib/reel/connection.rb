@@ -28,6 +28,14 @@ module Reel
       @parser.reset
     end
 
+    def peer_address
+      @socket.peeraddr
+    end
+
+    def local_address
+      @socket.addr
+    end
+
     # Read a request object from the connection
     def read_request
       raise StateError, "can't read header" unless @request_state == :header

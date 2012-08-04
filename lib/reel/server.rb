@@ -7,7 +7,7 @@ module Reel
 
       case server_or_config
       when Configuration
-        @config = config
+        @config = server_or_config
       when String
         @config = Configuration.new(['-a', server_or_config, '-p', port.to_s])
       end
@@ -28,13 +28,37 @@ module Reel
 
     def handle_connection(socket)
       connection = Connection.new(socket)
+
       begin
-        connection.read_request
-        @callback[connection] if connection.request
+        request = connection.read_request
+        next unless request && request.body
+
+        file_path = File.join('.', 'public', request.path)
+
+        if @callback
+          @callback[connection]
+        elsif File.exists?(file_path) && !File.directory?(file_path)
+          serve_file file_path, connection
+        else
+          Actor[:worker_pool].handle(request, connection)
+        end
+
       end while connection.alive?
+
     rescue EOFError
       # Client disconnected prematurely
       # FIXME: should probably do something here
+    end
+
+    def serve_file(path, connection)
+      File.open(path) do |f|
+        response = Response.new(200, f)
+        connection.respond response
+      end
+    end
+
+    def send_response(response, connection)
+      connection.respond response
     end
   end
 end

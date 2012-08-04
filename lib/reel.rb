@@ -11,6 +11,7 @@ require 'reel/request_parser'
 require 'reel/response'
 require 'reel/server'
 require 'reel/configuration'
+require 'reel/rack_worker'
 
 
 # A Reel good HTTP server

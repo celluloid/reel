@@ -15,10 +15,10 @@ end
 class ExampleRequest
   extend Forwardable
   def_delegators :@headers, :[], :[]=
-  attr_accessor  :path, :version, :body
+  attr_accessor  :method, :path, :version, :body
 
-  def initialize(verb = :get, path = "/", version = "1.1", headers = {}, body = nil)
-    @verb = verb.to_s.upcase
+  def initialize(method = :get, path = "/", version = "1.1", headers = {}, body = nil)
+    @method = method.to_s.upcase
     @path = path
     @version = "1.1"
     @headers = {
@@ -39,7 +39,7 @@ class ExampleRequest
       @headers['Content-Length'] = @body.length
     end
 
-    "#{@verb} #{@path} HTTP/#{@version}\r\n" <<
+    "#{@method} #{@path} HTTP/#{@version}\r\n" <<
     @headers.map { |k, v| "#{k}: #{v}" }.join("\r\n") << "\r\n\r\n" <<
     (@body ? @body : '')
   end
