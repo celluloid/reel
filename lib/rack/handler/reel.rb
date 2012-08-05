@@ -2,12 +2,11 @@ require 'reel'
 
 module Rack
   module Handler
-
-    # Don't mess with Rack::File
-    File = ::File
-
     class Reel
       attr_reader :options
+
+      # Don't mess with Rack::File
+      File = ::File
 
       DEFAULT_OPTIONS = {
         :host    => "0.0.0.0",
