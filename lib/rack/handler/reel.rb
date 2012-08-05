@@ -43,7 +43,7 @@ module Rack
           request = connection.request
           next unless request && request.body
 
-          path = Object::File.join('.', 'public', request.path)
+          path = File.join('.', 'public', request.path)
 
           if File.exists?(path) && !File.directory?(path)
             File.open(path) do |f|
@@ -68,7 +68,7 @@ module Rack
         path = @options[:rackup]
 
         unless File.exists?(path)
-          raise ConfigurationError.new("Missing rackup file '#{path}'")
+          raise "Missing rackup file '#{path}'"
         end
 
         @options[:app], options = Rack::Builder.parse_file path
