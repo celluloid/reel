@@ -4,7 +4,7 @@ rvm:
 #  - ruby-head http_parser.rb not working :(
   - jruby-19mode
   - jruby-head
-  - rbx-19mode
+#  - rbx-19mode choking on string encodings
 
 notifications:
   irc: "irc.freenode.org#celluloid"
