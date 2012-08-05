@@ -15,10 +15,11 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
 
-  gem.add_dependency 'celluloid-io',   '>= 0.8.0'
-  gem.add_dependency 'http',           '>= 0.2.0'
-  gem.add_dependency 'http_parser.rb', '>= 0.5.3'
-  gem.add_dependency 'rack',        '>= 1.4.0'
+  gem.add_runtime_dependency 'celluloid-io',   '>= 0.8.0'
+  gem.add_runtime_dependency 'http',           '>= 0.2.0'
+  gem.add_runtime_dependency 'http_parser.rb', '>= 0.5.3'
+  gem.add_runtime_dependency 'libwebsocket',   '>= 0.1.5'
+  gem.add_runtime_dependency 'rack',           '>= 1.4.0'
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'

@@ -10,6 +10,7 @@ require 'reel/request'
 require 'reel/request_parser'
 require 'reel/response'
 require 'reel/server'
+require 'reel/websocket'
 
 require 'rack'
 require 'rack/handler'

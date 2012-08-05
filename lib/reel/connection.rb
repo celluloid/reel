@@ -25,6 +25,7 @@ module Reel
     def reset_request
       @request_state = :header
       @request = nil
+      @header_buffer = "" # Buffer headers in case of an upgrade request
       @parser.reset
     end
 
@@ -41,12 +42,14 @@ module Reel
       raise StateError, "can't read header" unless @request_state == :header
 
       begin
-        @parser << @socket.readpartial(BUFFER_SIZE) until @parser.headers
+        data = @socket.readpartial(BUFFER_SIZE)
+        @header_buffer << data
+        @parser << data
       rescue IOError, Errno::ECONNRESET, Errno::EPIPE
         @keepalive = false
         @socket.close unless @socket.closed?
         return
-      end
+      end until @parser.headers
 
       @request_state = :body
 
@@ -62,6 +65,15 @@ module Reel
       end
 
       @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
+
+      if headers['Upgrade'] == 'WebSocket'
+        @request = WebSocket.new(@socket, @parser.url, headers, @header_buffer)
+        @request_state = @response_state = :websocket
+        @socket = @header_buffer = nil
+        return @request
+      end
+
+      @header_buffer = nil
       @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers, self)
     end
 

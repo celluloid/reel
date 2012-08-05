@@ -1,6 +1,9 @@
 require 'bundler/setup'
 require 'reel'
 
+logfile = File.open(File.expand_path("../../log/test.log", __FILE__), 'a')
+Celluloid.logger = Logger.new(logfile)
+
 def example_addr; '127.0.0.1'; end
 def example_port; 1234; end
 def example_url;  "/example"; end
