@@ -14,6 +14,19 @@ module Reel
       @socket << handshake.to_s
 
       raise HandshakeError, "error during handshake: #{handshake.error}" if handshake.error
+
+      @parser = LibWebSocket::Frame.new
     end
+
+    def read
+      @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until data = @parser.next
+      data
+    end
+
+    def write(data)
+      @socket << LibWebSocket::Frame.new(data).to_s
+      data
+    end
+    alias_method :<<, :write
   end
 end
