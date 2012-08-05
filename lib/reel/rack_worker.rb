@@ -1,6 +1,6 @@
 module Reel
   class RackWorker
-    include Celluloid
+    include Celluloid::IO
 
     PROTO_RACK_ENV = {
       "rack.version".freeze      => Rack::VERSION,
@@ -30,12 +30,7 @@ module Reel
         body_parts.each { |part| body_text += part }
       end
 
-      response = Response.new(status, headers, body_text)
-
-      # This won't work
-      # Actor[:reel_server].send_response! response, connection
-
-      connection.respond response
+      connection.respond Response.new(status, headers, body_text)
 
       ensure
         [body, body_parts].each { |b| b.close if b.respond_to?(:close) }
