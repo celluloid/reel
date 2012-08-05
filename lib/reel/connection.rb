@@ -59,10 +59,10 @@ module Reel
       @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
 
       if headers['Upgrade'] == 'WebSocket'
-        @websocket = WebSocket.new(@socket, @header_buffer)
+        @request = WebSocket.new(@socket, @parser.url, headers, @header_buffer)
         @request_state = @response_state = :websocket
-        @header_buffer = nil
-        return @websocket
+        @socket = @header_buffer = nil
+        return @request
       end
 
       @header_buffer = nil

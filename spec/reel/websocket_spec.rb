@@ -1,12 +1,15 @@
 require 'spec_helper'
 
 describe Reel::WebSocket do
+  let(:example_host)    { "www.example.com" }
+  let(:example_path)    { "/example"}
+  let(:example_url)     { "ws://#{example_host}#{example_path}" }
   let(:example_message) { "Hello, World!" }
   let(:another_message) { "What's going on?" }
 
   it "performs websocket handshakes" do
     with_socket_pair do |client, connection|
-      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => 'ws://www.example.com')
+      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
 
       client << handshake.to_s
       websocket = connection.read_request
@@ -14,6 +17,18 @@ describe Reel::WebSocket do
 
       handshake.parse client.readpartial(4096) until handshake.done?
       handshake.error.should be_nil
+    end
+  end
+
+  it "knows its URL" do
+    with_websocket_pair do |_, websocket|
+      websocket.url.should == example_path
+    end
+  end
+
+  it "knows its headers" do
+    with_websocket_pair do |_, websocket|
+      websocket['Host'].should == example_host
     end
   end
 
@@ -61,7 +76,7 @@ describe Reel::WebSocket do
 
   def with_websocket_pair
     with_socket_pair do |client, connection|
-      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => 'ws://www.example.com')
+      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
       client << handshake.to_s
       websocket = connection.read_request
       websocket.should be_a Reel::WebSocket
