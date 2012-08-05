@@ -57,6 +57,14 @@ describe Reel::WebSocket do
     end
   end
 
+  it "closes" do
+    with_websocket_pair do |_, websocket|
+      websocket.should_not be_closed
+      websocket.close
+      websocket.should be_closed
+    end
+  end
+
   def with_socket_pair
     host = '127.0.0.1'
     port = 10103

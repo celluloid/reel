@@ -33,5 +33,13 @@ module Reel
       data
     end
     alias_method :<<, :write
+
+    def closed?
+      @socket.closed?
+    end
+
+    def close
+      @socket.close
+    end
   end
 end
