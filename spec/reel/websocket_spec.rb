@@ -1,17 +1,16 @@
 require 'spec_helper'
 
-describe Reel::Websocket do
+describe Reel::WebSocket do
   it "parses incoming websockets requests" do
     with_socket_pair do |client, connection|
-      client << LibWebSocket::OpeningHandshake::Client.new(:url => 'ws://www.example.com')
-      request = connection.read_request
+      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => 'ws://www.example.com')
 
-      request.url.should     eq "/"
-      request.version.should eq "1.1"
+      client << handshake.to_s
+      websocket = connection.read_request
+      websocket.should be_a Reel::WebSocket
 
-      request['Host'].should eq "www.example.com"
-      request['Connection'].should eq "Upgrade"
-      request['Upgrade'].should eq "WebSocket"
+      handshake.parse client.readpartial(4096) until handshake.done?
+      handshake.error.should be_nil
     end
   end
 
