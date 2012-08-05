@@ -8,9 +8,9 @@ to Celluloid, Reel also works great for multithreaded applications and provides
 traditional multithreaded blocking I/O support too.
 
 [parser]: https://github.com/tmm1/http_parser.rb
+[websockets]: https://github.com/imanel/websocket-ruby
 [celluloidio]: https://github.com/celluloid/celluloid-io
 [nio4r]: https://github.com/tarcieri/nio4r
-[Goliath]: http://postrank-labs.github.com/goliath/
 
 Connections to Reel can be either non-blocking and handled entirely within
 the Reel::Server thread, or the same connections can be dispatched to worker
@@ -76,6 +76,10 @@ Reel::Server.supervise("0.0.0.0", 3000) do |connection|
 	end
 end
 ```
+
+When we read a request from the incoming connection, we'll either get back
+a Reel::Request object, indicating a normal HTTP connection, or a
+Reel::WebSocket object for WebSockets connections.
 
 Status
 ------
