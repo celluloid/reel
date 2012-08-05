@@ -15,13 +15,13 @@ module Reel
       "GATEWAY_INTERFACE".freeze => "CGI/1.1"
     }.freeze
 
-    def initialize(config)
-      @config, @app = config, config.rack_app
+    def initialize(handler)
+      @handler, @app = handler, handler.rack_app
     end
 
     def handle(request, connection)
       env = rack_env(request, connection)
-      status, headers, body_parts = @config.rack_app.call(env)
+      status, headers, body_parts = @handler.rack_app.call(env)
 
       body = if body_parts.respond_to?(:to_path)
         File.new(body_parts.to_path)
@@ -39,8 +39,8 @@ module Reel
     def rack_env(request, connection)
       env = PROTO_RACK_ENV.dup
 
-      env["SERVER_NAME"] = @config[:host]
-      env["SERVER_PORT"] = @config[:port]
+      env["SERVER_NAME"] = @handler[:host]
+      env["SERVER_PORT"] = @handler[:port]
 
       peer_address = connection.peer_address
 
