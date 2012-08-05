@@ -1,6 +1,6 @@
 module Reel
   class RackWorker
-    include Celluloid::IO
+    include Celluloid
 
     PROTO_RACK_ENV = {
       "rack.version".freeze      => Rack::VERSION,

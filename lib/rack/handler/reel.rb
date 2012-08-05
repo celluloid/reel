@@ -37,9 +37,9 @@ module Rack
       end
 
       def start
-        Celluloid::Actor[:worker_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
+        Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
 
-        Celluloid::Actor[:reel_server] = ::Reel::Server.supervise(options[:host], options[:port]) do |connection|
+        ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
           request = connection.request
           next unless request && request.body
 
@@ -51,7 +51,7 @@ module Rack
               connection.respond response
             end
           else
-            Celluloid::Actor[:worker_pool].handle(request, connection)
+            Celluloid::Actor[:reel_rack_pool].handle(request, connection)
           end
         end
 
