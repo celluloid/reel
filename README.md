@@ -3,9 +3,9 @@
 [![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
 
 Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
-[Celluloid::IO][celluloidio], and [nio4r][nio4r]. It's probably most similar to
-[Goliath][goliath], but thanks to Celluloid also works great for multithreaded
-applications and provides traditional multithreaded blocking I/O support too.
+[libwebsocket][websockets],[ Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
+to Celluloid, Reel also works great for multithreaded applications and provides
+traditional multithreaded blocking I/O support too.
 
 [parser]: https://github.com/tmm1/http_parser.rb
 [celluloidio]: https://github.com/celluloid/celluloid-io
@@ -63,9 +63,17 @@ Reel provides an extremely simple API:
 require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
-  request = connection.request
-  puts "Client requested: #{request.method} #{request.url}"
-  connection.respond :ok, "hello, world"
+  while request = connection.request
+	  if request.is_a? Reel::WebSocket
+	    puts "Client made a WebSocket request to: #{request.url}"
+	    request << "Hello there"
+	    connection.close
+	    break
+	  else
+		  puts "Client requested: #{request.method} #{request.url}"
+		  connection.respond :ok, "hello, world"
+		end
+	end
 end
 ```
 
