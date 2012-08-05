@@ -10,18 +10,18 @@ describe Reel::RackWorker do
     end
   end
 
-  let :config do
+  let :handler do
     app = Proc.new do |env|
       [200, {'Content-Type' => 'text/plain'}, ['Hello world!']]
     end
 
-    config = Reel::Configuration.new
-    config.options[:app] = app
+    handler = Rack::Handler::Reel.new
+    handler.options[:app] = app
 
-    config
+    handler
   end
 
-  let(:worker) { Reel::RackWorker.new(config) }
+  let(:worker) { Reel::RackWorker.new(handler) }
 
   it "creates a rack env from a request" do
     with_request do |request, connection|
