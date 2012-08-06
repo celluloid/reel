@@ -3,7 +3,7 @@ require 'uri'
 module Reel
   class Request
     attr_accessor :method, :version, :url, :headers
-    METHODS = [:get, :head, :post, :put, :delete, :trace, :options, :connect, :patch]
+    METHODS = Http::METHODS
 
     def self.read(connection)
       parser = connection.parser
