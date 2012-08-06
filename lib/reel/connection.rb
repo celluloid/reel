@@ -22,8 +22,8 @@ module Reel
     def alive?; @keepalive; end
 
     # Reset the current request state
-    def reset_request
-      @request_state = :header
+    def reset_request(state = :header)
+      @request_state = state
       @request = nil
       @header_buffer = "" # Buffer headers in case of an upgrade request
       @parser.reset
@@ -34,13 +34,11 @@ module Reel
     end
 
     def local_address
-      @socket.addr
+      @socket.addr(false)
     end
 
     # Read a request object from the connection
     def request
-      return nil if socket.closed?
-
       @request ||= begin
         Request.read(self).tap do |request|
           case request
@@ -56,6 +54,10 @@ module Reel
           end
         end
       end
+
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
+      # The client is disconnected
+      @keepalive = false
     end
 
     # Read a chunk from the request
@@ -113,11 +115,10 @@ module Reel
       @keepalive = false
     ensure
       if @keepalive
-        reset_request
-        @request_state = :header
+        reset_request(:header)
       else
         @socket.close unless @socket.closed?
-        @request_state = :closed
+        reset_request(:closed)
       end
     end
 

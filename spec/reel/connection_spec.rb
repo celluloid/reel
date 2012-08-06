@@ -81,4 +81,17 @@ describe Reel::Connection do
       response[(response.length - fixture.length)..-1].should eq fixture
     end
   end
+
+  it "reset the request after a response is sent" do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new(:get, "/", "1.1", {'Connection' => 'close'})
+      client << example_request
+
+      connection.request.should_not be_false
+
+      connection.respond :ok, "Response sent"
+
+      connection.request.should be_false
+    end
+  end
 end
