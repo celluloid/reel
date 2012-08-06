@@ -39,10 +39,6 @@ module Reel
           body_parts.close if body_parts.respond_to?(:close)
         end
       end
-
-      rescue EOFError
-        # Client disconnected prematurely
-        # FIXME: should probably do something here
     end
 
     def rack_env(request, connection)
