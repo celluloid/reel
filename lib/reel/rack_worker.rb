@@ -25,21 +25,24 @@ module Reel
           env = rack_env(request, connection)
           status, headers, body_parts = @handler.rack_app.call(env)
 
-          if body_parts.respond_to?(:to_path)
-            body = File.new(body_parts.to_path)
+          body = if body_parts.respond_to?(:to_path)
+            File.new(body_parts.to_path)
           else
             body_text = ""
             body_parts.each { |part| body_text += part }
+            body_text
           end
 
-          connection.respond Response.new(status, headers, body_text)
+          connection.respond Response.new(status, headers, body)
         ensure
           body.close if body.respond_to?(:close)
           body_parts.close if body_parts.respond_to?(:close)
         end
       end
 
-      connection.close
+      rescue EOFError
+        # Client disconnected prematurely
+        # FIXME: should probably do something here
     end
 
     def rack_env(request, connection)
