@@ -64,14 +64,14 @@ require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
   while request = connection.request
-    if request.is_a? Reel::WebSocket
+    when Reel::Request
+      puts "Client requested: #{request.method} #{request.url}"
+      connection.respond :ok, "hello, world"
+    when Reel::WebSocket
       puts "Client made a WebSocket request to: #{request.url}"
       request << "Hello there"
       connection.close
       break
-    else
-      puts "Client requested: #{request.method} #{request.url}"
-      connection.respond :ok, "hello, world"
     end
   end
 end
