@@ -15,6 +15,23 @@ ensure
   server.terminate
 end
 
+def with_socket_pair
+  host = '127.0.0.1'
+  port = 10103
+
+  server = TCPServer.new(host, port)
+  client = TCPSocket.new(host, port)
+  peer   = server.accept
+
+  begin
+    yield client, Reel::Connection.new(peer)
+  ensure
+    server.close rescue nil
+    client.close rescue nil
+    peer.close   rescue nil
+  end
+end
+
 class ExampleRequest
   extend Forwardable
   def_delegators :@headers, :[], :[]=
