@@ -19,21 +19,27 @@ module Reel
       @handler, @app = handler, handler.rack_app
     end
 
-    def handle(request, connection)
-      env = rack_env(request, connection)
-      status, headers, body_parts = @handler.rack_app.call(env)
+    def handle(connection)
+      while request = connection.request
+        begin
+          env = rack_env(request, connection)
+          status, headers, body_parts = @handler.rack_app.call(env)
 
-      body = if body_parts.respond_to?(:to_path)
-        File.new(body_parts.to_path)
-      else
-        body_text = ""
-        body_parts.each { |part| body_text += part }
+          if body_parts.respond_to?(:to_path)
+            body = File.new(body_parts.to_path)
+          else
+            body_text = ""
+            body_parts.each { |part| body_text += part }
+          end
+
+          connection.respond Response.new(status, headers, body_text)
+        ensure
+          body.close if body.respond_to?(:close)
+          body_parts.close if body_parts.respond_to?(:close)
+        end
       end
 
-      connection.respond Response.new(status, headers, body_text)
-
-      ensure
-        [body, body_parts].each { |b| b.close if b.respond_to?(:close) }
+      connection.close
     end
 
     def rack_env(request, connection)

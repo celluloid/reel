@@ -4,7 +4,7 @@ describe Reel::Response do
   it "streams enumerables" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
-      request = connection.read_request
+      request = connection.request
 
       connection.respond Reel::Response.new(:ok, ["Hello", "World"])
       connection.close

@@ -20,7 +20,6 @@ module Reel
     def handle_connection(socket)
       connection = Connection.new(socket)
       begin
-        connection.read_request
         @callback[connection] if connection.request
       end while connection.alive?
     rescue EOFError

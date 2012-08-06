@@ -40,19 +40,7 @@ module Rack
         Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
 
         ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
-          request = connection.request
-          next unless request && request.body
-
-          path = File.join('.', 'public', request.path)
-
-          if File.exists?(path) && !File.directory?(path)
-            File.open(path) do |f|
-              response = ::Reel::Response.new(200, f)
-              connection.respond response
-            end
-          else
-            Celluloid::Actor[:reel_rack_pool].handle(request, connection)
-          end
+          Celluloid::Actor[:reel_rack_pool].handle(connection)
         end
 
         sleep

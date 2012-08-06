@@ -12,7 +12,7 @@ describe Reel::WebSocket do
       handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
 
       client << handshake.to_s
-      websocket = connection.read_request
+      websocket = connection.request
       websocket.should be_a Reel::WebSocket
 
       handshake.parse client.readpartial(4096) until handshake.done?
@@ -86,7 +86,7 @@ describe Reel::WebSocket do
     with_socket_pair do |client, connection|
       handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
       client << handshake.to_s
-      websocket = connection.read_request
+      websocket = connection.request
       websocket.should be_a Reel::WebSocket
 
       handshake.parse client.readpartial(4096) until handshake.done?

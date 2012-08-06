@@ -19,6 +19,9 @@ require 'reel/rack_worker'
 
 # A Reel good HTTP server
 module Reel
+  # Error occured performing IO on a socket
+  class SocketError < StandardError; end
+
   # The method given was not understood
   class UnsupportedMethodError < ArgumentError; end
 end

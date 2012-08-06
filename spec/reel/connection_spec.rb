@@ -6,7 +6,7 @@ describe Reel::Connection do
   it "reads requests without bodies" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
-      request = connection.read_request
+      request = connection.request
 
       request.url.should     eq "/"
       request.version.should eq "1.1"
@@ -28,7 +28,7 @@ describe Reel::Connection do
       example_request.body = body
 
       client << example_request.to_s
-      request = connection.read_request
+      request = connection.request
 
       request.url.should     eq "/"
       request.version.should eq "1.1"
@@ -40,7 +40,7 @@ describe Reel::Connection do
   it "serves static files" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
-      request = connection.read_request
+      request = connection.request
 
       fixture_text = File.read(fixture_path)
       File.open(fixture_path) do |file|
@@ -56,7 +56,7 @@ describe Reel::Connection do
   it "streams responses when transfer-encoding is chunked" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
-      request = connection.read_request
+      request = connection.request
 
       # Sending transfer_encoding chunked without a body enables streaming mode
       connection.respond :ok, :transfer_encoding => :chunked

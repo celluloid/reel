@@ -5,6 +5,28 @@ module Reel
     attr_accessor :method, :version, :url, :headers
     METHODS = [:get, :head, :post, :put, :delete, :trace, :options, :connect, :patch]
 
+    def self.read(connection)
+      parser = connection.parser
+      header_buffer = ''
+
+      begin
+        data = connection.socket.readpartial(Connection::BUFFER_SIZE)
+        header_buffer << data
+        parser << data
+      end until parser.headers
+
+      headers = {}
+      parser.headers.each do |field, value|
+        headers[Http.canonicalize_header(field)] = value
+      end
+
+      if headers['Upgrade'] == 'WebSocket'
+        WebSocket.new(connection.socket, parser.url, headers, header_buffer)
+      else
+        Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)
+      end
+    end
+
     def initialize(method, url, version = "1.1", headers = {}, connection = nil)
       @method = method.to_s.downcase.to_sym
       raise UnsupportedArgumentError, "unknown method: #{method}" unless METHODS.include? @method

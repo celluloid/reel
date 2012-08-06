@@ -3,7 +3,7 @@ module Reel
   class Connection
     class StateError < RuntimeError; end # wrong state for a given operation
 
-    attr_reader :request
+    attr_reader :request, :socket, :parser
 
     # Attempt to read this much data
     BUFFER_SIZE = 4096
@@ -38,47 +38,28 @@ module Reel
     end
 
     # Read a request object from the connection
-    def read_request
-      raise StateError, "can't read header" unless @request_state == :header
-
-      begin
-        data = @socket.readpartial(BUFFER_SIZE)
-        @header_buffer << data
-        @parser << data
-      rescue IOError, Errno::ECONNRESET, Errno::EPIPE
-        @keepalive = false
-        @socket.close unless @socket.closed?
-        return
-      end until @parser.headers
-
-      @request_state = :body
-
-      headers = {}
-      @parser.headers.each do |field, value|
-        headers[Http.canonicalize_header(field)] = value
+    def request
+      @request ||= begin
+        Request.read(self).tap do |request|
+          case request
+          when Request
+            @request_state = :body
+            @keepalive = false if request['Connection'] == 'close' || request.version == "1.0"
+            @body_remaining = Integer(request['Content-Length']) if request['Content-Length']
+          when WebSocket
+            @request_state = @response_state = :websocket
+            @body_remaining = nil
+            @socket = nil
+          else raise "unexpected request type: #{request.class}"
+          end
+        end
       end
-
-      if headers['Connection']
-        @keepalive = false if headers['Connection'] == 'close'
-      elsif @parser.http_version == "1.0"
-        @keepalive = false
-      end
-
-      @body_remaining = Integer(headers['Content-Length']) if headers['Content-Length']
-
-      if headers['Upgrade'] == 'WebSocket'
-        @request = WebSocket.new(@socket, @parser.url, headers, @header_buffer)
-        @request_state = @response_state = :websocket
-        @socket = @header_buffer = nil
-        return @request
-      end
-
-      @header_buffer = nil
-      @request = Request.new(@parser.http_method, @parser.url, @parser.http_version, headers, self)
     end
 
     # Read a chunk from the request
     def readpartial(size = BUFFER_SIZE)
+      raise StateError, "can't read in the `#{@request_state}' state" unless @request_state == :body
+
       if @body_remaining and @body_remaining > 0
         chunk = @parser.chunk
         unless chunk
