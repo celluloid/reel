@@ -1,8 +1,8 @@
 HEAD
 ----
 * Initial WebSockets support via Reel::WebSocket
+* Experimental Rack adapter by Alberto Fernández-Capel
 
 0.1.0
 -----
-
-* First official release
+* Initial release
