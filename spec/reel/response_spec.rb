@@ -15,20 +15,4 @@ describe Reel::Response do
       response[(response.length - fixture.length)..-1].should eq fixture
     end
   end
-
-  def with_socket_pair
-    host = '127.0.0.1'
-    port = 10103
-
-    server = TCPServer.new(host, port)
-    client = TCPSocket.new(host, port)
-    peer   = server.accept
-
-    begin
-      yield client, Reel::Connection.new(peer)
-    ensure
-      server.close
-      client.close
-    end
-  end
 end

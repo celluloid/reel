@@ -2,31 +2,24 @@ require 'spec_helper'
 
 describe Reel::RackWorker do
 
-  class MockConnection < Reel::Connection
-    attr_reader :response
+  let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_url}") }
 
-    def respond(response, headers_or_body = {}, body = nil)
-      @response = response
-    end
-  end
-
-  let :handler do
+  let(:worker) do
     app = Proc.new do |env|
       [200, {'Content-Type' => 'text/plain'}, ['Hello world!']]
+      [200, {'Content-Type' => 'text/plain'}, ['Hello rack world!']]
     end
 
     handler = Rack::Handler::Reel.new
     handler.options[:app] = app
 
-    handler
+    Reel::RackWorker.new(handler)
   end
 
-  let(:worker) { Reel::RackWorker.new(handler) }
-
-# FIXME: broken :(
-=begin
   it "creates a rack env from a request" do
-    with_request do |request, connection|
+    with_socket_pair do |client, connection|
+      client << ExampleRequest.new(:get, '/test?hello=true').to_s
+      request = connection.request
       env = worker.rack_env(request, connection)
 
       Reel::RackWorker::PROTO_RACK_ENV.each do |k, v|
@@ -42,9 +35,9 @@ describe Reel::RackWorker do
       env["REQUEST_PATH"].should == "/test"
       env["ORIGINAL_FULLPATH"].should == "/test"
       env["QUERY_STRING"].should == "hello=true"
-      env["HTTP_HOST"].should == 'example.com:3000'
-      env["HTTP_ACCEPT_LANGUAGE"].should == 'es-ES,es;q=0.8'
-      env["REQUEST_URI"].should == 'http://example.com:3000/test'
+      env["HTTP_HOST"].should == 'www.example.com'
+      env["HTTP_ACCEPT_LANGUAGE"].should == "en-US,en;q=0.8"
+      env["REQUEST_URI"].should == 'http://www.example.com/test'
 
       env["rack.input"].should be_kind_of(StringIO)
       env["rack.input"].string.should == ''
@@ -52,44 +45,23 @@ describe Reel::RackWorker do
   end
 
   it "delegates web requests to the rack app" do
-    with_request do |request, connection|
-      worker.handle(connection)
+    ex = nil
 
-      response = connection.response
-
-      response.status.should  == 200
-      response.headers.should == {"Content-Type"=>"text/plain", "Content-Length"=>12}
-      response.body.should    == "Hello world!"
+    handler = proc do |connection|
+      begin
+        worker.handle!(connection)
+      rescue => ex
+      end
     end
-  end
-=end
 
-  def with_request
-    host = '127.0.0.1'
-    port = 10103
-
-    @server = TCPServer.new(host, port)
-    @client = TCPSocket.new(host, port)
-
-    begin
-      peer   = @server.accept
-      connection = MockConnection.new(peer)
-
-      headers = {
-        'Accept-Language' => 'es-ES,es;q=0.8',
-        'Host'            => 'example.com:3000'
-      }
-
-      request = Reel::Request.new(:get, "/test?hello=true", "1.1", headers, connection)
-
-      # FIXME: hax!
-      connection.instance_variable_set(:@request,       request)
-      connection.instance_variable_set(:@request_state, :body)
-
-      yield request, connection
-    ensure
-      @server.close
-      @client.close
+    with_reel(handler) do
+      http = Net::HTTP.new(endpoint.host, endpoint.port)
+      request = Net::HTTP::Get.new(endpoint.request_uri)
+      response = http.request(request)
+      response.should be_a Net::HTTPOK
+      response.body.should == 'Hello rack world!'
     end
+
+    raise ex if ex
   end
 end
