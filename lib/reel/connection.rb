@@ -39,6 +39,8 @@ module Reel
 
     # Read a request object from the connection
     def request
+      return nil if socket.closed?
+
       @request ||= begin
         Request.read(self).tap do |request|
           case request
