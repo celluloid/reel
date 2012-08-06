@@ -65,23 +65,6 @@ describe Reel::WebSocket do
     end
   end
 
-  def with_socket_pair
-    host = '127.0.0.1'
-    port = 10103
-
-    server = TCPServer.new(host, port)
-    client = TCPSocket.new(host, port)
-    peer   = server.accept
-
-    begin
-      yield client, Reel::Connection.new(peer)
-    ensure
-      server.close rescue nil
-      client.close rescue nil
-      peer.close   rescue nil
-    end
-  end
-
   def with_websocket_pair
     with_socket_pair do |client, connection|
       handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
