@@ -3,7 +3,6 @@ require 'uri'
 module Reel
   class Request
     attr_accessor :method, :version, :url, :headers
-    METHODS = Http::METHODS
 
     def self.read(connection)
       parser = connection.parser
@@ -29,7 +28,7 @@ module Reel
 
     def initialize(method, url, version = "1.1", headers = {}, connection = nil)
       @method = method.to_s.downcase.to_sym
-      raise UnsupportedArgumentError, "unknown method: #{method}" unless METHODS.include? @method
+      raise UnsupportedArgumentError, "unknown method: #{method}" unless Http::METHODS.include? @method
 
       @url, @version, @headers, @connection = url, version, headers, connection
     end
