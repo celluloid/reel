@@ -22,6 +22,8 @@ module Reel
       begin
         @callback[connection] if connection.request
       end while connection.alive?
+    rescue RequestError
+      connection.close
     rescue EOFError
       # Client disconnected prematurely
       # FIXME: should probably do something here

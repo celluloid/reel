@@ -19,8 +19,14 @@ require 'reel/rack_worker'
 
 # A Reel good HTTP server
 module Reel
+  # Error reading a request
+  class RequestError < StandardError; end
+
   # Error occured performing IO on a socket
-  class SocketError < StandardError; end
+  class SocketError < RequestError; end
+
+  # Error occured during a WebSockets handshake
+  class HandshakeError < RequestError; end
 
   # The method given was not understood
   class UnsupportedMethodError < ArgumentError; end

@@ -2,7 +2,6 @@ require 'libwebsocket'
 
 module Reel
   class WebSocket
-    class HandshakeError < StandardError; end
     attr_reader :url, :headers
 
     def initialize(socket, url, headers, buffer = nil)
@@ -11,11 +10,19 @@ module Reel
       handshake = LibWebSocket::OpeningHandshake::Server.new
       handshake.parse buffer if buffer
 
-      handshake.parse @socket.readpartial(Connection::BUFFER_SIZE) until handshake.done?
+      until handshake.done?
+        if handshake.error
+          response = Response.new(400)
+          response.reason = handshake.error.to_s
+          response.render(@socket)
+
+          raise HandshakeError, "error during handshake: #{handshake.error}"
+        end
+
+        handshake.parse @socket.readpartial(Connection::BUFFER_SIZE)
+      end
+
       @socket << handshake.to_s
-
-      raise HandshakeError, "error during handshake: #{handshake.error}" if handshake.error
-
       @parser = LibWebSocket::Frame.new
     end
 
