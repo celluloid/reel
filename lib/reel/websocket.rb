@@ -1,29 +1,52 @@
-require 'libwebsocket'
+require 'websocket_parser'
 
 module Reel
   class WebSocket
     attr_reader :url, :headers
 
-    def initialize(socket, url, headers, buffer = nil)
+    def initialize(socket, url, headers)
       @socket, @url, @headers = socket, url, headers
 
-      handshake = LibWebSocket::OpeningHandshake::Server.new
-      handshake.parse buffer if buffer
+      handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
-      until handshake.done?
-        if handshake.error
-          response = Response.new(400)
-          response.reason = handshake.error.to_s
-          response.render(@socket)
-
-          raise HandshakeError, "error during handshake: #{handshake.error}"
-        end
-
-        handshake.parse @socket.readpartial(Connection::BUFFER_SIZE)
+      if handshake.valid?
+        response = handshake.accept_response
+        response.render(socket)
+      else
+        Logger.warn("Error during handshake: #{handshake.errors.first}")
+        close
+        return
       end
 
-      @socket << handshake.to_s
-      @parser = LibWebSocket::Frame.new
+      @parser = ::WebSocket::Parser.new
+
+      @parser.on_message do |msg|
+        puts "Received message: '#{msg}'"
+      end
+
+      @parser.on_error do |ex|
+        puts "Error while parsing Websocket message: #{ex}"
+        socket.close!
+      end
+
+      @parser.on_close do |status, reason|
+        # According to the spec the server must respond with another
+        # close message before closing the connection
+
+        puts "Client disconnected. #{status}: #{reason}"
+
+        socket << ::WebSocket::Message.close.to_data
+        socket.close!
+      end
+
+      @parser.on_ping do
+        socket << ::WebSocket::Message.pong.to_data
+      end
+
+      while !closed?
+        data = @socket.readpartial(Connection::BUFFER_SIZE)
+        @parser << data
+      end
     end
 
     def [](header)
@@ -31,13 +54,12 @@ module Reel
     end
 
     def read
-      @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until data = @parser.next
-      data
+      @parser << @socket.readpartial(Connection::BUFFER_SIZE)
     end
 
-    def write(data)
-      @socket << LibWebSocket::Frame.new(data).to_s
-      data
+    def write(msg)
+      @socket << ::WebSocket::Message.new(msg).to_data
+      msg
     end
     alias_method :<<, :write
 

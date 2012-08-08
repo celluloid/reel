@@ -1,4 +1,5 @@
 require 'uri'
+require 'websocket_parser'
 
 module Reel
   class Request
@@ -21,7 +22,7 @@ module Reel
 
       upgrade = headers['Upgrade']
       if upgrade && upgrade.downcase == 'websocket'
-        WebSocket.new(connection.socket, parser.url, headers, header_buffer)
+        WebSocket.new(connection.socket, parser.url, headers)
       else
         Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)
       end
