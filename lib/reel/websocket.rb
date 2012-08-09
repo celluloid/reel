@@ -27,12 +27,12 @@ module Reel
       @parser.on_close do |status, reason|
         # According to the spec the server must respond with another
         # close message before closing the connection
-        socket << ::WebSocket::Message.close.to_data
+        @socket << ::WebSocket::Message.close.to_data
         close
       end
 
       @parser.on_ping do
-        socket << ::WebSocket::Message.pong.to_data
+        @socket << ::WebSocket::Message.pong.to_data
       end
     end
 
