@@ -20,15 +20,6 @@ module Reel
 
       @parser = ::WebSocket::Parser.new
 
-      @parser.on_message do |msg|
-        puts "Received message: '#{msg}'"
-      end
-
-      @parser.on_error do |ex|
-        close
-        raise ex
-      end
-
       @parser.on_close do |status, reason|
         # According to the spec the server must respond with another
         # close message before closing the connection
@@ -46,7 +37,8 @@ module Reel
     end
 
     def read
-      @parser << @socket.readpartial(Connection::BUFFER_SIZE)
+      @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
+      msg
     end
 
     def write(msg)

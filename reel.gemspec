@@ -18,7 +18,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'celluloid-io',     '>= 0.8.0'
   gem.add_runtime_dependency 'http',             '>= 0.2.0'
   gem.add_runtime_dependency 'http_parser.rb',   '>= 0.5.3'
-  gem.add_runtime_dependency 'websocket_parser', '>= 0.0.5'
+  gem.add_runtime_dependency 'websocket_parser', '>= 0.0.6'
   gem.add_runtime_dependency 'rack',             '>= 1.4.0'
 
   gem.add_development_dependency 'rake'
