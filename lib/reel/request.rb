@@ -1,5 +1,4 @@
 require 'uri'
-require 'websocket_parser'
 
 module Reel
   class Request

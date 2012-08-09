@@ -25,27 +25,19 @@ module Reel
       end
 
       @parser.on_error do |ex|
-        puts "Error while parsing Websocket message: #{ex}"
-        socket.close!
+        close
+        raise ex
       end
 
       @parser.on_close do |status, reason|
         # According to the spec the server must respond with another
         # close message before closing the connection
-
-        puts "Client disconnected. #{status}: #{reason}"
-
         socket << ::WebSocket::Message.close.to_data
-        socket.close!
+        close
       end
 
       @parser.on_ping do
         socket << ::WebSocket::Message.pong.to_data
-      end
-
-      while !closed?
-        data = @socket.readpartial(Connection::BUFFER_SIZE)
-        @parser << data
       end
     end
 
