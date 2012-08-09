@@ -13,9 +13,13 @@ module Reel
         response = handshake.accept_response
         response.render(socket)
       else
-        Logger.warn("Error during handshake: #{handshake.errors.first}")
-        close
-        return
+        error = handshake.errors.first
+
+        response = Response.new(400)
+        response.reason = handshake.errors.first
+        response.render(@socket)
+
+        raise HandshakeError, "error during handshake: #{error}"
       end
 
       @parser = ::WebSocket::Parser.new
