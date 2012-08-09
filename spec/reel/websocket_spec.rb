@@ -7,16 +7,28 @@ describe Reel::WebSocket do
   let(:example_message) { "Hello, World!" }
   let(:another_message) { "What's going on?" }
 
+  let :handshake_headers do
+    {
+      "Host"                   => example_host,
+      "Upgrade"                => "websocket",
+      "Connection"             => "Upgrade",
+      "Sec-WebSocket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
+      "Origin"                 => "http://example.com",
+      "Sec-WebSocket-Protocol" => "chat, superchat",
+      "Sec-WebSocket-Version"  => "13"
+    }
+  end
+
+  let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) }
+
   it "performs websocket handshakes" do
     with_socket_pair do |client, connection|
-      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
+      client << handshake.to_data
 
-      client << handshake.to_s
       websocket = connection.request
       websocket.should be_a Reel::WebSocket
 
-      handshake.parse client.readpartial(4096) until handshake.done?
-      handshake.error.should be_nil
+      handshake.errors.should be_empty
     end
   end
 
@@ -34,25 +46,25 @@ describe Reel::WebSocket do
 
   it "reads frames" do
     with_websocket_pair do |client, websocket|
-      client << LibWebSocket::Frame.new(example_message).to_s
-      client << LibWebSocket::Frame.new(another_message).to_s
+      client << WebSocket::Message.new(example_message).to_data
+      client << WebSocket::Message.new(another_message).to_data
 
       websocket.read.should == example_message
       websocket.read.should == another_message
     end
   end
 
-  it "writes frames" do
+  it "writes messages" do
     with_websocket_pair do |client, websocket|
       websocket.write example_message
-      websocket << another_message
+      websocket.write another_message
 
-      frame_parser = LibWebSocket::Frame.new
+      parser = WebSocket::Parser.new
 
-      frame_parser.append client.readpartial(4096) until first_message = frame_parser.next
+      parser.append client.readpartial(4096) until first_message = parser.next_message
       first_message.should == example_message
 
-      frame_parser.append client.readpartial(4096) until next_message = frame_parser.next
+      parser.append client.readpartial(4096) until next_message = parser.next_message
       next_message.should == another_message
     end
   end
@@ -67,13 +79,12 @@ describe Reel::WebSocket do
 
   def with_websocket_pair
     with_socket_pair do |client, connection|
-      handshake = LibWebSocket::OpeningHandshake::Client.new(:url => example_url)
-      client << handshake.to_s
+      client << handshake.to_data
       websocket = connection.request
       websocket.should be_a Reel::WebSocket
 
-      handshake.parse client.readpartial(4096) until handshake.done?
-      handshake.error.should be_nil
+      # Discard handshake
+      client.readpartial(4096)
 
       yield client, websocket
     end
