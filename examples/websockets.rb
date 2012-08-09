@@ -49,7 +49,6 @@ class WebServer < Reel::Server
         route_request connection, request
       when Reel::WebSocket
         TimeClient.new(request)
-        request.read while !request.closed?
       end
     end
   end
