@@ -48,7 +48,7 @@ class WebServer < Reel::Server
       when Reel::Request
         route_request connection, request
       when Reel::WebSocket
-        TimeClient.new(connection)
+        TimeClient.new(request)
       end
     end
   end
@@ -88,6 +88,9 @@ class WebServer < Reel::Server
       <script>
         var SocketKlass = "MozWebSocket" in window ? MozWebSocket : WebSocket;
         var ws = new SocketKlass('ws://' + window.location.host + '/timeinfo');
+        ws.onmessage = function(msg){
+          document.getElementById('current-time').innerHTML = msg.data;
+        }
       </script>
       <body>
         <div id="content">
