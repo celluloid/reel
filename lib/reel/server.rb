@@ -20,13 +20,15 @@ module Reel
     def handle_connection(socket)
       connection = Connection.new(socket)
       begin
-        @callback[connection] if connection.request
-      end while connection.alive?
-    rescue RequestError
-      connection.close
-    rescue EOFError
+        @callback[connection]
+      ensure
+        if connection.attached?
+          connection.close rescue nil
+        end
+      end
+    rescue RequestError, EOFError
       # Client disconnected prematurely
-      # FIXME: should probably do something here
+      # TODO: log this?
     end
   end
 end

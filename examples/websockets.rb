@@ -23,14 +23,19 @@ end
 class TimeClient
   include Celluloid
   include Celluloid::Notifications
+  include Celluloid::Logger
 
   def initialize(websocket)
+    info "Streaming time changes to client"
     @socket = websocket
     subscribe('time_change', :notify_time_change)
   end
 
   def notify_time_change(topic, new_time)
     @socket << new_time.inspect
+  rescue Reel::SocketError
+    info "Time client disconnected"
+    terminate
   end
 end
 
@@ -48,7 +53,8 @@ class WebServer < Reel::Server
       when Reel::Request
         route_request connection, request
       when Reel::WebSocket
-        TimeClient.new(request)
+        info "Received a WebSocket connection"
+        route_websocket request
       end
     end
   end
@@ -60,6 +66,15 @@ class WebServer < Reel::Server
 
     info "404 Not Found: #{request.path}"
     connection.respond :not_found, "Not found"
+  end
+
+  def route_websocket(socket)
+    if socket.url == "/timeinfo"
+      TimeClient.new(socket)
+    else
+      info "Received invalid WebSocket request for: #{socket.url}"
+      socket.close
+    end
   end
 
   def render_index(connection)

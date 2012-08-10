@@ -6,11 +6,9 @@ module Reel
 
     def self.read(connection)
       parser = connection.parser
-      header_buffer = ''
 
       begin
         data = connection.socket.readpartial(Connection::BUFFER_SIZE)
-        header_buffer << data
         parser << data
       end until parser.headers
 

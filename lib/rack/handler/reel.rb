@@ -40,7 +40,7 @@ module Rack
         Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
 
         ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
-          Celluloid::Actor[:reel_rack_pool].handle(connection)
+          Celluloid::Actor[:reel_rack_pool].handle(connection.detach)
         end
 
         sleep

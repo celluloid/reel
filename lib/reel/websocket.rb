@@ -48,6 +48,8 @@ module Reel
     def write(msg)
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
+    rescue Errno::EPIPE
+      raise SocketError, "error writing to socket"
     end
     alias_method :<<, :write
 

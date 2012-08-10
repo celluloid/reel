@@ -3,15 +3,16 @@ module Reel
   class Connection
     class StateError < RuntimeError; end # wrong state for a given operation
 
-    attr_reader :request, :socket, :parser
+    attr_reader :socket, :parser
 
     # Attempt to read this much data
     BUFFER_SIZE = 4096
 
     def initialize(socket)
-      @socket = socket
+      @attached  = true
+      @socket    = socket
       @keepalive = true
-      @parser = Request::Parser.new
+      @parser    = Request::Parser.new
       reset_request
 
       @response_state = :header
@@ -21,10 +22,18 @@ module Reel
     # Is the connection still active?
     def alive?; @keepalive; end
 
+    # Is the connection still attached to a Reel::Server?
+    def attached?; @attached; end
+
+    # Detach this connection from the Reel::Server and manage it independently
+    def detach
+      @attached = false
+      self
+    end
+
     # Reset the current request state
     def reset_request(state = :header)
       @request_state = state
-      @request = nil
       @header_buffer = "" # Buffer headers in case of an upgrade request
       @parser.reset
     end
@@ -39,25 +48,27 @@ module Reel
 
     # Read a request object from the connection
     def request
-      @request ||= begin
-        Request.read(self).tap do |request|
-          case request
-          when Request
-            @request_state = :body
-            @keepalive = false if request['Connection'] == 'close' || request.version == "1.0"
-            @body_remaining = Integer(request['Content-Length']) if request['Content-Length']
-          when WebSocket
-            @request_state = @response_state = :websocket
-            @body_remaining = nil
-            @socket = nil
-          else raise "unexpected request type: #{request.class}"
-          end
-        end
+      return if @request_state == :websocket
+      req = Request.read(self)
+
+      case req
+      when Request
+        @request_state = :body
+        @keepalive = false if req['Connection'] == 'close' || req.version == "1.0"
+        @body_remaining = Integer(req['Content-Length']) if req['Content-Length']
+      when WebSocket
+        @request_state = @response_state = :websocket
+        @body_remaining = nil
+        @socket = nil
+      else raise "unexpected request type: #{req.class}"
       end
 
+      req
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       # The client is disconnected
+      @request_state = :closed
       @keepalive = false
+      nil
     end
 
     # Read a chunk from the request
