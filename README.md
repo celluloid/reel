@@ -64,6 +64,7 @@ require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
   while request = connection.request
+    case request
     when Reel::Request
       puts "Client requested: #{request.method} #{request.url}"
       connection.respond :ok, "hello, world"
