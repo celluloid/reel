@@ -2,6 +2,7 @@ require 'reel'
 require 'octarine'
 
 module Reel
+  # Define Reel endpoints using a sinatra-like dsl (provided by octarine)
   module App
     def self.included(base)
       base.class_eval do
