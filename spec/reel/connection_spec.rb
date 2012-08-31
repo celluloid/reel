@@ -77,7 +77,7 @@ describe Reel::Connection do
       end
 
       crlf = "\r\n"
-      fixture = "5#{crlf}Hello5#{crlf}World0#{crlf*2}"
+      fixture = "5#{crlf}Hello#{crlf}5#{crlf}World#{crlf}0#{crlf*2}"
       response[(response.length - fixture.length)..-1].should eq fixture
     end
   end

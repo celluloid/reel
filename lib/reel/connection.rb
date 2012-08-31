@@ -139,6 +139,7 @@ module Reel
       chunk_header = chunk.bytesize.to_s(16) + Response::CRLF
       @socket << chunk_header
       @socket << chunk
+      @socket << Response::CRLF
     end
     alias_method :<<, :write
 
