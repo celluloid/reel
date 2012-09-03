@@ -7,6 +7,7 @@ Celluloid.logger = Logger.new(logfile)
 def example_addr; '127.0.0.1'; end
 def example_port; 1234; end
 def example_path; "/example"; end
+def example_url;  "http://#{example_addr}:#{example_port}#{example_path}"; end
 
 def with_reel(handler)
   server = Reel::Server.new(example_addr, example_port, &handler)

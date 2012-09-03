@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'net/http'
 
 describe Reel::Server do
-  let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_path}") }
+  let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
 
   it "receives HTTP requests and sends responses" do

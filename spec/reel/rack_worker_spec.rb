@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Reel::RackWorker do
 
-  let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_path}") }
+  let(:endpoint) { URI(example_url) }
 
   let(:worker) do
     app = Proc.new do |env|
