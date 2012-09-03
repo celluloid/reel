@@ -40,7 +40,7 @@ module Reel
     # Obtain the hostname of the remote connection
     def remote_host
       # NOTE: Celluloid::IO does not yet support non-blocking reverse DNS
-      @socket.peeraddr(:hostname)[2]
+      @socket.peeraddr(true)[2]
     end
 
     # Reset the current request state
