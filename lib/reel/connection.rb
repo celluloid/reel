@@ -42,10 +42,6 @@ module Reel
       @socket.peeraddr(false)
     end
 
-    def local_address
-      @socket.addr(false)
-    end
-
     # Read a request object from the connection
     def request
       return if @request_state == :websocket
