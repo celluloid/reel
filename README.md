@@ -3,12 +3,12 @@
 [![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
 
 Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
-[libwebsocket][websockets],[ Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
+[websocket_parser][websockets], [Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
 to Celluloid, Reel also works great for multithreaded applications and provides
 traditional multithreaded blocking I/O support too.
 
 [parser]: https://github.com/tmm1/http_parser.rb
-[websockets]: https://github.com/imanel/websocket-ruby
+[websockets]: https://github.com/afcapel/websocket_parser
 [celluloidio]: https://github.com/celluloid/celluloid-io
 [nio4r]: https://github.com/tarcieri/nio4r
 
@@ -24,9 +24,10 @@ primarily I/O bound, and threads for where you're compute bound.
 
 ### Is it any good?
 
-[Yes](http://news.ycombinator.com/item?id=3067434),
-but it has room for improvement. A "hello world" web server benchmark,
-run on a 2GHz i7 (OS X 10.7.3). All servers used in a single-threaded mode.
+[Yes](http://news.ycombinator.com/item?id=3067434)
+
+Here's a "hello world" web server benchmark, run on a 2GHz i7 (OS X 10.7.3).
+All servers used in a single-threaded mode.
 
 Reel performance on various Ruby VMs:
 
