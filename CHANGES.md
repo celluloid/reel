@@ -1,5 +1,5 @@
-HEAD
-----
+0.2.0
+-----
 * Initial WebSockets support via Reel::WebSocket
 * Experimental Rack adapter by Alberto Fernández-Capel
 * Octarine (Sinatra-like DSL) support by Grant Rodgers
