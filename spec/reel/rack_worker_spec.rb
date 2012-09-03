@@ -29,7 +29,7 @@ describe Reel::RackWorker do
       env["SERVER_NAME"].should == '0.0.0.0'
       env["SERVER_PORT"].should == 3000
       env["REMOTE_ADDR"].should == "127.0.0.1"
-      env["REMOTE_HOST"].should == "127.0.0.1"
+      env["REMOTE_HOST"].should == "localhost"
       env["PATH_INFO"].should == "/test"
       env["REQUEST_METHOD"].should == "GET"
       env["REQUEST_PATH"].should == "/test"

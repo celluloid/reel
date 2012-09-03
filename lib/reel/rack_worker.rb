@@ -47,10 +47,8 @@ module Reel
       env["SERVER_NAME"] = @handler[:host]
       env["SERVER_PORT"] = @handler[:port]
 
-      peer_address = connection.peer_address
-
-      env["REMOTE_ADDR"] = peer_address[3]
-      env["REMOTE_HOST"] = peer_address[2]
+      env["REMOTE_ADDR"] = connection.remote_ip
+      env["REMOTE_HOST"] = connection.remote_host
 
       env["PATH_INFO"]   = request.path
       env["REQUEST_METHOD"] = request.method.to_s.upcase
