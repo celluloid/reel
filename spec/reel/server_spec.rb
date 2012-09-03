@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'net/http'
 
 describe Reel::Server do
-  let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_url}") }
+  let(:endpoint) { URI("http://#{example_addr}:#{example_port}#{example_path}") }
   let(:response_body) { "ohai thar" }
 
   it "receives HTTP requests and sends responses" do
@@ -13,7 +13,7 @@ describe Reel::Server do
         request = connection.request
         request.method.should eq :get
         request.version.should eq "1.1"
-        request.url.should eq example_url
+        request.url.should eq example_path
 
         connection.respond :ok, response_body
       rescue => ex

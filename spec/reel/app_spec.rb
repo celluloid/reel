@@ -6,7 +6,7 @@ describe Reel::App do
     Class.new do
       include Reel::App
 
-      get example_url do
+      get example_path do
         [200, {}, "hello foo"]
       end
 
@@ -22,9 +22,11 @@ describe Reel::App do
   end
 
   it 'responds to get requests' do
-    res = Http.with_response(:object).get "#{example_addr}:#{example_port}/#{example_url}"
+    puts "doing get"
+    res = Http.with_response(:object).get "http://#{example_addr}:#{example_port}#{example_path}"
+    puts "get done"
     res.status.should == 200
-    res.headers.should == {}
+    res.headers.should == {"Connection" => "Keep-Alive", "Content-Length" => res.body.length.to_s}
     res.body.should == "hello foo"
   end
 

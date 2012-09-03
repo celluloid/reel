@@ -14,9 +14,8 @@ module Reel
 
     def initialize(host, port)
       super()
-      @server = Reel::Server.supervise host, port do |connection|
-        if connection.request # why is this nil sometimes?
-          request = connection.request
+      @server = Reel::Server.supervise(host, port) do |connection|
+        while request = connection.request
           status, headers, body = call Rack::MockRequest.env_for(request.url, :method => request.method, :input => request.body)
           connection.respond status_symbol(status), headers, body.to_s
         end

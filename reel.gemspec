@@ -20,8 +20,8 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency 'http_parser.rb',   '>= 0.5.3'
   gem.add_runtime_dependency 'websocket_parser', '>= 0.1.0'
   gem.add_runtime_dependency 'rack',             '>= 1.4.0'
-  gem.add_runtime_dependency 'octarine',         '>= 0.0.3'
 
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'octarine'
 end
