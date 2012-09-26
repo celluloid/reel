@@ -4,7 +4,7 @@ rvm:
   - ruby-head
   - jruby-19mode
   - jruby-head
-  - rbx-19mode choking on string encodings
+  - rbx-19mode
 
 matrix:
   allow_failures:
