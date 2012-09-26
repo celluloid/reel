@@ -1,5 +1,3 @@
-# FIXME: not quite complete yet, but it should give you an idea
-
 require 'rubygems'
 require 'bundler/setup'
 require 'reel'
