@@ -1,10 +1,16 @@
 rvm:
   - 1.9.2
   - 1.9.3
-#  - ruby-head http_parser.rb not working :(
+  - ruby-head
   - jruby-19mode
   - jruby-head
-#  - rbx-19mode choking on string encodings
+  - rbx-19mode choking on string encodings
+
+matrix:
+  allow_failures:
+    - rvm: ruby-head
+    - rvm: jruby-head
+    - rvm: rbx-19mode
 
 notifications:
   irc: "irc.freenode.org#celluloid"
