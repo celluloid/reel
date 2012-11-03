@@ -64,7 +64,7 @@ class WebServer < Reel::Server
   include Celluloid::Logger
 
   def initialize(host = "0.0.0.0", port = 9000)
-    info "Time server example starting on #{host}:#{port}"
+    info "Roundtrip example starting on #{host}:#{port}"
     super(host, port, &method(:on_connection))
   end
 
