@@ -31,6 +31,10 @@ module Reel
         close
       end
 
+      @parser.on_message do |m|
+        puts "Received message #{m}"
+      end
+
       @parser.on_ping do
         @socket << ::WebSocket::Message.pong.to_data
       end
