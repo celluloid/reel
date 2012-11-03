@@ -54,7 +54,7 @@ class Reader
    def new_message(topic)
     msg = @socket.read
     publish 'write_message', msg 
-  rescue Reel::SocketError
+  rescue Reel::SocketError, EOFError
     info "WS client disconnected"
     terminate
   end
