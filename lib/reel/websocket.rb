@@ -6,7 +6,7 @@ module Reel
 
     def initialize(socket, url, headers)
       @socket, @url, @headers = socket, url, headers
-      puts "initialize websocket"
+
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
       if handshake.valid?
@@ -29,10 +29,6 @@ module Reel
         # close message before closing the connection
         @socket << ::WebSocket::Message.close.to_data
         close
-      end
-
-      @parser.on_message do |m|
-        puts "Received message #{m}"
       end
 
       @parser.on_ping do
