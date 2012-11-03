@@ -6,7 +6,7 @@ module Reel
 
     def initialize(socket, url, headers)
       @socket, @url, @headers = socket, url, headers
-
+      puts "initialize websocket"
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
       if handshake.valid?
