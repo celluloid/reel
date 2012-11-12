@@ -76,6 +76,7 @@ module Rack
       def normalize_options(options)
         options = options.inject({}) { |h, (k,v)| h[k.downcase] = v ; h }
         options[:rackup] = options[:config] if options[:config]
+        options[:port] = options[:port].to_i if options[:port]
         options
       end
     end
