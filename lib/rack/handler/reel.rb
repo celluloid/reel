@@ -18,7 +18,7 @@ module Rack
 
       def self.run(app, options = {})
 
-        @handler = Reel.new(options)
+        @handler = Reel.new(options.merge :app => app)
 
         ::Reel::Logger.info "A Reel good HTTP server!"
         ::Reel::Logger.info "Listening on #{@handler[:host]}:#{@handler[:port]}"
