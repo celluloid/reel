@@ -44,7 +44,7 @@ module Reel
     def rack_env(request, connection)
       env = PROTO_RACK_ENV.dup
 
-      env["SERVER_NAME"] = @handler[:host]
+      env["SERVER_NAME"] = request['Host'].to_s.split(':').first || @handler[:Host]
       env["SERVER_PORT"] = @handler[:port].to_s
 
       env["REMOTE_ADDR"] = connection.remote_ip
@@ -78,9 +78,7 @@ module Reel
         env[name] = val
       }
 
-      host = env['HTTP_HOST'] || env["SERVER_NAME"]
-
-      env["REQUEST_URI"] = "#{env['rack.url_scheme']}://#{host}#{request.path}"
+      env["REQUEST_URI"] = request.path
 
       env
     end

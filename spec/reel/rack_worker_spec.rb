@@ -26,7 +26,7 @@ describe Reel::RackWorker do
         env[k].should == v
       end
 
-      env["SERVER_NAME"].should == '0.0.0.0'
+      env["SERVER_NAME"].should == 'www.example.com'
       env["SERVER_PORT"].should == "3000"
       env["REMOTE_ADDR"].should == "127.0.0.1"
       env["PATH_INFO"].should == "/test"
@@ -36,7 +36,7 @@ describe Reel::RackWorker do
       env["QUERY_STRING"].should == "hello=true"
       env["HTTP_HOST"].should == 'www.example.com'
       env["HTTP_ACCEPT_LANGUAGE"].should == "en-US,en;q=0.8"
-      env["REQUEST_URI"].should == 'http://www.example.com/test'
+      env["REQUEST_URI"].should == '/test'
 
       %w(localhost 127.0.0.1).should include env["REMOTE_HOST"]
 
