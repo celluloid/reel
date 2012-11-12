@@ -36,7 +36,7 @@ describe Reel::RackWorker do
       env["QUERY_STRING"].should == "hello=true"
       env["HTTP_HOST"].should == 'www.example.com'
       env["HTTP_ACCEPT_LANGUAGE"].should == "en-US,en;q=0.8"
-      env["REQUEST_URI"].should == 'http://www.example.com/test'
+      env["REQUEST_URI"].should == '/test'
 
       %w(localhost 127.0.0.1).should include env["REMOTE_HOST"]
 

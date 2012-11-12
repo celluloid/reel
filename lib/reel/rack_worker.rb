@@ -78,9 +78,7 @@ module Reel
         env[name] = val
       }
 
-      host = env['HTTP_HOST'] || env["SERVER_NAME"]
-
-      env["REQUEST_URI"] = "#{env['rack.url_scheme']}://#{host}#{request.path}"
+      env["REQUEST_URI"] = request.path
 
       env
     end
