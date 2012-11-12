@@ -45,7 +45,7 @@ module Reel
       env = PROTO_RACK_ENV.dup
 
       env["SERVER_NAME"] = @handler[:host]
-      env["SERVER_PORT"] = @handler[:port]
+      env["SERVER_PORT"] = @handler[:port].to_s
 
       env["REMOTE_ADDR"] = connection.remote_ip
       env["REMOTE_HOST"] = connection.remote_host
