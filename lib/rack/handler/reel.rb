@@ -18,12 +18,13 @@ module Rack
 
       def self.run(app, options = {})
 
-        handler = Reel.new(options)
+        @handler = Reel.new(options)
 
         ::Reel::Logger.info "A Reel good HTTP server!"
-        ::Reel::Logger.info "Listening on #{handler[:host]}:#{handler[:port]}"
+        ::Reel::Logger.info "Listening on #{@handler[:host]}:#{@handler[:port]}"
 
-        handler.start
+        yield @handler if block_given?
+        @handler.start
       end
 
       def initialize(opts = {})
@@ -73,7 +74,7 @@ module Rack
 
       # Transform the options that rails s reel passes
       def normalize_options(options)
-        options.inject({}) { |h, (k,v)|  h[k.downcase] = v ; h }
+        options = options.inject({}) { |h, (k,v)| h[k.downcase] = v ; h }
         options[:rackup] = options[:config] if options[:config]
         options
       end
