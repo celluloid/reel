@@ -4,6 +4,9 @@ module Reel
   class Request
     attr_accessor :method, :version, :url, :headers
 
+    UPGRADE   = 'Upgrade'.freeze
+    WEBSOCKET = 'websocket'.freeze
+
     def self.read(connection)
       parser = connection.parser
 
@@ -17,8 +20,8 @@ module Reel
         headers[Http.canonicalize_header(field)] = value
       end
 
-      upgrade = headers['Upgrade']
-      if upgrade && upgrade.downcase == 'websocket'
+      upgrade = headers[UPGRADE]
+      if upgrade && upgrade.downcase == WEBSOCKET
         WebSocket.new(connection.socket, parser.url, headers)
       else
         Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)

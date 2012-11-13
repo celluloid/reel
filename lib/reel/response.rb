@@ -1,5 +1,10 @@
 module Reel
   class Response
+
+    CONTENT_LENGTH     = 'Content-Length'.freeze
+    TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
+    CHUNKED            = 'chunked'.freeze
+
     # Use status code tables from the Http gem
     STATUS_CODES          = Http::Response::STATUS_CODES
     SYMBOL_TO_STATUS_CODE = Http::Response::SYMBOL_TO_STATUS_CODE
@@ -30,11 +35,11 @@ module Reel
 
       case @body
       when String
-        @headers['Content-Length'] ||= @body.bytesize
+        @headers[CONTENT_LENGTH] ||= @body.bytesize
       when IO
-        @headers['Content-Length'] ||= @body.stat.size
+        @headers[CONTENT_LENGTH] ||= @body.stat.size
       when Enumerable
-        @headers['Transfer-Encoding'] ||= 'chunked'
+        @headers[TRANSFER_ENCODING] ||= CHUNKED
       when NilClass
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
