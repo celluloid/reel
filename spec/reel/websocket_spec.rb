@@ -1,25 +1,10 @@
 require 'spec_helper'
 
 describe Reel::WebSocket do
-  let(:example_host)    { "www.example.com" }
-  let(:example_path)    { "/example"}
-  let(:example_url)     { "ws://#{example_host}#{example_path}" }
+  include WebSocketHelpers
+
   let(:example_message) { "Hello, World!" }
   let(:another_message) { "What's going on?" }
-
-  let :handshake_headers do
-    {
-      "Host"                   => example_host,
-      "Upgrade"                => "websocket",
-      "Connection"             => "Upgrade",
-      "Sec-WebSocket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
-      "Origin"                 => "http://example.com",
-      "Sec-WebSocket-Protocol" => "chat, superchat",
-      "Sec-WebSocket-Version"  => "13"
-    }
-  end
-
-  let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) }
 
   it "performs websocket handshakes" do
     with_socket_pair do |client, connection|

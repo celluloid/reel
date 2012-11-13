@@ -65,3 +65,26 @@ class ExampleRequest
     (@body ? @body : '')
   end
 end
+
+module WebSocketHelpers
+  def self.included(spec)
+    spec.instance_eval do
+      let(:example_host)    { "www.example.com" }
+      let(:example_path)    { "/example"}
+      let(:example_url)     { "ws://#{example_host}#{example_path}" }
+      let :handshake_headers do
+        {
+          "Host"                   => example_host,
+          "Upgrade"                => "websocket",
+          "Connection"             => "Upgrade",
+          "Sec-WebSocket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
+          "Origin"                 => "http://example.com",
+          "Sec-WebSocket-Protocol" => "chat, superchat",
+          "Sec-WebSocket-Version"  => "13"
+        }
+      end
+
+      let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) } 
+    end
+  end
+end
