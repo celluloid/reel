@@ -67,6 +67,7 @@ module Reel
       query_string = request.query_string || ""
       query_string += "##{request.fragment}" if request.fragment
 
+      env["HTTP_VERSION"] ||= env["SERVER_PROTOCOL"]
       env["QUERY_STRING"] = query_string
 
       request.headers.each{|key, val|
