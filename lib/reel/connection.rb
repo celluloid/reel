@@ -3,6 +3,14 @@ module Reel
   class Connection
     class StateError < RuntimeError; end # wrong state for a given operation
 
+    CONNECTION         = 'Connection'.freeze
+    TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
+    KEEP_ALIVE         = 'Keep-Alive'.freeze
+    CLOSE              = 'close'.freeze
+    CHUNKED            = 'chunked'.freeze
+    CONTENT_LENGTH     = 'Content-Length'.freeze
+    HTTP_1_0           =  '1.0'.freeze
+
     attr_reader :socket, :parser
 
     # Attempt to read this much data
@@ -58,8 +66,8 @@ module Reel
       case req
       when Request
         @request_state = :body
-        @keepalive = false if req['Connection'] == 'close' || req.version == "1.0"
-        @body_remaining = Integer(req['Content-Length']) if req['Content-Length']
+        @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_1_0
+        @body_remaining = Integer(req[CONTENT_LENGTH]) if req[CONTENT_LENGTH]
       when WebSocket
         @request_state = @response_state = :websocket
         @body_remaining = nil
@@ -107,9 +115,9 @@ module Reel
       end
 
       if @keepalive
-        headers['Connection'] = 'Keep-Alive'
+        headers[CONNECTION] = KEEP_ALIVE
       else
-        headers['Connection'] = 'close'
+        headers[CONNECTION] = CLOSE
       end
 
       case response
@@ -122,7 +130,7 @@ module Reel
       response.render(@socket)
 
       # Enable streaming mode
-      if response.headers['Transfer-Encoding'] == "chunked" and response.body.nil?
+      if response.headers[TRANSFER_ENCODING] == CHUNKED and response.body.nil?
         @response_state = :chunked_body
       end
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
