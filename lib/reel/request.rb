@@ -22,7 +22,7 @@ module Reel
 
       upgrade = headers[UPGRADE]
       if upgrade && upgrade.downcase == WEBSOCKET
-        WebSocket.new(connection.socket, parser.url, headers)
+        WebSocket.new(connection.socket, parser.http_method, parser.url, headers)
       else
         Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)
       end

@@ -2,10 +2,10 @@ require 'websocket_parser'
 
 module Reel
   class WebSocket
-    attr_reader :url, :headers
+    attr_reader :url, :headers, :method
 
-    def initialize(socket, url, headers)
-      @socket, @url, @headers = socket, url, headers
+    def initialize(socket, method, url, headers)
+      @socket, @method, @url, @headers = socket, method, url, headers
 
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
@@ -45,6 +45,10 @@ module Reel
       msg
     end
 
+    def body
+      nil
+    end
+
     def write(msg)
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
@@ -59,6 +63,34 @@ module Reel
 
     def close
       @socket.close
+    end
+
+    # Obtain the IP address of the remote connection
+    def remote_ip
+      @socket.peeraddr(false)[3]
+    end
+    alias_method :remote_addr, :remote_ip
+
+    # Obtain the hostname of the remote connection
+    def remote_host
+      # NOTE: Celluloid::IO does not yet support non-blocking reverse DNS
+      @socket.peeraddr(true)[2]
+    end
+
+    def uri
+      URI(url)
+    end
+
+    def path
+      uri.path
+    end
+
+    def query_string
+      uri.query
+    end
+
+    def fragment
+      uri.fragment
     end
   end
 end

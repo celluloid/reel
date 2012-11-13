@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe Reel::RackWorker do
-
   let(:endpoint) { URI(example_url) }
 
   let(:worker) do
@@ -43,6 +42,20 @@ describe Reel::RackWorker do
       env["rack.input"].should be_kind_of(StringIO)
       env["rack.input"].string.should == ''
     end
+  end
+
+  context "WebSocket" do
+    include WebSocketHelpers
+
+    it "places websocket into rack env" do
+      with_socket_pair do |client, connection|
+        client << handshake.to_data
+        request = connection.request
+        env = worker.rack_env(request, connection)
+        
+        env["async.connection"].should == request
+      end
+    end    
   end
 
   it "delegates web requests to the rack app" do

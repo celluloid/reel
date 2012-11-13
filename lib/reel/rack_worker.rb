@@ -41,6 +41,7 @@ module Reel
     RACK_URL_SCHEME   = 'rack.url_scheme'.freeze
     ASYNC_CALLBACK    = 'async.callback'.freeze
     ASYNC_CLOSE       = 'async.close'.freeze
+    ASYNC_CONNECTION  = 'async.connection'.freeze
 
     PROTO_RACK_ENV = {
       RACK_VERSION      => Rack::VERSION,
@@ -89,6 +90,16 @@ module Reel
 
       env[SERVER_NAME] = request[HOST].to_s.split(':').first || @handler[:Host]
       env[SERVER_PORT] = @handler[:port].to_s
+
+      case request
+      when WebSocket
+        env[REMOTE_ADDR] = request.remote_ip
+        env[REMOTE_HOST] = request.remote_host
+        env[ASYNC_CONNECTION] = request
+      when Request
+        env[REMOTE_ADDR] = connection.remote_ip
+        env[REMOTE_HOST] = connection.remote_host
+      end
 
       env[REMOTE_ADDR] = connection.remote_ip
       env[REMOTE_HOST] = connection.remote_host

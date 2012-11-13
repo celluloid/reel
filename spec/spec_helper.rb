@@ -25,7 +25,8 @@ def with_socket_pair
   peer   = server.accept
 
   begin
-    yield client, Reel::Connection.new(peer)
+    connection = Reel::Connection.new(peer)
+    yield client, connection
   ensure
     server.close rescue nil
     client.close rescue nil
