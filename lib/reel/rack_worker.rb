@@ -88,10 +88,6 @@ module Reel
       debug "Handle Websocket"
       env = rack_env(request, connection)
       @handler.rack_app.call(env)
-      # while next_app = app.send(:instance_variable_get, :@app)
-      #   app = next_app
-      # end
-      # app.call(env)
     end
 
     def response_body(body_parts)
