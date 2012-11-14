@@ -87,5 +87,6 @@ run Rack::URLMap.new(
   "/" => Proc.new{ [200, {"Content-Type" => "text/html"}, [Web.new.render_index]]},
   "/timeinfo" => Proc.new{ |env|
     TimeClient.new(env["async.connection"])
+    [200, {}, []] # Fake response for middleware.
   }
 )
