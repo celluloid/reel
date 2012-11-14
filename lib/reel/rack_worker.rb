@@ -1,6 +1,7 @@
 module Reel
   class RackWorker
     include Celluloid
+    include Celluloid::Logger
 
     INITIAL_BODY      = ''
 
@@ -62,17 +63,35 @@ module Reel
 
     def handle(connection)
       while request = connection.request
-        begin
-          env = rack_env(request, connection)
-          status, headers, body_parts = @app.call(env)
-          body = response_body(body_parts)
-
-          connection.respond Response.new(status, headers, body)
-        ensure
-          body.close if body.respond_to?(:close)
-          body_parts.close if body_parts.respond_to?(:close)
+        case request
+        when Request
+          handle_request(request, connection)
+        when WebSocket
+          handle_websocket(request, connection)
         end
       end
+    end
+
+    def handle_request(request, connection)
+      debug "Handle Request"
+      env = rack_env(request, connection)
+      status, headers, body_parts = @handler.rack_app.call(env)
+      body = response_body(body_parts)
+
+      connection.respond Response.new(status, headers, body)
+    ensure
+      body.close if body.respond_to?(:close)
+      body_parts.close if body_parts.respond_to?(:close)
+    end
+
+    def handle_websocket(request, connection)
+      debug "Handle Websocket"
+      env = rack_env(request, connection)
+      @handler.rack_app.call(env)
+      # while next_app = app.send(:instance_variable_get, :@app)
+      #   app = next_app
+      # end
+      # app.call(env)
     end
 
     def response_body(body_parts)
