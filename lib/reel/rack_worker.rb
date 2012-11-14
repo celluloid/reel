@@ -73,7 +73,6 @@ module Reel
     end
 
     def handle_request(request, connection)
-      debug "Handle Request"
       env = rack_env(request, connection)
       status, headers, body_parts = @handler.rack_app.call(env)
       body = response_body(body_parts)
@@ -85,7 +84,6 @@ module Reel
     end
 
     def handle_websocket(request, connection)
-      debug "Handle Websocket"
       env = rack_env(request, connection)
       @handler.rack_app.call(env)
     end
