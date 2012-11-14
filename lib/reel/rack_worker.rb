@@ -93,16 +93,14 @@ module Reel
 
       case request
       when WebSocket
-        env[REMOTE_ADDR] = request.remote_ip
-        env[REMOTE_HOST] = request.remote_host
+        remote_connection = request
         env[ASYNC_CONNECTION] = request
-      when Request
-        env[REMOTE_ADDR] = connection.remote_ip
-        env[REMOTE_HOST] = connection.remote_host
+     when Request
+        remote_connection = connection
       end
 
-      env[REMOTE_ADDR] = connection.remote_ip
-      env[REMOTE_HOST] = connection.remote_host
+      env[REMOTE_ADDR] = remote_connection.remote_ip
+      env[REMOTE_HOST] = remote_connection.remote_host
 
       env[PATH_INFO]   = request.path
       env[REQUEST_METHOD] = request.method.to_s.upcase
