@@ -42,7 +42,7 @@ module Reel
     RACK_URL_SCHEME   = 'rack.url_scheme'.freeze
     ASYNC_CALLBACK    = 'async.callback'.freeze
     ASYNC_CLOSE       = 'async.close'.freeze
-    ASYNC_CONNECTION  = 'async.connection'.freeze
+    RACK_WEBSOCKET    = 'rack.websocket'.freeze
 
     PROTO_RACK_ENV = {
       RACK_VERSION      => Rack::VERSION,
@@ -107,7 +107,7 @@ module Reel
       case request
       when WebSocket
         remote_connection = request
-        env[ASYNC_CONNECTION] = request
+        env[RACK_WEBSOCKET] = request
      when Request
         remote_connection = connection
       end

@@ -53,7 +53,7 @@ describe Reel::RackWorker do
         request = connection.request
         env = worker.rack_env(request, connection)
         
-        env["async.connection"].should == request
+        env["rack.websocket"].should == request
       end
     end    
   end
