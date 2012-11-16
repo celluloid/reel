@@ -1,6 +1,8 @@
 module Reel
   # A connection to the HTTP server
   class Connection
+    include RemoteConnection
+
     class StateError < RuntimeError; end # wrong state for a given operation
 
     CONNECTION         = 'Connection'.freeze
@@ -37,18 +39,6 @@ module Reel
     def detach
       @attached = false
       self
-    end
-
-    # Obtain the IP address of the remote connection
-    def remote_ip
-      @socket.peeraddr(false)[3]
-    end
-    alias_method :remote_addr, :remote_ip
-
-    # Obtain the hostname of the remote connection
-    def remote_host
-      # NOTE: Celluloid::IO does not yet support non-blocking reverse DNS
-      @socket.peeraddr(true)[2]
     end
 
     # Reset the current request state

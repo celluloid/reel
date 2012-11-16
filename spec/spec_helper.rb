@@ -25,7 +25,8 @@ def with_socket_pair
   peer   = server.accept
 
   begin
-    yield client, Reel::Connection.new(peer)
+    connection = Reel::Connection.new(peer)
+    yield client, connection
   ensure
     server.close rescue nil
     client.close rescue nil
@@ -63,5 +64,28 @@ class ExampleRequest
     "#{@method} #{@path} HTTP/#{@version}\r\n" <<
     @headers.map { |k, v| "#{k}: #{v}" }.join("\r\n") << "\r\n\r\n" <<
     (@body ? @body : '')
+  end
+end
+
+module WebSocketHelpers
+  def self.included(spec)
+    spec.instance_eval do
+      let(:example_host)    { "www.example.com" }
+      let(:example_path)    { "/example"}
+      let(:example_url)     { "ws://#{example_host}#{example_path}" }
+      let :handshake_headers do
+        {
+          "Host"                   => example_host,
+          "Upgrade"                => "websocket",
+          "Connection"             => "Upgrade",
+          "Sec-WebSocket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
+          "Origin"                 => "http://example.com",
+          "Sec-WebSocket-Protocol" => "chat, superchat",
+          "Sec-WebSocket-Version"  => "13"
+        }
+      end
+
+      let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) } 
+    end
   end
 end

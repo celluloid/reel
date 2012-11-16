@@ -4,6 +4,9 @@ require 'celluloid/io'
 
 require 'reel/version'
 
+require 'reel/remote_connection'
+require 'reel/uri_parts'
+
 require 'reel/connection'
 require 'reel/logger'
 require 'reel/request'
