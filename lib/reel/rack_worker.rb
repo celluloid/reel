@@ -1,6 +1,7 @@
 module Reel
   class RackWorker
     include Celluloid
+    include Celluloid::Logger
 
     INITIAL_BODY      = ''
 
@@ -41,6 +42,7 @@ module Reel
     RACK_URL_SCHEME   = 'rack.url_scheme'.freeze
     ASYNC_CALLBACK    = 'async.callback'.freeze
     ASYNC_CLOSE       = 'async.close'.freeze
+    RACK_WEBSOCKET    = 'rack.websocket'.freeze
 
     PROTO_RACK_ENV = {
       RACK_VERSION      => Rack::VERSION,
@@ -61,17 +63,29 @@ module Reel
 
     def handle(connection)
       while request = connection.request
-        begin
-          env = rack_env(request, connection)
-          status, headers, body_parts = @app.call(env)
-          body = response_body(body_parts)
-
-          connection.respond Response.new(status, headers, body)
-        ensure
-          body.close if body.respond_to?(:close)
-          body_parts.close if body_parts.respond_to?(:close)
+        case request
+        when Request
+          handle_request(request, connection)
+        when WebSocket
+          handle_websocket(request, connection)
         end
       end
+    end
+
+    def handle_request(request, connection)
+      env = rack_env(request, connection)
+      status, headers, body_parts = @app.call(env)
+      body = response_body(body_parts)
+
+      connection.respond Response.new(status, headers, body)
+    ensure
+      body.close if body.respond_to?(:close)
+      body_parts.close if body_parts.respond_to?(:close)
+    end
+
+    def handle_websocket(request, connection)
+      env = rack_env(request, connection)
+      @app.call(env)
     end
 
     def response_body(body_parts)
@@ -90,8 +104,16 @@ module Reel
       env[SERVER_NAME] = request[HOST].to_s.split(':').first || @handler[:Host]
       env[SERVER_PORT] = @handler[:port].to_s
 
-      env[REMOTE_ADDR] = connection.remote_ip
-      env[REMOTE_HOST] = connection.remote_host
+      case request
+      when WebSocket
+        remote_connection = request
+        env[RACK_WEBSOCKET] = request
+     when Request
+        remote_connection = connection
+      end
+
+      env[REMOTE_ADDR] = remote_connection.remote_ip
+      env[REMOTE_HOST] = remote_connection.remote_host
 
       env[PATH_INFO]   = request.path
       env[REQUEST_METHOD] = request.method.to_s.upcase

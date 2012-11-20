@@ -2,10 +2,13 @@ require 'websocket_parser'
 
 module Reel
   class WebSocket
-    attr_reader :url, :headers
+    include RemoteConnection
+    include URIParts
 
-    def initialize(socket, url, headers)
-      @socket, @url, @headers = socket, url, headers
+    attr_reader :url, :headers, :method
+
+    def initialize(socket, method, url, headers)
+      @socket, @method, @url, @headers = socket, method, url, headers
 
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
@@ -43,6 +46,10 @@ module Reel
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
       msg
+    end
+
+    def body
+      nil
     end
 
     def write(msg)

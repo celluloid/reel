@@ -2,6 +2,8 @@ require 'uri'
 
 module Reel
   class Request
+    include URIParts
+
     attr_accessor :method, :version, :url, :headers
 
     UPGRADE   = 'Upgrade'.freeze
@@ -22,7 +24,7 @@ module Reel
 
       upgrade = headers[UPGRADE]
       if upgrade && upgrade.downcase == WEBSOCKET
-        WebSocket.new(connection.socket, parser.url, headers)
+        WebSocket.new(connection.socket, parser.http_method, parser.url, headers)
       else
         Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)
       end
@@ -37,22 +39,6 @@ module Reel
 
     def [](header)
       @headers[header]
-    end
-
-    def uri
-      @uri ||= URI(url)
-    end
-
-    def path
-      uri.path
-    end
-
-    def query_string
-      uri.query
-    end
-
-    def fragment
-      uri.fragment
     end
 
     def body
