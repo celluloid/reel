@@ -77,7 +77,7 @@ module Reel
     end
 
     def handle_request(request, connection)
-      status, headers, body_parts = @app.call(request_env request, connection)
+      status, headers, body_parts = @app.call(request_env(request, connection))
       body = response_body(body_parts)
 
       connection.respond Response.new(status, headers, body)
@@ -87,7 +87,7 @@ module Reel
     end
 
     def handle_websocket(request, connection)
-      status, *rest = @app.call(websocket_env request)
+      status, *rest = @app.call(websocket_env(request))
       request.socket.close unless status < 300
     end
 
@@ -132,15 +132,10 @@ module Reel
       (_ = request.headers.delete CONTENT_LENGTH) && (env[CONTENT_LENGTH] = _)
 
       request.headers.each_pair do |key, val|
-        env[header_keys(key)] = val
+        env[HTTP_ + key.sub('-', '_').upcase] = val
       end
 
       env
-    end
-
-    # avoid expensive repetitive string operations on each request.
-    def header_keys key
-      (@@header_keys ||= {})[key] ||= HTTP_ + key.sub('-', '_').upcase
     end
 
   end
