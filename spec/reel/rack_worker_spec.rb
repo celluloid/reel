@@ -3,14 +3,13 @@ require 'spec_helper'
 describe Reel::RackWorker do
   let(:endpoint) { URI(example_url) }
 
-  let(:worker) do
-    app = Proc.new do |env|
-      [200, {'Content-Type' => 'text/plain'}, ['Hello world!']]
-      [200, {'Content-Type' => 'text/plain'}, ['Hello rack world!']]
-    end
+  RackApp = Proc.new do |env|
+    [200, {'Content-Type' => 'text/plain'}, ['Hello rack world!']]
+  end
 
+  let(:worker) do
     handler = Rack::Handler::Reel.new
-    handler.options[:app] = app
+    handler.options[:app] = RackApp
 
     Reel::RackWorker.new(handler)
   end
@@ -19,7 +18,7 @@ describe Reel::RackWorker do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new(:get, '/test?hello=true').to_s
       request = connection.request
-      env = worker.rack_env(request, connection)
+      env = worker.request_env(request, connection)
 
       Reel::RackWorker::PROTO_RACK_ENV.each do |k, v|
         env[k].should == v
@@ -30,17 +29,16 @@ describe Reel::RackWorker do
       env["REMOTE_ADDR"].should == "127.0.0.1"
       env["PATH_INFO"].should == "/test"
       env["REQUEST_METHOD"].should == "GET"
-      env["REQUEST_PATH"].should == "/test"
-      env["ORIGINAL_FULLPATH"].should == "/test"
       env["QUERY_STRING"].should == "hello=true"
       env["HTTP_HOST"].should == 'www.example.com'
       env["HTTP_ACCEPT_LANGUAGE"].should == "en-US,en;q=0.8"
-      env["REQUEST_URI"].should == '/test'
-
-      %w(localhost 127.0.0.1).should include env["REMOTE_HOST"]
 
       env["rack.input"].should be_kind_of(StringIO)
       env["rack.input"].string.should == ''
+
+      validator = ::Rack::Lint.new(RackApp)
+      status, *rest = validator.call(env)
+      status.should == 200
     end
   end
 
@@ -51,8 +49,9 @@ describe Reel::RackWorker do
       with_socket_pair do |client, connection|
         client << handshake.to_data
         request = connection.request
-        env = worker.rack_env(request, connection)
+        env = worker.websocket_env(request)
         
+        env["REMOTE_ADDR"].should == "127.0.0.1"
         env["rack.websocket"].should == request
       end
     end    

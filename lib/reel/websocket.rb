@@ -5,7 +5,7 @@ module Reel
     include RemoteConnection
     include URIParts
 
-    attr_reader :url, :headers, :method
+    attr_reader :url, :headers, :method, :version
 
     def initialize(socket, method, url, headers)
       @socket, @method, @url, @headers = socket, method, url, headers
