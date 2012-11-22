@@ -3,7 +3,7 @@ module Reel
     include Celluloid
     include Celluloid::Logger
 
-    INITIAL_BODY      = ''
+    INITIAL_BODY = ''
 
     # Freeze some HTTP header names & values
     SERVER_SOFTWARE     = 'SERVER_SOFTWARE'.freeze
@@ -13,8 +13,6 @@ module Reel
     GATEWAY_INTERFACE   = "GATEWAY_INTERFACE".freeze
     LOCALHOST           = 'localhost'.freeze
     HTTP_VERSION        = 'HTTP_VERSION'.freeze
-    HTTP_1_0            = 'HTTP/1.0'.freeze
-    HTTP_1_1            = 'HTTP/1.1'.freeze
     CGI_1_1             = 'CGI/1.1'.freeze
     REMOTE_ADDR         = 'REMOTE_ADDR'.freeze
     CONNECTION          = 'HTTP_CONNECTION'.freeze
@@ -24,32 +22,24 @@ module Reel
     QUERY_STRING        = 'QUERY_STRING'.freeze
     CONTENT_TYPE        = 'Content-Type'.freeze
     CONTENT_LENGTH      = 'Content-Length'.freeze
+    HTTP_1_0            = 'HTTP/1.0'.freeze
+    HTTP_1_1            = 'HTTP/1.1'.freeze
     HTTP_               = 'HTTP_'.freeze
     HOST                = 'Host'.freeze
-
+    
     # Freeze some Rack header names
-    RACK_INPUT        = 'rack.input'.freeze
-    RACK_LOGGER       = 'rack.logger'.freeze
-    RACK_VERSION      = 'rack.version'.freeze
-    RACK_ERRORS       = 'rack.errors'.freeze
-    RACK_MULTITHREAD  = 'rack.multithread'.freeze
-    RACK_MULTIPROCESS = 'rack.multiprocess'.freeze
-    RACK_RUN_ONCE     = 'rack.run_once'.freeze
-    RACK_URL_SCHEME   = 'rack.url_scheme'.freeze
-    RACK_WEBSOCKET    = 'rack.websocket'.freeze
-
-    REQUEST_METHODS   = {
-      :get     => 'GET'.freeze,
-      :post    => 'POST'.freeze,
-      :put     => 'PUT'.freeze,
-      :head    => 'HEAD'.freeze,
-      :delete  => 'DELETE'.freeze,
-      :options => 'OPTIONS'.freeze,
-      :patch   => 'PATCH'.freeze,
-    }
+    RACK_INPUT          = 'rack.input'.freeze
+    RACK_LOGGER         = 'rack.logger'.freeze
+    RACK_VERSION        = 'rack.version'.freeze
+    RACK_ERRORS         = 'rack.errors'.freeze
+    RACK_MULTITHREAD    = 'rack.multithread'.freeze
+    RACK_MULTIPROCESS   = 'rack.multiprocess'.freeze
+    RACK_RUN_ONCE       = 'rack.run_once'.freeze
+    RACK_URL_SCHEME     = 'rack.url_scheme'.freeze
+    RACK_WEBSOCKET      = 'rack.websocket'.freeze
 
     PROTO_RACK_ENV = {
-      RACK_VERSION      => Rack::VERSION,
+      RACK_VERSION      => ::Rack::VERSION,
       RACK_ERRORS       => STDERR,
       RACK_MULTITHREAD  => true,
       RACK_MULTIPROCESS => false,
@@ -79,7 +69,6 @@ module Reel
     def handle_request(request, connection)
       status, headers, body_parts = @app.call(request_env(request, connection))
       body = response_body(body_parts)
-
       connection.respond Response.new(status, headers, body)
     ensure
       body.close if body.respond_to?(:close)
@@ -88,15 +77,20 @@ module Reel
 
     def handle_websocket(request, connection)
       status, *rest = @app.call(websocket_env(request))
-      request.socket.close unless status < 300
+      request.close unless status < 300
     end
 
     def request_env request, connection
-      env(request).merge REMOTE_ADDR => connection.remote_ip
+      env = env(request)
+      env[REMOTE_ADDR] = connection.remote_ip
+      env
     end
 
     def websocket_env request
-      env(request).merge REMOTE_ADDR => request.remote_ip, RACK_WEBSOCKET => request
+      env = env(request)
+      env[REMOTE_ADDR]    = request.remote_ip
+      env[RACK_WEBSOCKET] = request
+      env
     end
 
     def response_body(body_parts)
@@ -110,33 +104,24 @@ module Reel
     end
 
     private
-
     def env request
       env = Hash[PROTO_RACK_ENV]
 
       env[RACK_INPUT] = StringIO.new(request.body || INITIAL_BODY)
       env[RACK_INPUT].set_encoding(Encoding::BINARY) if env[RACK_INPUT].respond_to?(:set_encoding)
-
       env[SERVER_NAME], env[SERVER_PORT] = (request[HOST]||'').split(':', 2)
       env[SERVER_PORT] ||= @handler[:port].to_s
-      env[HTTP_VERSION] = request.version || env[SERVER_PROTOCOL]
+      env[HTTP_VERSION]   = request.version || env[SERVER_PROTOCOL]
+      env[REQUEST_METHOD] = request.method
+      env[PATH_INFO]      = request.path
+      env[QUERY_STRING]   = request.query_string || ''
 
-      env[REQUEST_METHOD] = REQUEST_METHODS[request.method] || 
-        raise(ArgumentError, "unknown request method: %s" % request.method)
-
-      env[PATH_INFO]    = request.path
-      env[QUERY_STRING] = request.query_string || ''
-
-      # seems headers wont be used anymore so it is safe to alter them.
       (_ = request.headers.delete CONTENT_TYPE) && (env[CONTENT_TYPE] = _)
       (_ = request.headers.delete CONTENT_LENGTH) && (env[CONTENT_LENGTH] = _)
-
       request.headers.each_pair do |key, val|
         env[HTTP_ + key.sub('-', '_').upcase] = val
       end
-
       env
     end
-
   end
 end

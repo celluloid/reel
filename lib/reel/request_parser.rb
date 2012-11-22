@@ -1,11 +1,18 @@
 module Reel
   class Request
     class Parser
+      include HTTPVersionsMixin
       attr_reader :headers
 
       def initialize
         @parser = Http::Parser.new(self)
         reset
+      end
+
+      [:request_path, :query_string].each do |m|
+        define_method m do
+          @parser.send m
+        end
       end
 
       def add(data)
@@ -18,11 +25,12 @@ module Reel
       end
 
       def http_method
-        @parser.http_method.downcase.to_sym
+        @parser.http_method
       end
 
       def http_version
-        @parser.http_version.join(".")
+        # TODO: add extra HTTP_VERSION handler when HTTP/1.2 released
+        @parser.http_version[1] == 1 ? HTTP_VERSION_1_1 : HTTP_VERSION_1_0
       end
 
       def url

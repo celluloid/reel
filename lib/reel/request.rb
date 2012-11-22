@@ -1,13 +1,13 @@
-require 'uri'
-
 module Reel
   class Request
-    include URIParts
-
-    attr_accessor :method, :version, :url, :headers
+    include RequestMixin
 
     UPGRADE   = 'Upgrade'.freeze
     WEBSOCKET = 'websocket'.freeze
+
+    # Array#include? seems slow compared to Hash lookup
+    request_methods = Http::METHODS.map { |m| m.to_s.upcase }
+    REQUEST_METHODS = Hash[request_methods.zip(request_methods)].freeze
 
     def self.read(connection)
       parser = connection.parser
@@ -17,28 +17,19 @@ module Reel
         parser << data
       end until parser.headers
 
-      headers = {}
-      parser.headers.each do |field, value|
-        headers[Http.canonicalize_header(field)] = value
-      end
+      REQUEST_METHODS[parser.http_method] ||
+        raise(ArgumentError, "Unknown Request Method: %s" % parser.http_method)
 
-      upgrade = headers[UPGRADE]
+      upgrade = parser.headers[UPGRADE]
       if upgrade && upgrade.downcase == WEBSOCKET
-        WebSocket.new(connection.socket, parser.http_method, parser.url, headers)
+        WebSocket.new(parser, connection.socket)
       else
-        Request.new(parser.http_method, parser.url, parser.http_version, headers, connection)
+        Request.new(parser, connection)
       end
     end
 
-    def initialize(method, url, version = "1.1", headers = {}, connection = nil)
-      @method = method.to_s.downcase.to_sym
-      raise UnsupportedArgumentError, "unknown method: #{method}" unless Http::METHODS.include? @method
-
-      @url, @version, @headers, @connection = url, version, headers, connection
-    end
-
-    def [](header)
-      @headers[header]
+    def initialize(http_parser, connection = nil)
+      @http_parser, @connection = http_parser, connection
     end
 
     def body

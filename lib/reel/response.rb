@@ -26,11 +26,8 @@ module Reel
       end
 
       @headers = {}
-      headers.each do |name, value|
-        name = name.to_s
-        key = name[Http::CANONICAL_HEADER]
-        key ||= canonicalize_header(name)
-        @headers[key] = value.to_s
+      headers.each_pair do |header, value|
+        @headers[Http.canonicalize_header(header)] = value.to_s
       end
 
       case @body
@@ -110,10 +107,5 @@ module Reel
     end
     private :render_header
 
-    # Transform to canonical HTTP header capitalization
-    def canonicalize_header(header)
-      header.to_s.split(/[\-_]/).map(&:capitalize).join('-')
-    end
-    private :canonicalize_header
   end
 end

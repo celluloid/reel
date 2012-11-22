@@ -2,13 +2,11 @@ require 'websocket_parser'
 
 module Reel
   class WebSocket
-    include RemoteConnection
-    include URIParts
+    include ConnectionMixin
+    include RequestMixin
 
-    attr_reader :url, :headers, :method, :version
-
-    def initialize(socket, method, url, headers)
-      @socket, @method, @url, @headers = socket, method, url, headers
+    def initialize(http_parser, socket)
+      @http_parser, @socket = http_parser, socket
 
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
@@ -37,10 +35,6 @@ module Reel
       @parser.on_ping do
         @socket << ::WebSocket::Message.pong.to_data
       end
-    end
-
-    def [](header)
-      @headers[header]
     end
 
     def read

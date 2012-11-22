@@ -1,11 +1,12 @@
+require 'uri'
+
 require 'http/parser'
 require 'http'
 require 'celluloid/io'
 
 require 'reel/version'
 
-require 'reel/remote_connection'
-require 'reel/uri_parts'
+require 'reel/mixins'
 
 require 'reel/connection'
 require 'reel/logger'
@@ -22,6 +23,7 @@ require 'reel/rack_worker'
 
 # A Reel good HTTP server
 module Reel
+
   # Error reading a request
   class RequestError < StandardError; end
 
