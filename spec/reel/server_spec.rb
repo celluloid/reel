@@ -11,7 +11,7 @@ describe Reel::Server do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq :get
+        request.method.should eq 'GET'
         request.version.should eq "1.1"
         request.url.should eq example_path
 
@@ -34,7 +34,7 @@ describe Reel::Server do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq :post
+        request.method.should eq 'POST'
         connection.respond :ok, request.body
       rescue => ex
       end

@@ -1,7 +1,8 @@
 module Reel
   # A connection to the HTTP server
   class Connection
-    include RemoteConnection
+    include HTTPVersionsMixin
+    include ConnectionMixin
 
     class StateError < RuntimeError; end # wrong state for a given operation
 
@@ -11,7 +12,6 @@ module Reel
     CLOSE              = 'close'.freeze
     CHUNKED            = 'chunked'.freeze
     CONTENT_LENGTH     = 'Content-Length'.freeze
-    HTTP_1_0           =  '1.0'.freeze
 
     attr_reader :socket, :parser
 
@@ -56,7 +56,7 @@ module Reel
       case req
       when Request
         @request_state = :body
-        @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_1_0
+        @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
         @body_remaining = Integer(req[CONTENT_LENGTH]) if req[CONTENT_LENGTH]
       when WebSocket
         @request_state = @response_state = :websocket
