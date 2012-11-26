@@ -67,12 +67,8 @@ module Reel
     end
 
     def handle_request(request, connection)
-      status, headers, body_parts = @app.call(request_env(request, connection))
-      body = response_body(body_parts)
-      connection.respond Response.new(status, headers, body)
-    ensure
-      body.close if body.respond_to?(:close)
-      body_parts.close if body_parts.respond_to?(:close)
+      status, headers, body = @app.call(request_env(request, connection))
+      connection.respond Response.new(status, headers, response_body(body))
     end
 
     def handle_websocket(request, connection)
@@ -94,12 +90,12 @@ module Reel
     end
 
     def response_body(body_parts)
-      if body_parts.respond_to?(:to_path)
+      if body_parts.respond_to?(:call)
+        body_parts
+      elsif body_parts.respond_to?(:to_path)
         File.new(body_parts.to_path)
       else
-        body_text = ''
-        body_parts.each { |part| body_text << part }
-        body_text
+        body_parts.inject('') { |b,c| b << c }
       end
     end
 

@@ -35,9 +35,9 @@ module Reel
         @headers[CONTENT_LENGTH] ||= @body.bytesize
       when IO
         @headers[CONTENT_LENGTH] ||= @body.stat.size
-      when Enumerable
+      when Enumerable, ChunkStream, Stream
         @headers[TRANSFER_ENCODING] ||= CHUNKED
-      when NilClass
+      when EventStream, NilClass
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
 
@@ -73,22 +73,28 @@ module Reel
       when String
         socket << @body
       when IO
-        if !defined?(JRUBY_VERSION)
-          IO.copy_stream(@body, socket)
-        else
-          # JRuby 1.6.7 doesn't support IO.copy_stream :(
-          while data = @body.read(4096)
-            socket << data
+        begin
+          if !defined?(JRUBY_VERSION)
+            IO.copy_stream(@body, socket)
+          else
+            # JRuby 1.6.7 doesn't support IO.copy_stream :(
+            while data = @body.read(4096)
+              socket << data
+            end
           end
+        ensure
+          @body.close
         end
       when Enumerable
         @body.each do |chunk|
-          chunk_header = chunk.bytesize.to_s(16) + CRLF
-          socket << chunk_header
-          socket << chunk
+          chunk_header = chunk.bytesize.to_s(16)
+          socket << chunk_header + CRLF
+          socket << chunk + CRLF
         end
 
-        socket << "0" << CRLF * 2
+        socket << "0#{CRLF * 2}"
+      when EventStream, ChunkStream, Stream
+        @body.call socket
       end
     end
 

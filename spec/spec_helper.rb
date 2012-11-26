@@ -18,7 +18,7 @@ end
 
 def with_socket_pair
   host = '127.0.0.1'
-  port = 10103
+  port = 10101
 
   server = TCPServer.new(host, port)
   client = TCPSocket.new(host, port)
