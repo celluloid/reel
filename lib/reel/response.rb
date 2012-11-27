@@ -4,6 +4,7 @@ module Reel
     CONTENT_LENGTH     = 'Content-Length'.freeze
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     CHUNKED            = 'chunked'.freeze
+    IDENTITY           = 'identity'.freeze
 
     # Use status code tables from the Http gem
     STATUS_CODES          = Http::Response::STATUS_CODES
@@ -35,9 +36,14 @@ module Reel
         @headers[CONTENT_LENGTH] ||= @body.bytesize
       when IO
         @headers[CONTENT_LENGTH] ||= @body.stat.size
-      when Enumerable, ChunkStream, Stream
+      when EventStream
+        # EventSource behaves extremely bad on chunked Transfer-Encoding
+        @headers[TRANSFER_ENCODING] = IDENTITY
+      when Enumerable, ChunkStream
         @headers[TRANSFER_ENCODING] ||= CHUNKED
-      when EventStream, NilClass
+      when Stream
+        @headers[TRANSFER_ENCODING] ||= IDENTITY
+      when NilClass
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
 

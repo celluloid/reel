@@ -1,9 +1,9 @@
 module Reel
-  
   class Stream
 
     def initialize &proc
       @proc = proc
+      @error_handlers = []
     end
 
     def call socket
@@ -11,38 +11,52 @@ module Reel
       @proc.call self
     end
 
-    # writing data directly to socket
     def write data
-      @socket << data
+      write!  data
       self
     end
     alias :<< :write
-    alias :push :write
+
+    def on_error &proc
+      @error_handlers << proc
+      self
+    end
 
     def close
       @socket.close unless @socket.closed?
+    rescue => e
+      @error_handlers.each {|h| h.call e}
     end
     alias finish close
+
+    private
+    def write! string
+      @socket << string
+    rescue => e
+      @error_handlers.each {|h| h.call e}
+    end
 
   end
     
   class EventStream < Stream
 
-    # helpers
-    # @example - using helpers
+    # EventSource-related helpers
+    #
+    # @example
     #   Reel::EventStream.new do |socket|
     #     socket.event 'some event'
     #     socket.data 'some string'
+    #     socket.retry 10
     #   end
+    #
+    # @note
+    #   though retry is a reserved word, it is ok to use it as `object#retry`
+    #
     %w[event data id retry].each do |meth|
       define_method meth do |data|
-        push meth + ': ' + data
+        write! meth + ": %s\n\n" % data # EventSource expects \n\n after each message
+        self
       end
-    end
-
-    # EventSource expects \n\n after each message
-    def push data
-      write data.to_s + "\n\n"
     end
 
   end
@@ -50,17 +64,17 @@ module Reel
   class ChunkStream < Stream
     
     def write chunk
-      chunk_header = (chunk = chunk.to_s).bytesize.to_s(16)
-      @socket << chunk_header + Response::CRLF
-      @socket << chunk + Response::CRLF
+      chunk_header = chunk.bytesize.to_s(16)
+      write! chunk_header + Response::CRLF
+      write! chunk + Response::CRLF
+      self
     end
     alias :<< :write
-    alias :push :write
 
     # finish does not actually close the socket,
     # it only inform the browser there are no more messages
     def finish
-      @socket << "0#{Response::CRLF * 2}"
+      write! "0#{Response::CRLF * 2}"
     end
 
     def close

@@ -10,15 +10,17 @@ app = Rack::Builder.new do
       [200, {'Content-Type' => 'text/html'}, [Body]]
     }
   end
+
   map '/subscribe' do
     run lambda { |env|
       body = Reel::EventStream.new do |socket|
         Connections << socket
-        socket.on_error { Connections.delete socket } if socket.respond_to?(:on_error)
+        socket.on_error { Connections.delete socket }
       end
-      [200, {'Content-Type' => 'text/event-stream'}, body]      
+      [200, {'Content-Type' => 'text/event-stream'}, body]
     }
   end
+
   map '/wall' do
     run lambda { |env|
       msg = env['PATH_INFO'].gsub(/\/+/, '').strip
