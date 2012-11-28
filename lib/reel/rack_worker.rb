@@ -6,6 +6,11 @@ module Reel
     INITIAL_BODY = ''
 
     # Freeze some HTTP header names & values
+    CONTENT_TYPE_ORIG   = 'Content-Type'.freeze
+    CONTENT_LENGTH_ORIG = 'Content-Length'.freeze
+    CONTENT_TYPE        = 'CONTENT_TYPE'.freeze
+    CONTENT_LENGTH      = 'CONTENT_LENGTH'.freeze
+
     SERVER_SOFTWARE     = 'SERVER_SOFTWARE'.freeze
     SERVER_NAME         = 'SERVER_NAME'.freeze
     SERVER_PORT         = 'SERVER_PORT'.freeze
@@ -20,8 +25,6 @@ module Reel
     PATH_INFO           = 'PATH_INFO'.freeze
     REQUEST_METHOD      = 'REQUEST_METHOD'.freeze
     QUERY_STRING        = 'QUERY_STRING'.freeze
-    CONTENT_TYPE        = 'Content-Type'.freeze
-    CONTENT_LENGTH      = 'Content-Length'.freeze
     HTTP_1_0            = 'HTTP/1.0'.freeze
     HTTP_1_1            = 'HTTP/1.1'.freeze
     HTTP_               = 'HTTP_'.freeze
@@ -67,8 +70,12 @@ module Reel
     end
 
     def handle_request(request, connection)
-      status, headers, body = @app.call(request_env(request, connection))
-      connection.respond Response.new(status, headers, response_body(body))
+      status, headers, body_parts = @app.call(request_env(request, connection))
+      body = response_body(body_parts)
+      connection.respond Response.new(status, headers, body)
+    ensure
+      body_parts.respond_to?(:close) && (body_parts.closed? || body_parts.close)
+      body.respond_to?(:close) && (body.closed? || body.close)
     end
 
     def handle_websocket(request, connection)
@@ -90,12 +97,14 @@ module Reel
     end
 
     def response_body(body_parts)
-      if body_parts.respond_to?(:call)
+      if body_parts.respond_to?(:to_path)
+        ::File.new(body_parts.to_path)
+      elsif body_parts.respond_to?(:call)
         body_parts
-      elsif body_parts.respond_to?(:to_path)
-        File.new(body_parts.to_path)
       else
-        body_parts.inject('') { |b,c| b << c }
+        body = ''
+        body_parts.each { |c| body << c }
+        body
       end
     end
 
@@ -112,8 +121,9 @@ module Reel
       env[PATH_INFO]      = request.path
       env[QUERY_STRING]   = request.query_string || ''
 
-      (_ = request.headers.delete CONTENT_TYPE) && (env[CONTENT_TYPE] = _)
-      (_ = request.headers.delete CONTENT_LENGTH) && (env[CONTENT_LENGTH] = _)
+      (_ = request.headers.delete CONTENT_TYPE_ORIG) && (env[CONTENT_TYPE] = _)
+      (_ = request.headers.delete CONTENT_LENGTH_ORIG) && (env[CONTENT_LENGTH] = _)
+
       request.headers.each_pair do |key, val|
         env[HTTP_ + key.sub('-', '_').upcase] = val
       end
