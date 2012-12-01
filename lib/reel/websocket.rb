@@ -1,9 +1,13 @@
+require 'forwardable'
 require 'websocket_parser'
 
 module Reel
   class WebSocket
+    extend Forwardable
     include ConnectionMixin
     include RequestMixin
+
+    def_delegators :@socket, :addr, :peeraddr
 
     def initialize(http_parser, socket)
       @http_parser, @socket = http_parser, socket
