@@ -25,27 +25,19 @@ module Reel
         @body = body_or_headers
       end
 
-      @headers = {}
-      headers.each_pair do |header, value|
-        @headers[Http.canonicalize_header(header)] = value.to_s
-      end
-
       case @body
       when String
-        @headers[CONTENT_LENGTH] ||= @body.bytesize
+        headers[CONTENT_LENGTH] ||= @body.bytesize
       when IO
-        @headers[CONTENT_LENGTH] ||= @body.stat.size
+        headers[CONTENT_LENGTH] ||= @body.stat.size
       when Enumerable
-        @headers[TRANSFER_ENCODING] ||= CHUNKED
+        headers[TRANSFER_ENCODING] ||= CHUNKED
       when NilClass
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
 
-      # Prevent modification through the accessor
-      @headers.freeze
-
-      # FIXME: real HTTP versioning
-      @version = "HTTP/1.1"
+      @headers = canonicalize_headers(headers)
+      @version = http_version
     end
 
     # Set the status
@@ -73,22 +65,26 @@ module Reel
       when String
         socket << @body
       when IO
-        if !defined?(JRUBY_VERSION)
-          IO.copy_stream(@body, socket)
-        else
-          # JRuby 1.6.7 doesn't support IO.copy_stream :(
-          while data = @body.read(4096)
-            socket << data
+        begin
+          if !defined?(JRUBY_VERSION)
+            IO.copy_stream(@body, socket)
+          else
+            # JRuby 1.6.7 doesn't support IO.copy_stream :(
+            while data = @body.read(4096)
+              socket << data
+            end
           end
+        ensure
+          @body.close
         end
       when Enumerable
         @body.each do |chunk|
-          chunk_header = chunk.bytesize.to_s(16) + CRLF
-          socket << chunk_header
-          socket << chunk
+          chunk_header = chunk.bytesize.to_s(16)
+          socket << chunk_header + CRLF
+          socket << chunk + CRLF
         end
 
-        socket << "0" << CRLF * 2
+        socket << "0#{CRLF * 2}"
       end
     end
 
@@ -106,6 +102,19 @@ module Reel
       response_header << CRLF
     end
     private :render_header
+
+    def canonicalize_headers headers
+      headers.inject({}) do |headers, (header, value)|
+        headers.merge Http.canonicalize_header(header) => value.to_s
+      end.freeze
+    end
+    private :canonicalize_headers
+
+    def http_version
+      # FIXME: real HTTP versioning
+      "HTTP/1.1".freeze
+    end
+    private :http_version
 
   end
 end

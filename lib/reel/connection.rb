@@ -138,24 +138,23 @@ module Reel
     # Write body chunks directly to the connection
     def write(chunk)
       raise StateError, "not in chunked body mode" unless @response_state == :chunked_body
-      chunk_header = chunk.bytesize.to_s(16) + Response::CRLF
-      @socket << chunk_header
-      @socket << chunk
-      @socket << Response::CRLF
+      chunk_header = chunk.bytesize.to_s(16)
+      @socket << chunk_header + Response::CRLF
+      @socket << chunk + Response::CRLF
     end
     alias_method :<<, :write
 
     # Finish the response and reset the response state to header
     def finish_response
       raise StateError, "not in body state" if @response_state != :chunked_body
-      @socket << "0" << Response::CRLF * 2
+      @socket << "0#{Response::CRLF * 2}"
       @response_state = :header
     end
 
     # Close the connection
     def close
       @keepalive = false
-      @socket.close
+      @socket.close unless @socket.closed?
     end
   end
 end
