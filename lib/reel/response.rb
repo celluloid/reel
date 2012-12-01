@@ -4,7 +4,6 @@ module Reel
     CONTENT_LENGTH     = 'Content-Length'.freeze
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     CHUNKED            = 'chunked'.freeze
-    IDENTITY           = 'identity'.freeze
 
     # Use status code tables from the Http gem
     STATUS_CODES          = Http::Response::STATUS_CODES
@@ -26,32 +25,19 @@ module Reel
         @body = body_or_headers
       end
 
-      @headers = {}
-      headers.each_pair do |header, value|
-        @headers[Http.canonicalize_header(header)] = value.to_s
-      end
-
       case @body
       when String
-        @headers[CONTENT_LENGTH] ||= @body.bytesize
+        headers[CONTENT_LENGTH] ||= @body.bytesize
       when IO
-        @headers[CONTENT_LENGTH] ||= @body.stat.size
-      when EventStream
-        # EventSource behaves extremely bad on chunked Transfer-Encoding
-        @headers[TRANSFER_ENCODING] = IDENTITY
-      when Enumerable, ChunkStream
-        @headers[TRANSFER_ENCODING] ||= CHUNKED
-      when Stream
-        @headers[TRANSFER_ENCODING] ||= IDENTITY
+        headers[CONTENT_LENGTH] ||= @body.stat.size
+      when Enumerable
+        headers[TRANSFER_ENCODING] ||= CHUNKED
       when NilClass
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
 
-      # Prevent modification through the accessor
-      @headers.freeze
-
-      # FIXME: real HTTP versioning
-      @version = "HTTP/1.1"
+      @headers = canonicalize_headers(headers)
+      @version = http_version
     end
 
     # Set the status
@@ -99,8 +85,6 @@ module Reel
         end
 
         socket << "0#{CRLF * 2}"
-      when EventStream, ChunkStream, Stream
-        @body.call socket
       end
     end
 
@@ -118,6 +102,19 @@ module Reel
       response_header << CRLF
     end
     private :render_header
+
+    def canonicalize_headers headers
+      headers.inject({}) do |headers, (header, value)|
+        headers.merge Http.canonicalize_header(header) => value.to_s
+      end.freeze
+    end
+    private :canonicalize_headers
+
+    def http_version
+      # FIXME: real HTTP versioning
+      "HTTP/1.1".freeze
+    end
+    private :http_version
 
   end
 end

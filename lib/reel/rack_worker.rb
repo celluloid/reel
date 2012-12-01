@@ -71,11 +71,13 @@ module Reel
 
     def handle_request(request, connection)
       status, headers, body_parts = @app.call(request_env(request, connection))
-      body = response_body(body_parts)
-      connection.respond Response.new(status, headers, body)
+      body, is_stream = response_body(body_parts)
+      connection.respond (is_stream ? StreamResponse : Response).new(status, headers, body)
     ensure
-      body_parts.respond_to?(:close) && (body_parts.closed? || body_parts.close)
-      body.respond_to?(:close) && (body.closed? || body.close)
+      unless is_stream ||= nil
+        body_parts.respond_to?(:close) && (body_parts.closed? || body_parts.close)
+        body.respond_to?(:close) && (body.closed? || body.close)
+      end
     end
 
     def handle_websocket(request, connection)
@@ -99,11 +101,12 @@ module Reel
     def response_body(body_parts)
       if body_parts.respond_to?(:to_path)
         ::File.new(body_parts.to_path)
-      elsif body_parts.respond_to?(:call)
-        body_parts
       else
         body = ''
-        body_parts.each { |c| body << c }
+        body_parts.each do |c|
+          return [c, true] if c.is_a?(Reel::Stream)
+          body << c
+        end
         body
       end
     end

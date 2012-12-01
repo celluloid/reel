@@ -17,17 +17,24 @@ module Reel
     end
     alias :<< :write
 
+    # behaves like a true Rack::Response/BodyProxy object
+    def each(*)
+      yield self
+    end
+
     def on_error &proc
       @error_handlers << proc
       self
     end
 
     def close
-      @socket.close unless @socket.closed?
-    rescue => e
-      @error_handlers.each {|h| h.call e}
+      @socket.close
     end
     alias finish close
+
+    def closed?
+      @socket.closed?
+    end
 
     private
     def write! string
@@ -82,6 +89,35 @@ module Reel
       super
     end
 
+  end
+
+  class StreamResponse < Response
+
+    IDENTITY = 'identity'.freeze
+
+    def initialize status, headers, body
+      self.status = status
+      @body = body
+
+      case @body
+      when EventStream
+        # EventSource behaves extremely bad on chunked Transfer-Encoding
+        headers[TRANSFER_ENCODING] = IDENTITY
+      when ChunkStream
+        headers[TRANSFER_ENCODING] = CHUNKED
+      when Stream
+      else
+        raise TypeError, "can't render #{@body.class} as a response body"
+      end
+
+      @headers = canonicalize_headers(headers)
+      @version = http_version
+    end
+
+    def render socket
+      socket << render_header
+      @body.call socket
+    end
   end
 
 end
