@@ -128,7 +128,7 @@ module Reel
       (_ = request.headers.delete CONTENT_LENGTH_ORIG) && (env[CONTENT_LENGTH] = _)
 
       request.headers.each_pair do |key, val|
-        env[HTTP_ + key.sub('-', '_').upcase] = val
+        env[HTTP_ + key.gsub('-', '_').upcase] = val
       end
       env
     end
