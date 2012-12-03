@@ -40,7 +40,9 @@ module Reel
     def write! string
       @socket << string
     rescue => e
-      @error_handlers.each {|h| h.call e}
+      @error_handlers.any? ?
+        @error_handlers.each {|h| h.call e} :
+        raise(e)
     end
 
   end

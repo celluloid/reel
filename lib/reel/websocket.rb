@@ -35,11 +35,17 @@ module Reel
       @parser.on_ping do
         @socket << ::WebSocket::Message.pong.to_data
       end
+
+      @error_handlers = []
     end
 
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
       msg
+    rescue => e
+      @error_handlers.any? ?
+        @error_handlers.each {|h| h.call e} :
+        raise(e)
     end
 
     def body
@@ -49,8 +55,10 @@ module Reel
     def write(msg)
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
-    rescue Errno::EPIPE
-      raise SocketError, "error writing to socket"
+    rescue => e
+      @error_handlers.any? ?
+        @error_handlers.each {|h| h.call e} :
+        raise(e)
     end
     alias_method :<<, :write
 
@@ -61,5 +69,11 @@ module Reel
     def close
       @socket.close
     end
+
+    def on_error &proc
+      @error_handlers << proc
+      self
+    end
+
   end
 end
