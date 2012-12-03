@@ -14,10 +14,14 @@ app = Rack::Builder.new do
   map '/subscribe' do
     run lambda { |env|
       if socket = env['rack.websocket']
-        Connections << socket
+        socket.on_message do |m|
+          socket << "Server got \"#{m}\" message"
+        end
         socket.on_error { Connections.delete socket }
+        Connections << socket
+        Celluloid.every(1) { socket.read }
       end
-      [200, {'Content-Type' => 'text/event-stream'}, []]
+      [200, {}, []]
     }
   end
 
@@ -37,10 +41,11 @@ __END__
 <!doctype html>
 <html lang="en">
 <body>
+  <input type="button" onClick="ws.send(Math.random());" value="Send a message to server">
   <div id="content"></div>
 </body>
 <script type="text/javascript">
-var ws = new WebSocket('ws://' + window.location.host + '/subscribe');
+ws = new WebSocket('ws://' + window.location.host + '/subscribe');
 ws.onmessage = function(e) {
   document.getElementById('content').innerHTML += e.data + '<br>';
 }

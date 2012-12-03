@@ -3,7 +3,6 @@ module Reel
 
     def initialize &proc
       @proc = proc
-      @error_handlers = []
     end
 
     def call socket
@@ -23,7 +22,7 @@ module Reel
     end
 
     def on_error &proc
-      @error_handlers << proc
+      @on_error = proc
       self
     end
 
@@ -40,9 +39,7 @@ module Reel
     def write! string
       @socket << string
     rescue => e
-      @error_handlers.any? ?
-        @error_handlers.each {|h| h.call e} :
-        raise(e)
+      @on_error ? @on_error.call(e) : raise(e)
     end
 
   end

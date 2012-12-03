@@ -35,17 +35,19 @@ module Reel
       @parser.on_ping do
         @socket << ::WebSocket::Message.pong.to_data
       end
+    end
 
-      @error_handlers = []
+    [:next_message, :next_messages, :on_message, :on_error, :on_close, :on_ping, :on_pong].each do |meth|
+      define_method meth do |&proc|
+        @parser.send __method__, &proc
+      end
     end
 
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
       msg
     rescue => e
-      @error_handlers.any? ?
-        @error_handlers.each {|h| h.call e} :
-        raise(e)
+      @on_error ? @on_error.call(e) : raise(e)
     end
 
     def body
@@ -56,9 +58,7 @@ module Reel
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
     rescue => e
-      @error_handlers.any? ?
-        @error_handlers.each {|h| h.call e} :
-        raise(e)
+      @on_error ? @on_error.call(e) : raise(e)
     end
     alias_method :<<, :write
 
@@ -68,11 +68,6 @@ module Reel
 
     def close
       @socket.close
-    end
-
-    def on_error &proc
-      @error_handlers << proc
-      self
     end
 
   end
