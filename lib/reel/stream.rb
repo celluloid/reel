@@ -51,18 +51,24 @@ module Reel
     # @example
     #   Reel::EventStream.new do |socket|
     #     socket.event 'some event'
-    #     socket.data 'some string'
     #     socket.retry 10
     #   end
     #
     # @note
     #   though retry is a reserved word, it is ok to use it as `object#retry`
     #
-    %w[event data id retry].each do |meth|
+    %w[event id retry].each do |meth|
       define_method meth do |data|
-        write! meth + ": %s\n\n" % data # EventSource expects \n\n after each message
-        self
+        # unlike on #data, these messages expects a single \n at the end.
+        write! "%s: %s\n" % [meth, data]
       end
+    end
+
+    def data data
+      # - any single message should not contain \n except at the end.
+      # - EventSource expects \n\n at the end of each single message.
+      write! "data: %s\n\n" % data.gsub(/\n|\r/, '')
+      self
     end
 
   end
