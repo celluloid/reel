@@ -43,10 +43,24 @@ module Reel
       end
     end
 
+    def read_every n, unit = :s
+      cancel_timer! # only one timer allowed per stream
+      seconds = case unit.to_s
+      when /\Am/
+        n * 60
+      when /\Ah/
+        n * 3600
+      else
+        n
+      end
+      @timer = Celluloid.every(seconds) { read }
+    end
+
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
       msg
     rescue => e
+      cancel_timer!
       @on_error ? @on_error.call(e) : raise(e)
     end
 
@@ -58,6 +72,7 @@ module Reel
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
     rescue => e
+      cancel_timer!
       @on_error ? @on_error.call(e) : raise(e)
     end
     alias_method :<<, :write
@@ -67,7 +82,12 @@ module Reel
     end
 
     def close
+      cancel_timer!
       @socket.close
+    end
+
+    def cancel_timer!
+      @timer && @timer.cancel
     end
 
   end

@@ -19,7 +19,7 @@ app = Rack::Builder.new do
         end
         socket.on_error { Connections.delete socket }
         Connections << socket
-        Celluloid.every(1) { socket.read }
+        socket.read_every 1
       end
       [200, {}, []]
     }
