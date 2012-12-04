@@ -55,6 +55,8 @@ module Reel
       end
       @timer = Celluloid.every(seconds) { read }
     end
+    alias read_interval  read_every
+    alias read_frequency read_every
 
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
