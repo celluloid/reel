@@ -75,8 +75,8 @@ module Reel
       connection.respond (is_stream ? StreamResponse : Response).new(status, headers, body)
     ensure
       unless is_stream ||= nil
-        body_parts.respond_to?(:close) && (body_parts.closed? || body_parts.close)
-        body.respond_to?(:close) && (body.closed? || body.close)
+        body_parts.respond_to?(:close) && body_parts.close
+        body.respond_to?(:close) && body.close
       end
     end
 
