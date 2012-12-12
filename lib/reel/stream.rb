@@ -27,7 +27,7 @@ module Reel
     end
 
     def close
-      @socket.close
+      @socket.close unless closed?
     end
     alias finish close
 
