@@ -89,7 +89,7 @@ module Reel
 
     def close
       cancel_timer!
-      @socket.close
+      @socket.close unless closed?
     end
 
     def cancel_timer!

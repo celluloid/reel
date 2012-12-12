@@ -73,11 +73,6 @@ module Reel
       status, headers, body_parts = @app.call(request_env(request, connection))
       body, is_stream = response_body(body_parts)
       connection.respond (is_stream ? StreamResponse : Response).new(status, headers, body)
-    ensure
-      unless is_stream ||= nil
-        body_parts.respond_to?(:close) && body_parts.close
-        body.respond_to?(:close) && body.close
-      end
     end
 
     def handle_websocket(request, connection)
@@ -107,6 +102,7 @@ module Reel
           return [c, true] if c.is_a?(Reel::Stream)
           body << c
         end
+        body_parts.close if body_parts.respond_to?(:close)
         body
       end
     end
