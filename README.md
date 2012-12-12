@@ -83,13 +83,6 @@ When we read a request from the incoming connection, we'll either get back
 a Reel::Request object, indicating a normal HTTP connection, or a
 Reel::WebSocket object for WebSockets connections.
 
-Status
-------
-
-Reel is still in an extremely early stage of development and may be
-missing a lot of features. It seems to be doing a rudimentary job of
-speaking HTTP and has basic keep-alive support.
-
 Contributing
 ------------
 
