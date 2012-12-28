@@ -57,63 +57,13 @@ Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
 and are not amortized across all concurrent requests.
 
-Usage
------
-
-### Framework Adapters
-#### Rack
-
-Reel can be used as a standard Rack server via the "reel" command line
-application. Please be aware that Rack support is experimental and that there
-are potential complications between using large numbers of rack middlewares
-and the limited 4kB stack depth of Ruby Fibers, which are used extensively
-by Celluloid. In addition, the Rack specification mandates that request bodies
-are rewindable, which prevents streaming request bodies as the spec dictates
-they must be written to disk.
-
-To really leverage Reel's capabilities, you must use Reel via its own API,
-or another Ruby library with direct Reel support.
-
-#### Webmachine
-
-The most notable library with native Reel support is
-[webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
-an advanced HTTP framework for Ruby with a complete state machine for proper
-processing of HTTP/1.1 requests. Together with Reel, Webmachine provides
-full streaming support for both requests and responses.
-
-To use Reel with Webmachine, add the following to your Gemfile:
-
-```ruby
-gem 'webmachine', git: 'git://github.com/seancribbs/webmachine-ruby.git'
-```
-
-Then use `config.adapter = :Reel` when configuring a Webmachine app, e.g:
-
-```ruby
-MyApp = Webmachine::Application.new do |app|
-  app.routes do
-    add ['*'], MyHome
-  end
-
-  app.configure do |config|
-    config.ip      = MYAPP_IP
-    config.port    = MYAPP_PORT
-    config.adapter = :Reel
-  end
-end
-
-MyApp.run
-```
-
-See the Webmachine documentation for further information
-
-### Ruby API
+API
+---
 
 Reel also provides a "bare metal" API which was used in the benchmarks above.
 Here are some examples:
 
-#### Block Form
+### Block Form
 
 Reel lets you pass a block to initialize which receives connections:
 
@@ -140,7 +90,7 @@ When we read a request from the incoming connection, we'll either get back
 a Reel::Request object, indicating a normal HTTP connection, or a
 Reel::WebSocket object for WebSockets connections.
 
-### Subclass Form
+## Subclass Form
 
 You can also subclass Reel, which allows additional customizations:
 
@@ -175,6 +125,55 @@ end
 
 MyServer.run
 ```
+
+Framework Adapters
+------------------
+### Rack
+
+Reel can be used as a standard Rack server via the "reel" command line
+application. Please be aware that Rack support is experimental and that there
+are potential complications between using large numbers of rack middlewares
+and the limited 4kB stack depth of Ruby Fibers, which are used extensively
+by Celluloid. In addition, the Rack specification mandates that request bodies
+are rewindable, which prevents streaming request bodies as the spec dictates
+they must be written to disk.
+
+To really leverage Reel's capabilities, you must use Reel via its own API,
+or another Ruby library with direct Reel support.
+
+### Webmachine
+
+The most notable library with native Reel support is
+[webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
+an advanced HTTP framework for Ruby with a complete state machine for proper
+processing of HTTP/1.1 requests. Together with Reel, Webmachine provides
+full streaming support for both requests and responses.
+
+To use Reel with Webmachine, add the following to your Gemfile:
+
+```ruby
+gem 'webmachine', git: 'git://github.com/seancribbs/webmachine-ruby.git'
+```
+
+Then use `config.adapter = :Reel` when configuring a Webmachine app, e.g:
+
+```ruby
+MyApp = Webmachine::Application.new do |app|
+  app.routes do
+    add ['*'], MyHome
+  end
+
+  app.configure do |config|
+    config.ip      = MYAPP_IP
+    config.port    = MYAPP_PORT
+    config.adapter = :Reel
+  end
+end
+
+MyApp.run
+```
+
+See the Webmachine documentation for further information
 
 Contributing
 ------------
