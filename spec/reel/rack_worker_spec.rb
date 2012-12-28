@@ -52,7 +52,7 @@ describe Reel::RackWorker do
         env = worker.websocket_env(request)
         
         env["REMOTE_ADDR"].should == "127.0.0.1"
-        env["rack.websocket"].should == request
+        env["rack.websocket"].should be_a Reel::WebSocket
       end
     end    
   end
