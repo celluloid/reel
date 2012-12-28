@@ -1,5 +1,8 @@
+require 'forwardable'
+
 module Reel
   class Request
+    extend Forwardable
     include RequestMixin
 
     UPGRADE   = 'Upgrade'.freeze
@@ -27,6 +30,8 @@ module Reel
         Request.new(parser, connection)
       end
     end
+
+    def_delegators :@connection, :respond, :finish_response, :close
 
     def initialize(http_parser, connection = nil)
       @http_parser, @connection = http_parser, connection

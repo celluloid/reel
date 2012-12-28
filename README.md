@@ -60,7 +60,8 @@ and are not amortized across all concurrent requests.
 Usage
 -----
 
-### Rack support
+### Framework Adapters
+#### Rack
 
 Reel can be used as a standard Rack server via the "reel" command line
 application. Please be aware that Rack support is experimental and that there
@@ -73,7 +74,7 @@ they must be written to disk.
 To really leverage Reel's capabilities, you must use Reel via its own API,
 or another Ruby library with direct Reel support.
 
-### Webmachine adapter
+#### Webmachine
 
 The most notable library with native Reel support is
 [webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
@@ -107,10 +108,14 @@ MyApp.run
 
 See the Webmachine documentation for further information
 
-### "Bare metal" Ruby API
+### Ruby API
 
 Reel also provides a "bare metal" API which was used in the benchmarks above.
-Here's an example of using it:
+Here are some examples:
+
+#### Block Form
+
+Reel lets you pass a block to initialize which receives connections:
 
 ```ruby
 require 'reel'
@@ -120,11 +125,11 @@ Reel::Server.supervise("0.0.0.0", 3000) do |connection|
     case request
     when Reel::Request
       puts "Client requested: #{request.method} #{request.url}"
-      connection.respond :ok, "hello, world"
+      request.respond :ok, "Hello, world!"
     when Reel::WebSocket
       puts "Client made a WebSocket request to: #{request.url}"
-      request << "Hello there"
-      connection.close
+      request << "Hello everyone out there in WebSocket land"
+      request.close
       break
     end
   end
@@ -134,6 +139,40 @@ end
 When we read a request from the incoming connection, we'll either get back
 a Reel::Request object, indicating a normal HTTP connection, or a
 Reel::WebSocket object for WebSockets connections.
+
+### Subclass Form
+
+You can also subclass Reel, which allows additional customizations:
+
+```ruby
+require 'reel'
+
+class MyServer < Reel::Server
+  def initialize(host = "127.0.0.1", port = 7778)
+    super(host, port, &method(:on_connection))
+  end
+
+  def on_connection(connection)
+    while request = connection.request
+      case request
+      when Reel::Request
+        handle_request(request)
+      when Reel::WebSocket
+        handle_websocket(request)
+      end
+    end
+  end
+
+  def handle_request(request)
+    request.respond :ok, "Hello, world!"
+  end
+
+  def handle_websocket(sock)
+    sock << "Hello everyone out there in WebSocket land!"
+    sock.close
+  end
+end
+```
 
 Contributing
 ------------
