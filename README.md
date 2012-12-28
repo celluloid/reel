@@ -60,7 +60,7 @@ and are not amortized across all concurrent requests.
 Usage
 -----
 
-## Rack support
+### Rack support
 
 Reel can be used as a standard Rack server via the "reel" command line
 application. Please be aware that Rack support is experimental and that there
@@ -73,7 +73,7 @@ they must be written to disk.
 To really leverage Reel's capabilities, you must use Reel via its own API,
 or another Ruby library with direct Reel support.
 
-## Webmachine adapter
+### Webmachine adapter
 
 The most notable library with native Reel support is
 [webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
@@ -107,7 +107,7 @@ MyApp.run
 
 See the Webmachine documentation for further information
 
-## "Bare metal" Ruby API
+### "Bare metal" Ruby API
 
 Reel also provides a "bare metal" API which was used in the benchmarks above.
 Here's an example of using it:
