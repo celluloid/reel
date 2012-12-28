@@ -90,7 +90,7 @@ When we read a request from the incoming connection, we'll either get back
 a Reel::Request object, indicating a normal HTTP connection, or a
 Reel::WebSocket object for WebSockets connections.
 
-## Subclass Form
+### Subclass Form
 
 You can also subclass Reel, which allows additional customizations:
 
