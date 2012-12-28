@@ -148,7 +148,7 @@ You can also subclass Reel, which allows additional customizations:
 require 'reel'
 
 class MyServer < Reel::Server
-  def initialize(host = "127.0.0.1", port = 7778)
+  def initialize(host = "127.0.0.1", port = 3000)
     super(host, port, &method(:on_connection))
   end
 
@@ -172,6 +172,8 @@ class MyServer < Reel::Server
     sock.close
   end
 end
+
+MyServer.run
 ```
 
 Contributing
