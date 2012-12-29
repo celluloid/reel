@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# Run with: bundle exec examples/hello_world.rb
+
 require 'rubygems'
 require 'bundler/setup'
 require 'reel'
