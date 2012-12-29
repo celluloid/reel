@@ -173,7 +173,8 @@ end
 MyApp.run
 ```
 
-See the Webmachine documentation for further information
+See the [Webmachine documentation](http://rubydoc.info/gems/webmachine/frames/file/README.md)
+for further information
 
 Contributing
 ------------
