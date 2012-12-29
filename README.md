@@ -39,8 +39,8 @@ Reel performance on various Ruby VMs:
 Ruby Version        Throughput    Latency
 ------------        ----------    -------
 JRuby 1.7.0         3978 req/s    (0.3 ms/req)
-Ruby 1.9.3          2071 req/s    (0.5 ms/req)
 rbx HEAD            2288 reqs/s   (0.4 ms/req)
+Ruby 1.9.3          2071 req/s    (0.5 ms/req)
 ```
 
 Comparison with other web servers:
