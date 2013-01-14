@@ -11,7 +11,6 @@ module Reel
     KEEP_ALIVE         = 'Keep-Alive'.freeze
     CLOSE              = 'close'.freeze
     CHUNKED            = 'chunked'.freeze
-    CONTENT_LENGTH     = 'Content-Length'.freeze
 
     attr_reader :socket, :parser
 
@@ -26,7 +25,6 @@ module Reel
       reset_request
 
       @response_state = :header
-      @body_remaining = nil
     end
 
     # Is the connection still active?
@@ -57,10 +55,8 @@ module Reel
       when Request
         @request_state = :body
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
-        @body_remaining = Integer(req[CONTENT_LENGTH]) if req[CONTENT_LENGTH]
       when WebSocket
         @request_state = @response_state = :websocket
-        @body_remaining = nil
         @socket = nil
       else raise "unexpected request type: #{req.class}"
       end
@@ -77,19 +73,13 @@ module Reel
     def readpartial(size = BUFFER_SIZE)
       raise StateError, "can't read in the `#{@request_state}' state" unless @request_state == :body
 
-      if @body_remaining and @body_remaining > 0
+      chunk = @parser.chunk
+      unless chunk || @parser.finished?
+        @parser << @socket.readpartial(size)
         chunk = @parser.chunk
-        unless chunk
-          @parser << @socket.readpartial(size)
-          chunk = @parser.chunk
-          return unless chunk
-        end
-
-        @body_remaining -= chunk.length
-        @body_remaining = nil if @body_remaining < 1
-
-        chunk
       end
+
+      chunk
     end
 
     # Send a response back to the client
