@@ -37,6 +37,8 @@ module Reel
         @parser.request_url
       end
 
+      def finished?; @finished; end
+
       #
       # Http::Parser callbacks
       #
