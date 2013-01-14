@@ -11,7 +11,6 @@ module Reel
     KEEP_ALIVE         = 'Keep-Alive'.freeze
     CLOSE              = 'close'.freeze
     CHUNKED            = 'chunked'.freeze
-    CONTENT_LENGTH     = 'Content-Length'.freeze
 
     attr_reader :socket, :parser
 
