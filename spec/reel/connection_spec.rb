@@ -94,4 +94,93 @@ describe Reel::Connection do
       connection.request.should be_false
     end
   end
+
+  describe "Connection#read behaving like IO#read" do
+    it "raises an exception if length is a negative value" do
+      with_socket_pair do |client, connection|
+        example_request = ExampleRequest.new
+
+        client << example_request.to_s
+        request = connection.request
+
+        lambda { request.read(-1) }.should raise_error(ArgumentError)
+      end
+    end
+
+    it "returns an empty string if the length is zero" do
+      with_socket_pair do |client, connection|
+        example_request = ExampleRequest.new
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read(0).should be_empty
+      end
+    end
+
+    it "reads to EOF if length is nil" do
+      with_socket_pair do |client, connection|
+        body = "Hello, world!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read.should eq "Hello, world!"
+      end
+    end
+
+    it "uses the optional buffer to recieve data" do
+      with_socket_pair do |client, connection|
+        body = "Hello, world!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+        request = connection.request
+
+        buffer = ''
+        request.read(nil, buffer).should eq "Hello, world!"
+        buffer.should eq "Hello, world!"
+      end
+    end
+
+    it "returns with the content it could read when the length longer than EOF" do
+      with_socket_pair do |client, connection|
+        body = "Hello, world!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read(1024).should eq "Hello, world!"
+      end
+    end
+
+    it "returns nil at EOF if a length is passed" do
+      with_socket_pair do |client, connection|
+        example_request = ExampleRequest.new
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read(1024).should be_nil
+      end
+    end
+
+    it "returns an empty string at EOF if length is nil" do
+      with_socket_pair do |client, connection|
+        example_request = ExampleRequest.new
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read.should be_empty
+      end
+    end
+
+  end
+
 end
