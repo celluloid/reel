@@ -82,6 +82,28 @@ module Reel
       chunk
     end
 
+    # read length bytes from request body
+    def read(length = nil, buffer = nil)
+      raise ArgumentError, "negative length #{length} given" if length && length < 0
+
+      return '' if length == 0
+
+      res = buffer.nil? ? '' : buffer.clear
+
+      chunk_size = length.nil? ? BUFFER_SIZE : length
+      begin
+        while chunk_size > 0
+          chunk = readpartial(chunk_size)
+          break unless chunk
+          res << chunk
+          chunk_size = length - res.length unless length.nil?
+        end
+      rescue EOFError
+      end
+
+      return length && res.length == 0 ? nil : res
+    end
+
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
