@@ -62,7 +62,7 @@ describe Reel::RackWorker do
 
     handler = proc do |connection|
       begin
-        worker.handle!(connection.detach)
+        worker.async.handle(connection.detach)
       rescue => ex
       end
     end

@@ -7,7 +7,7 @@ class TimeServer
   include Celluloid::Notifications
 
   def initialize
-    run!
+    async.run
   end
 
   def run

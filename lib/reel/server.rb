@@ -2,12 +2,15 @@ module Reel
   class Server
     include Celluloid::IO
 
+    # FIXME: remove respond_to? check after Celluloid 1.0
+    finalizer :finalize if respond_to?(:finalizer)
+
     def initialize(host, port, &callback)
       # This is actually an evented Celluloid::IO::TCPServer
       @server = TCPServer.new(host, port)
       @server.listen(1024)
       @callback = callback
-      run!
+      async.run
     end
 
     def finalize
@@ -15,7 +18,7 @@ module Reel
     end
 
     def run
-      loop { handle_connection! @server.accept }
+      loop { async.handle_connection @server.accept }
     end
 
     def handle_connection(socket)
