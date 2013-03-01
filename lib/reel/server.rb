@@ -2,13 +2,16 @@ module Reel
   class Server
     include Celluloid::IO
 
+    # How many connections to backlog in the TCP accept queue
+    DEFAULT_BACKLOG = 100
+
     # FIXME: remove respond_to? check after Celluloid 1.0
     finalizer :finalize if respond_to?(:finalizer)
 
-    def initialize(host, port, &callback)
+    def initialize(host, port, backlog = DEFAULT_BACKLOG, &callback)
       # This is actually an evented Celluloid::IO::TCPServer
       @server = TCPServer.new(host, port)
-      @server.listen(1024)
+      @server.listen(backlog)
       @callback = callback
       async.run
     end
