@@ -15,7 +15,7 @@ module Reel
     attr_reader :socket, :parser
 
     # Attempt to read this much data
-    BUFFER_SIZE = 4096
+    BUFFER_SIZE = 16384
 
     def initialize(socket)
       @attached  = true
