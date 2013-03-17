@@ -4,6 +4,7 @@
 [![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
 [![Dependency Status](https://gemnasium.com/celluloid/reel.png)](https://gemnasium.com/celluloid/reel)
 [![Code Climate](https://codeclimate.com/github/celluloid/reel.png)](https://codeclimate.com/github/celluloid/reel)
+[![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.png?branch=master)](https://coveralls.io/r/celluloid/reel)
 
 Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
 [websocket_parser][websockets], [Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
