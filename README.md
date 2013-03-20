@@ -168,6 +168,12 @@ MyApp = Webmachine::Application.new do |app|
     config.ip      = MYAPP_IP
     config.port    = MYAPP_PORT
     config.adapter = :Reel
+
+    # Optional: (WM master only) handler for incoming websockets
+    config.adapter_options[:websocket_handler] = proc do |websocket|
+      # socket is a Reel::WebSocket
+      socket << "hello, world"
+    end
   end
 end
 
