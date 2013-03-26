@@ -71,7 +71,7 @@ Reel lets you pass a block to initialize which receives connections:
 ```ruby
 require 'reel'
 
-Reel::Server.supervise("0.0.0.0", 3000) do |connection|
+Reel::Server.run("0.0.0.0", 3000) do |connection|
   while request = connection.request
     case request
     when Reel::Request
