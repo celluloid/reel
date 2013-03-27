@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'reel'
+require 'celluloid/autostart'
 
 class TimeServer
   include Celluloid

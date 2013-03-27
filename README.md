@@ -85,6 +85,8 @@ Reel::Server.supervise("0.0.0.0", 3000) do |connection|
     end
   end
 end
+
+sleep
 ```
 
 When we read a request from the incoming connection, we'll either get back
