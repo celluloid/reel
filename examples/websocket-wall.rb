@@ -14,10 +14,15 @@ app = Rack::Builder.new do
   map '/subscribe' do
     run lambda { |env|
       if socket = env['rack.websocket']
+      
         socket.on_message do |m|
-          socket << "Server got \"#{m}\" message"
+          begin
+            socket << 'Server got "%s" message' % m
+          rescue => SocketError
+            Connections.delete(socket)
+          end
         end
-        socket.on_error { Connections.delete socket }
+        
         Connections << socket
         socket.read_every 1
       end
@@ -29,7 +34,15 @@ app = Rack::Builder.new do
     run lambda { |env|
       msg = env['PATH_INFO'].gsub(/\/+/, '').strip
       msg = Time.now if msg.empty?
-      Connections.each { |s| s << msg }
+      
+      Connections.each do |s|
+        begin
+          s << msg
+        rescue => SocketError
+          Connections.delete(s)
+        end
+      end
+      
       [200, {'Content-Type' => 'text/html'}, ["Sent \"#{msg}\" to #{Connections.size} clients"]]
     }
   end
