@@ -1,16 +1,15 @@
 module Reel
   class Stream
-
-    def initialize &proc
+    def initialize(&proc)
       @proc = proc
     end
 
-    def call socket
+    def call(socket)
       @socket = socket
       @proc.call self
     end
 
-    def write data
+    def write(data)
       write!  data
       self
     end
@@ -21,7 +20,7 @@ module Reel
       yield self
     end
 
-    def on_error &proc
+    def on_error(&proc)
       @on_error = proc
       self
     end
@@ -36,7 +35,7 @@ module Reel
     end
 
     private
-    def write! string
+    def write!(string)
       @socket << string
     rescue => e
       @on_error ? @on_error.call(e) : raise(e)
@@ -64,7 +63,7 @@ module Reel
       end
     end
 
-    def data data
+    def data(data)
       # - any single message should not contain \n except at the end.
       # - EventSource expects \n\n at the end of each single message.
       write! "data: %s\n\n" % data.gsub(/\n|\r/, '')
@@ -74,8 +73,7 @@ module Reel
   end
   
   class ChunkStream < Stream
-    
-    def write chunk
+    def write(chunk)
       chunk_header = chunk.bytesize.to_s(16)
       write! chunk_header + Response::CRLF
       write! chunk + Response::CRLF
@@ -100,7 +98,7 @@ module Reel
 
     IDENTITY = 'identity'.freeze
 
-    def initialize status, headers, body
+    def initialize(status, headers, body)
       self.status = status
       @body = body
 
@@ -119,7 +117,7 @@ module Reel
       @version = http_version
     end
 
-    def render socket
+    def render(socket)
       socket << render_header
       @body.call socket
     end

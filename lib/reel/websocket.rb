@@ -47,7 +47,7 @@ module Reel
       end
     end
 
-    def read_every n, unit = :s
+    def read_every(n, unit = :s)
       cancel_timer! # only one timer allowed per stream
       seconds = case unit.to_s
       when /\Am/

@@ -103,7 +103,7 @@ module Reel
     end
     private :render_header
 
-    def canonicalize_headers headers
+    def canonicalize_headers(headers)
       headers.inject({}) do |headers, (header, value)|
         headers.merge Http.canonicalize_header(header) => value.to_s
       end.freeze
