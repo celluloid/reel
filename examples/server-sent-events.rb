@@ -15,7 +15,6 @@ app = Rack::Builder.new do
     run lambda { |env|
       body = Reel::EventStream.new do |socket|
         Connections << socket
-        socket.on_error { Connections.delete socket }
       end
       [200, {'Content-Type' => 'text/event-stream'}, body]
     }
@@ -25,7 +24,15 @@ app = Rack::Builder.new do
     run lambda { |env|
       msg = env['PATH_INFO'].gsub(/\/+/, '').strip
       msg = Time.now if msg.empty?
-      Connections.each { |s| s.data msg }
+      
+      Connections.each do |s|
+        begin
+          s.data(msg)
+        rescue => SocketError
+          Connections.delete(s)
+        end
+      end
+      
       [200, {'Content-Type' => 'text/html'}, ["Sent \"#{msg}\" to #{Connections.size} clients"]]
     }
   end
