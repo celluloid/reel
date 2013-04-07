@@ -27,7 +27,7 @@ module Reel
     end
 
     def terminate
-      @server.terminate
+      @server.terminate if @server
     end
   end
 end

@@ -17,7 +17,7 @@ module Reel
     end
 
     def finalize
-      @server.close
+      @server.close if @server
     end
 
     def run
