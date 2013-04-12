@@ -18,7 +18,7 @@ describe Reel::App do
   end
 
   after(:each) do
-    @app.server.terminate if @app.server.alive?
+    @app.server.terminate if @app && @app.server.alive?
   end
 
   it 'responds to get requests' do

@@ -15,7 +15,7 @@ def with_reel(handler)
   server = Reel::Server.new(example_addr, example_port, &handler)
   yield server
 ensure
-  server.terminate if server
+  server.terminate if server && server.alive?
 end
 
 def with_socket_pair
