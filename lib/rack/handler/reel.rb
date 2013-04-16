@@ -47,6 +47,12 @@ module Rack
         sleep
       end
 
+      def stop
+        Celluloid::Actor[:reel_server].terminate!
+        Celluloid::Actor[:reel_rack_pool].terminate!
+        exit
+      end
+
       def [](option)
         @options[option]
       end
