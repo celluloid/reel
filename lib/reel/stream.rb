@@ -10,19 +10,16 @@ module Reel
     end
 
     def write(data)
-      write!  data
-      self
+      @socket << data
+      data
+    rescue Errno::EPIPE
+      raise SocketError, "error writing to socket"
     end
     alias :<< :write
 
     # behaves like a true Rack::Response/BodyProxy object
     def each(*)
       yield self
-    end
-
-    def on_error(&proc)
-      @on_error = proc
-      self
     end
 
     def close
@@ -33,14 +30,6 @@ module Reel
     def closed?
       @socket.closed?
     end
-
-    private
-    def write!(string)
-      @socket << string
-    rescue => e
-      @on_error ? @on_error.call(e) : raise(e)
-    end
-
   end
     
   class EventStream < Stream
