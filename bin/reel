@@ -3,7 +3,9 @@
 require 'reel'
 require 'optparse'
 
-options = {}
+options = {
+  rackup: "config.ru"
+}
 
 parser = OptionParser.new do |opts|
   opts.on "-p", "--port PORT", Integer,
@@ -43,10 +45,14 @@ parser.on_tail "-h", "--help", "Show help" do
   exit 1
 end
 
-parser.parse(ARGV)
+parser.parse!(ARGV)
 
 if ARGV.last =~ /\.ru$/
-  options[:rackup] = @argv.shift
+  options[:rackup] = ARGV.shift
+end
+
+unless File.exists?(options[:rackup])
+  abort "No rackup found at #{options[:rackup]}"
 end
 
 handler = Rack::Handler::Reel.new(options)
