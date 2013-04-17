@@ -25,10 +25,15 @@ class ServerSideEvents
     [200, {'Content-Type' => 'text/event-stream'}, body]
   end
 
-  get '/wall' do
-    msg = "" # env['PATH_INFO'].gsub(/\/+/, '').strip
-    msg = Time.now.to_s if msg.empty?
+  get '/wall/:rest' do |request|
+    deliver request.path.rest
+  end
 
+  get '/wall' do
+    deliver Time.now.to_s
+  end
+
+  def deliver(msg)
     Celluloid.logger.info "sending a message to clients: #{msg.inspect}"
     @connections.each do |s|
       begin
