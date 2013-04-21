@@ -35,7 +35,16 @@ module Reel
 
     def initialize(http_parser, connection = nil)
       @http_parser, @connection = http_parser, connection
+      @hijacked = false
     end
+
+    def hijack
+      @hijacked = true
+      @connection.detach
+      @connection.socket
+    end
+
+    def hijacked?; @hijacked; end
 
     def body
       @body ||= begin
