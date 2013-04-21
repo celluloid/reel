@@ -73,6 +73,14 @@ module Reel
     def handle_request(request, connection)
       status, headers, body_parts = @app.call(request_env(request, connection))
       return if request.hijacked?
+
+      # XXX delete is not actually part of the Rack SPEC...
+      if hijacking_callback = headers.delete('rack.hijack')
+        connection.respond Response.new(status, headers)
+        hijacking_callback.call(request.hijack)
+        return
+      end
+
       body, is_stream = response_body(body_parts)
       connection.respond (is_stream ? StreamResponse : Response).new(status, headers, body)
     end
