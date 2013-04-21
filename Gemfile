@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'celluloid',    github: 'celluloid/celluloid',    branch: 'master'
 gem 'celluloid-io', github: 'celluloid/celluloid-io', branch: 'master'
+gem 'websocket-protocol', github: 'faye/websocket-protocol-ruby', branch: 'master'
 
 gem 'rack', github: 'rack/rack', branch: 'master'
 
