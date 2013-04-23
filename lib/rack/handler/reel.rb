@@ -27,8 +27,8 @@ module Rack
       end
       
       def cli_announcement
-        ::Reel::Logger.info ( @options[:slogan] ) ? "A Reel good HTTP server!" : "Reel #{Reel::VERSION} ..."
-        ::Reel::Logger.info "Listening on #{handler[:host]}:#{@options[:port]}"
+        ::Reel::Logger.info ( @options[:slogan] ) ? "A Reel good HTTP server!" : "Reel: #{::Reel::VERSION} "
+        ::Reel::Logger.info "Listening on #{@options[:host]}:#{@options[:port]}"
         ::Reel::Logger.info "Number of workers: #{@options[:workers]}"
         ::Reel::Logger.info "Process ID saved to: #{@options[:pidfile]}" if @options[:pidfile]
         ::Reel::Logger.info "Process ID: #{Process.pid}"
@@ -45,6 +45,8 @@ module Rack
       end
 
       def start
+        
+        cli_announcement
         Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
 
         ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
@@ -56,8 +58,6 @@ module Rack
             f.puts Process.pid
           }
         end
-        
-        cli_announcement
 
         sleep
       end
