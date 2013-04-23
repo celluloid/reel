@@ -27,10 +27,10 @@ module Rack
       end
       
       def cli_announcement
-        ::Reel::Logger.info ( handler[:slogan] ) ? "A Reel good HTTP server!" : "Reel #{Reel::VERSION} ..."
-        ::Reel::Logger.info "Listening on #{handler[:host]}:#{handler[:port]}"
-        ::Reel::Logger.info "Number of workers: #{handler[:workers]}"
-        ::Reel::Logger.info "Process ID saved to: #{handler[:pidfile]}" if handler[:pidfile]
+        ::Reel::Logger.info ( @options[:slogan] ) ? "A Reel good HTTP server!" : "Reel #{Reel::VERSION} ..."
+        ::Reel::Logger.info "Listening on #{handler[:host]}:#{@options[:port]}"
+        ::Reel::Logger.info "Number of workers: #{@options[:workers]}"
+        ::Reel::Logger.info "Process ID saved to: #{@options[:pidfile]}" if @options[:pidfile]
         ::Reel::Logger.info "Process ID: #{Process.pid}"
       end
 
