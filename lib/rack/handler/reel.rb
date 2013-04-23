@@ -14,7 +14,7 @@ module Rack
         :quiet   => false,
         :workers => 10,
         :pidfile => nil,
-        :rackup  => "config.ru"
+        :rackup  => "config.ru",
         :slogan  => true
       }
 
