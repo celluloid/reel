@@ -51,7 +51,12 @@ module Rack
           Celluloid::Actor[:reel_rack_pool].handle(connection.detach)
         end
         
-        if pidfile = @options[:pidfile]; File.open(pidfile, "w") { |f| f.puts Process.pid } end
+        if pidfile = @options[:pidfile]
+          File.open(pidfile, "w") { |f|
+            f.puts Process.pid
+          }
+        end
+        
         cli_announcement
 
         sleep
