@@ -9,23 +9,29 @@ module Rack
       File = ::File
 
       DEFAULT_OPTIONS = {
-        :host    => "0.0.0.0",
-        :port    => 3000,
-        :quiet   => false,
-        :workers => 10,
-        :pidfile => nil,
-        :rackup  => "config.ru"
+        :host     => "0.0.0.0",
+        :port     => 3000,
+        :quiet    => false,
+        :workers  => 10,
+        :pidfile  => nil,
+        :rackup   => "config.ru"
+        :slogan   => true
       }
 
       def self.run(app, options = {})
 
         @handler = Reel.new(options.merge :app => app)
-
-        ::Reel::Logger.info "A Reel good HTTP server!"
-        ::Reel::Logger.info "Listening on #{@handler[:host]}:#{@handler[:port]}"
-
+        
         yield @handler if block_given?
         @handler.start
+      end
+      
+      def cli_announcement
+        ::Reel::Logger.info ( handler[:slogan] ) ? "A Reel good HTTP server!" : "Reel #{Reel::VERSION} ..."
+        ::Reel::Logger.info "Listening on #{handler[:host]}:#{handler[:port]}"
+        ::Reel::Logger.info "Number of workers: #{handler[:workers]}"
+        ::Reel::Logger.info "Process ID saved to: #{handler[:pidfile]}" if handler[:pidfile]
+        ::Reel::Logger.info "Process ID: #{Process.pid}"
       end
 
       def initialize(opts = {})
@@ -40,11 +46,13 @@ module Rack
 
       def start
         Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
-        if pidfile = @options[:pidfile]; File.open(pidfile, "w") { |f| f.puts Process.pid } end
 
         ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
           Celluloid::Actor[:reel_rack_pool].handle(connection.detach)
         end
+        
+        if pidfile = @options[:pidfile]; File.open(pidfile, "w") { |f| f.puts Process.pid } end
+        cli_announcement
 
         sleep
       end
