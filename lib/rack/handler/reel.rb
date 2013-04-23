@@ -9,13 +9,13 @@ module Rack
       File = ::File
 
       DEFAULT_OPTIONS = {
-        :host     => "0.0.0.0",
-        :port     => 3000,
-        :quiet    => false,
-        :workers  => 10,
-        :pidfile  => nil,
-        :rackup   => "config.ru"
-        :slogan   => true
+        :host    => "0.0.0.0",
+        :port    => 3000,
+        :quiet   => false,
+        :workers => 10,
+        :pidfile => nil,
+        :rackup  => "config.ru"
+        :slogan  => true
       }
 
       def self.run(app, options = {})
