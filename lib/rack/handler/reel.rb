@@ -36,7 +36,6 @@ module Rack
         if @options[:environment]
           ENV['RACK_ENV'] = @options[:environment].to_s
         end
-        
       end
 
       def start
