@@ -32,6 +32,11 @@ parser = OptionParser.new do |opts|
     options[:workers] = arg
   end
 
+  opts.on "-x", "--pidfile FILE",
+  "Store PID of Reel's process in this file (default: none)" do |arg|
+    options[:pidfile] = arg
+  end
+
   opts.on "-r", "--rackup FILE",
   "Load Rack config from this file (default: config.ru)" do |arg|
     options[:rackup] = arg
