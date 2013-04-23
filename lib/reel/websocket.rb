@@ -65,9 +65,9 @@ module Reel
     def read
       @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
       msg
-    rescue => e
+    rescue
       cancel_timer!
-      @on_error ? @on_error.call(e) : raise(e)
+      raise
     end
 
     def body
@@ -77,9 +77,12 @@ module Reel
     def write(msg)
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
-    rescue => e
+    rescue Errno::EPIPE
       cancel_timer!
-      @on_error ? @on_error.call(e) : raise(e)
+      raise SocketError, "error writing to socket"
+    rescue
+      cancel_timer!
+      raise
     end
     alias_method :<<, :write
 

@@ -1,3 +1,7 @@
+HEAD
+----
+* Remove on_error callback system
+
 0.3.0
 -----
 * Reel::App: Sinatra-like DSL for defining Reel apps using Octarine

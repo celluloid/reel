@@ -10,19 +10,16 @@ module Reel
     end
 
     def write(data)
-      write!  data
-      self
+      @socket << data
+      data
+    rescue Errno::EPIPE
+      raise SocketError, "error writing to socket"
     end
     alias :<< :write
 
     # behaves like a true Rack::Response/BodyProxy object
-    def each(*)
+    def each
       yield self
-    end
-
-    def on_error(&proc)
-      @on_error = proc
-      self
     end
 
     def close
@@ -33,14 +30,6 @@ module Reel
     def closed?
       @socket.closed?
     end
-
-    private
-    def write!(string)
-      @socket << string
-    rescue => e
-      @on_error ? @on_error.call(e) : raise(e)
-    end
-
   end
     
   class EventStream < Stream
@@ -59,14 +48,14 @@ module Reel
     %w[event id retry].each do |meth|
       define_method meth do |data|
         # unlike on #data, these messages expects a single \n at the end.
-        write! "%s: %s\n" % [meth, data]
+        write "%s: %s\n" % [meth, data]
       end
     end
 
     def data(data)
       # - any single message should not contain \n except at the end.
       # - EventSource expects \n\n at the end of each single message.
-      write! "data: %s\n\n" % data.gsub(/\n|\r/, '')
+      write "data: %s\n\n" % data.gsub(/\n|\r/, '')
       self
     end
 
@@ -75,8 +64,8 @@ module Reel
   class ChunkStream < Stream
     def write(chunk)
       chunk_header = chunk.bytesize.to_s(16)
-      write! chunk_header + Response::CRLF
-      write! chunk + Response::CRLF
+      write chunk_header + Response::CRLF
+      write chunk + Response::CRLF
       self
     end
     alias :<< :write
@@ -84,7 +73,7 @@ module Reel
     # finish does not actually close the socket,
     # it only inform the browser there are no more messages
     def finish
-      write! "0#{Response::CRLF * 2}"
+      write "0#{Response::CRLF * 2}"
     end
 
     def close
