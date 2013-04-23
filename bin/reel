@@ -37,6 +37,11 @@ parser = OptionParser.new do |opts|
     options[:pidfile] = arg
   end
 
+  opts.on "-v", "--version",
+  "Show version instead of slogan" do |arg|
+    options[:slogan] = false
+  end
+
   opts.on "-r", "--rackup FILE",
   "Load Rack config from this file (default: config.ru)" do |arg|
     options[:rackup] = arg
@@ -61,9 +66,6 @@ unless File.exists?(options[:rackup])
 end
 
 handler = Rack::Handler::Reel.new(options)
-
-Reel::Logger.info "A Reel good HTTP server!"
-Reel::Logger.info "Listening on #{handler[:host]}:#{handler[:port]}"
 
 handler.start
 
