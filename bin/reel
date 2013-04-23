@@ -30,13 +30,13 @@ parser = OptionParser.new do |opts|
     options[:workers] = arg
   end
 
-  opts.on "-x", "--pidfile FILE",
+  opts.on "-x", "--pidfile FILE" do |arg|
   "Store PID of Reel's process in this file (default: none)" do |arg|
     options[:pidfile] = arg
   end
 
   opts.on "-v", "--version",
-  "Show version instead of slogan" do |arg|
+  "Show version instead of slogan",
     options[:slogan] = false
   end
 
