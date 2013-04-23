@@ -33,7 +33,7 @@ parser = OptionParser.new do |opts|
   end
 
   opts.on "-x", "--pidfile FILE" do |arg|
-  "Store PID of Reel's process in this file (default: none)" do |arg|
+  "Store PID of Reel's process in this file (default: none)"
     options[:pidfile] = arg
   end
 
