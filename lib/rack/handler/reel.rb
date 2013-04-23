@@ -13,6 +13,7 @@ module Rack
         :port    => 3000,
         :quiet   => false,
         :workers => 10,
+        :pidfile => nil,
         :rackup  => "config.ru"
       }
 
@@ -35,10 +36,12 @@ module Rack
         if @options[:environment]
           ENV['RACK_ENV'] = @options[:environment].to_s
         end
+        
       end
 
       def start
         Celluloid::Actor[:reel_rack_pool] = ::Reel::RackWorker.pool(size: options[:workers], args: [self])
+        if pidfile = @options[:pidfile]; File.open(pidfile, "w") { |f| f.puts Process.pid } end
 
         ::Reel::Server.supervise_as(:reel_server, options[:host], options[:port]) do |connection|
           Celluloid::Actor[:reel_rack_pool].handle(connection.detach)
