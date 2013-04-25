@@ -1,37 +1,54 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'reel'
+require 'reel/app'
 
-Connections = []
-Body = DATA.read
-app = Rack::Builder.new do
-  map '/' do
-    run lambda { |env|
-      [200, {'Content-Type' => 'text/html'}, [Body]]
-    }
+class ServerSideEvents
+  include Reel::App
+
+  def initialize(host, port)
+    super
+    @connections = []
+    @body = DATA.read
   end
 
-  map '/subscribe' do
-    run lambda { |env|
-      body = Reel::EventStream.new do |socket|
-        Connections << socket
-        socket.on_error { Connections.delete socket }
+  get '/' do
+    [200, {'Content-Type' => 'text/html'}, @body]
+  end
+
+  get '/subscribe' do
+    Celluloid.logger.info "subscribing a client"
+    body = Reel::EventStream.new do |socket|
+      @connections << socket
+    end
+    Celluloid.logger.info "subscribing a client"
+    [200, {'Content-Type' => 'text/event-stream'}, body]
+  end
+
+  get '/wall/:rest' do |request|
+    deliver request.path.rest
+  end
+
+  get '/wall' do
+    deliver Time.now.to_s
+  end
+
+  def deliver(msg)
+    Celluloid.logger.info "sending a message to clients: #{msg.inspect}"
+    @connections.each do |s|
+      begin
+        s.data(msg)
+      rescue SocketError
+        @connections.delete(s)
       end
-      [200, {'Content-Type' => 'text/event-stream'}, body]
-    }
-  end
+    end
 
-  map '/wall' do
-    run lambda { |env|
-      msg = env['PATH_INFO'].gsub(/\/+/, '').strip
-      msg = Time.now if msg.empty?
-      Connections.each { |s| s.data msg }
-      [200, {'Content-Type' => 'text/html'}, ["Sent \"#{msg}\" to #{Connections.size} clients"]]
-    }
+    [200, {'Content-Type' => 'text/html'}, "Sent \"#{msg}\" to #{@connections.size} clients"]
   end
-end.to_app
+end
 
-Rack::Handler::Reel.run app, Port: 9292
+ServerSideEvents.new("0.0.0.0", 9292)
+sleep
 
 __END__
 <!doctype html>

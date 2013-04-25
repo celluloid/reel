@@ -16,8 +16,10 @@ module Reel
       async.run
     end
 
+    execute_block_on_receiver :initialize
+
     def finalize
-      @server.close
+      @server.close if @server
     end
 
     def run

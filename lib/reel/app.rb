@@ -17,7 +17,8 @@ module Reel
       @server = Reel::Server.supervise(host, port) do |connection|
         while request = connection.request
           status, headers, body = call Rack::MockRequest.env_for(request.url, :method => request.method, :input => request.body)
-          connection.respond status_symbol(status), headers, body.to_s
+          response_klass = body.is_a?(Stream) ? StreamResponse : Response
+          connection.respond(response_klass.new(status_symbol(status), headers, body))
         end
       end
     end
@@ -27,7 +28,7 @@ module Reel
     end
 
     def terminate
-      @server.terminate
+      @server.terminate if @server
     end
   end
 end

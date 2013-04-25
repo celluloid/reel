@@ -18,13 +18,13 @@ describe Reel::App do
   end
 
   after(:each) do
-    @app.server.terminate if @app.server.alive?
+    @app.server.terminate if @app && @app.server.alive?
   end
 
   it 'responds to get requests' do
     res = Http.with_response(:object).get example_url
     res.status.should == 200
-    res.headers.should == {"Connection" => "Keep-Alive", "Content-Length" => res.body.length.to_s}
+    res.headers.should == {"Content-Length" => res.body.length.to_s}
     res.body.should == "hello foo"
   end
 
