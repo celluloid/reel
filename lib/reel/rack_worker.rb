@@ -83,6 +83,7 @@ module Reel
 
       body, is_stream = response_body(body_parts)
       connection.respond (is_stream ? StreamResponse : Response).new(status, headers, body)
+      request.close
     end
 
     def handle_websocket(request, connection)

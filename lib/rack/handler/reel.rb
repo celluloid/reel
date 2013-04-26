@@ -65,6 +65,9 @@ module Rack
       def stop
         Celluloid::Actor[:reel_server].terminate!
         Celluloid::Actor[:reel_rack_pool].terminate!
+        
+        File.delete( pidfile ) if pidfile = @options[:pidfile] && File.file?( pidfile )
+
         exit
       end
 
