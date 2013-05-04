@@ -14,6 +14,8 @@ module Reel
 
     attr_reader :socket, :parser
 
+    attr_accessor :buffered_data
+
     # Attempt to read this much data
     BUFFER_SIZE = 16384
 
@@ -25,6 +27,9 @@ module Reel
       reset_request
 
       @response_state = :header
+
+      # Data read from the socket and not parsed yet
+      @buffered_data = ""
     end
 
     # Is the connection still active?
@@ -72,6 +77,17 @@ module Reel
     # Read a chunk from the request
     def readpartial(size = BUFFER_SIZE)
       raise StateError, "can't read in the `#{@request_state}' state" unless @request_state == :body
+
+      # First parse buffered data, until the parser says it's full
+      unless @buffered_data.empty?
+        parsed_index = 0
+        begin
+          @parser << @buffered_data[parsed_index]
+          parsed_index += 1
+        end until @parser.finished? or @buffered_data.size == parsed_index
+
+        @buffered_data = @buffered_data[parsed_index..-1] || ""
+      end
 
       chunk = @parser.chunk
       unless chunk || @parser.finished?
