@@ -1,6 +1,8 @@
-HEAD
+0.4.0
 ----
-* Remove on_error callback system
+* Allow Reel to stop cleanly
+* Remove `on_error` callback system
+* Increase buffer size
 
 0.3.0
 -----
