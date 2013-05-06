@@ -1,1 +1,1 @@
-rackup -s reel websocket.ru -Enone
+rackup -s reel websocket.ru -Enone -O "workers=16"
