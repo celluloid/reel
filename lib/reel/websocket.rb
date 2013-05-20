@@ -36,8 +36,8 @@ module Reel
         close
       end
 
-      @parser.on_ping do
-        @socket << ::WebSocket::Message.pong.to_data
+      @parser.on_ping do |payload|
+        @socket << ::WebSocket::Message.pong(payload).to_data
       end
     end
 
