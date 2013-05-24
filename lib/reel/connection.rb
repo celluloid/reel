@@ -52,13 +52,13 @@ module Reel
       req = Request.read(self)
 
       case req
-      when Request
-        @request_state = :body
-        @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
-      when WebSocket
-        @request_state = @response_state = :websocket
-        @socket = nil
-      else raise "unexpected request type: #{req.class}"
+        when Request
+          @request_state = :body
+          @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
+        when WebSocket
+          @request_state = @response_state = :websocket
+          @socket = nil
+        else raise "unexpected request type: #{req.class}"
       end
 
       req

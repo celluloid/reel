@@ -36,6 +36,8 @@ def with_socket_pair
   end
 end
 
+def fixture_dir; Pathname.new File.expand_path("../fixtures", __FILE__); end
+
 class ExampleRequest
   extend Forwardable
   def_delegators :@headers, :[], :[]=
@@ -74,7 +76,8 @@ module WebSocketHelpers
     spec.instance_eval do
       let(:example_host)    { "www.example.com" }
       let(:example_path)    { "/example"}
-      let(:example_url)     { "ws://#{example_host}#{example_path}" }
+      let(:example_url)     { "wss://#{example_host}#{example_path}" }
+
       let :handshake_headers do
         {
           "Host"                   => example_host,
