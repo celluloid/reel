@@ -16,7 +16,7 @@ traditional multithreaded blocking I/O support too.
 [parser]: https://github.com/tmm1/http_parser.rb
 [websockets]: https://github.com/afcapel/websocket_parser
 [celluloidio]: https://github.com/celluloid/celluloid-io
-[nio4r]: https://github.com/tarcieri/nio4r
+[nio4r]: https://github.com/celluloid/nio4r
 
 Connections to Reel can be either non-blocking and handled entirely within
 the Reel::Server thread, or the same connections can be dispatched to worker
