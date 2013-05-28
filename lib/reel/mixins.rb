@@ -55,5 +55,9 @@ module Reel
       @query ||= uri.query
     end
 
+    def fragment
+      @fragment ||= uri.fragment
+    end
+
   end
 end
