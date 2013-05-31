@@ -12,9 +12,9 @@ module Reel
       end
     end
 
-    def initialize(host, port)
+    def initialize(host, port, context)
       super()
-      @server = Reel::Server.supervise(host, port) do |connection|
+      @server = Reel::Server.supervise(host, port, context) do |connection|
         while request = connection.request
           status, headers, body = call Rack::MockRequest.env_for(request.url, :method => request.method, :input => request.body)
           response_klass = body.is_a?(Stream) ? StreamResponse : Response

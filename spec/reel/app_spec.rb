@@ -2,6 +2,24 @@ require 'spec_helper'
 require 'reel/app'
 
 describe Reel::App do
+  let(:client_cert) { OpenSSL::X509::Certificate.new fixture_dir.join("client.crt").read }
+  let(:client_key)  { OpenSSL::PKey::RSA.new fixture_dir.join("client.key").read }
+  let(:client_context) do
+    OpenSSL::SSL::SSLContext.new.tap do |context|
+      context.cert = client_cert
+      context.key  = client_key
+    end
+  end
+
+  let(:server_cert) { OpenSSL::X509::Certificate.new fixture_dir.join("server.crt").read }
+  let(:server_key)  { OpenSSL::PKey::RSA.new fixture_dir.join("server.key").read }
+  let(:server_context) do
+    OpenSSL::SSL::SSLContext.new.tap do |context|
+      context.cert = server_cert
+      context.key  = server_key
+    end
+  end
+
   let(:app) {
     Class.new do
       include Reel::App
@@ -14,7 +32,7 @@ describe Reel::App do
   }
 
   before(:each) do
-    @app = app.new(example_addr, example_port)
+    @app = app.new(example_addr, example_port, server_context)
   end
 
   after(:each) do

@@ -8,9 +8,12 @@ module Reel
     # FIXME: remove respond_to? check after Celluloid 1.0
     finalizer :finalize if respond_to?(:finalizer)
 
-    def initialize(host, port, backlog = DEFAULT_BACKLOG, &callback)
-      # This is actually an evented Celluloid::IO::TCPServer
-      @server = TCPServer.new(host, port)
+    def initialize(host, port, context = nil, backlog = DEFAULT_BACKLOG, &callback)
+      # This is actually an evented Celluloid::IO::SSLServer
+      @server = Celluloid::IO::TCPServer.new(host, port)
+      if context
+        @server = Celluloid::IO::SSLServer.new(@server, context)
+      end
       @server.listen(backlog)
       @callback = callback
       async.run
@@ -23,7 +26,14 @@ module Reel
     end
 
     def run
-      loop { async.handle_connection @server.accept }
+      loop do
+        begin
+        async.handle_connection @server.accept
+        rescue OpenSSL::SSL::SSLError
+          # Someone connected to SSL server without SSL.
+          # TODO: Log this?
+        end
+      end
     end
 
     def handle_connection(socket)
