@@ -26,7 +26,12 @@ module Reel
     end
 
     def run
-      loop { async.handle_connection @server.accept }
+      loop do
+        async.handle_connection @server.accept
+      rescue OpenSSL::SSL::SSLError
+        # Someone connected to SSL server without SSL.
+        # TODO: Log this?
+      end
     end
 
     def handle_connection(socket)
