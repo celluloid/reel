@@ -58,6 +58,7 @@ module Reel
       when WebSocket
         @request_state = @response_state = :websocket
         @socket = nil
+        @websocket = req
       else raise "unexpected request type: #{req.class}"
       end
 
