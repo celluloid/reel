@@ -65,7 +65,7 @@ describe Reel::WebSocket do
   it "raises a RequestError when connection used after it was upgraded" do
     with_socket_pair do |client, connection|
       client << handshake.to_data
-      remote_host = "localhost"
+      remote_host = /localhost/
 
       connection.remote_host.should =~ remote_host
 
