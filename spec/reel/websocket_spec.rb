@@ -67,13 +67,13 @@ describe Reel::WebSocket do
       client << handshake.to_data
       remote_host = "localhost"
 
-      connection.remote_host.should == remote_host
+      connection.remote_host.should =~ remote_host
 
       websocket = connection.request
       websocket.should be_a Reel::WebSocket
 
       lambda { connection.remote_host }.should raise_error(Reel::RequestError)
-      websocket.remote_host.should == remote_host
+      websocket.remote_host.should =~ remote_host
     end
   end
 
