@@ -9,12 +9,6 @@ module Reel
         reset
       end
 
-      [:request_path, :query_string].each do |m|
-        define_method m do
-          @parser.send m
-        end
-      end
-
       def add(data)
         @parser << data
       end
