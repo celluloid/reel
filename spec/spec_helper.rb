@@ -1,10 +1,16 @@
-require 'bundler/setup'
-require 'reel'
 require 'coveralls'
 Coveralls.wear!
 
+require 'bundler/setup'
+require 'reel'
+require 'pry'
+
 logfile = File.open(File.expand_path("../../log/test.log", __FILE__), 'a')
 Celluloid.logger = Logger.new(logfile)
+
+def fixture_dir
+  Pathname.new File.expand_path("../fixtures", __FILE__)
+end
 
 def example_addr; '127.0.0.1'; end
 def example_port; 1234; end
