@@ -22,5 +22,18 @@ module Reel
 
       async.run
     end
+
+    def run
+      loop do
+        begin
+          socket = @server.accept
+        rescue OpenSSL::SSL::SSLError
+          # TODO: log this?
+          retry
+        end
+
+        async.handle_connection socket
+      end
+    end
   end
 end
