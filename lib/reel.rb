@@ -15,6 +15,7 @@ require 'reel/request'
 require 'reel/request_parser'
 require 'reel/response'
 require 'reel/server'
+require 'reel/ssl_server'
 require 'reel/websocket'
 require 'reel/stream'
 
