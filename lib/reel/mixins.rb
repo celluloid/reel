@@ -48,11 +48,15 @@ module Reel
     end
 
     def path
-      @http_parser.request_path
+      uri.path
     end
 
     def query_string
-      @http_parser.query_string
+      uri.query
+    end
+
+    def fragment
+      uri.fragment
     end
 
   end
