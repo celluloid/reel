@@ -7,8 +7,8 @@ describe Reel::SSLServer do
   let(:endpoint)         { URI(example_url) }
   let(:response_body)    { "ohai thar" }
 
-  let(:server_cert) { OpenSSL::X509::Certificate.new fixture_dir.join("server.crt").read }
-  let(:server_key)  { OpenSSL::PKey::RSA.new fixture_dir.join("server.key").read }
+  let(:server_cert) { fixture_dir.join("server.crt").read }
+  let(:server_key)  { fixture_dir.join("server.key").read }
 
   it "receives HTTP requests and sends responses" do
     ex = nil

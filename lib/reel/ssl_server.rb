@@ -9,8 +9,8 @@ module Reel
       # mandatory part of the Reel API. It would be nice to support
       # alternatives (e.g. Puma's MiniSSL)
       ssl_context = OpenSSL::SSL::SSLContext.new
-      ssl_context.cert = options.fetch(:cert)
-      ssl_context.key  = options.fetch(:key)
+      ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
+      ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
 
       # FIXME: VERY VERY VERY VERY BAD RELEASE BLOCKER BAD
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
