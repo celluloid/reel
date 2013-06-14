@@ -143,6 +143,12 @@ by Celluloid. In addition, the Rack specification mandates that request bodies
 are rewindable, which prevents streaming request bodies as the spec dictates
 they must be written to disk.
 
+To run `.ru` file using Reel w/ 16 workers
+
+```
+rackup -p 1234 -s reel config.ru -Enone -O "workers=16" 
+```
+
 To really leverage Reel's capabilities, you must use Reel via its own API,
 or another Ruby library with direct Reel support.
 
