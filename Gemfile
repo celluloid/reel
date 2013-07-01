@@ -12,3 +12,7 @@ gem 'coveralls', require: false
 # Specify your gem's dependencies in reel.gemspec
 gemspec
 
+group :development do
+  gem 'guard-rspec'
+  gem 'pry'
+end

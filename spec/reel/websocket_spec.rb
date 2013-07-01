@@ -62,6 +62,20 @@ describe Reel::WebSocket do
     end
   end
 
+  it "raises a RequestError when connection used after it was upgraded" do
+    with_socket_pair do |client, connection|
+      client << handshake.to_data
+      
+      remote_host = connection.remote_host
+
+      websocket = connection.request
+      websocket.should be_a Reel::WebSocket
+
+      lambda { connection.remote_host }.should raise_error(Reel::RequestError)
+      websocket.remote_host.should == remote_host
+    end
+  end
+
   def with_websocket_pair
     with_socket_pair do |client, connection|
       client << handshake.to_data

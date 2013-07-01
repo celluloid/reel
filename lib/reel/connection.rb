@@ -57,7 +57,7 @@ module Reel
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
       when WebSocket
         @request_state = @response_state = :websocket
-        @socket = nil
+        @socket = SocketUpgradedError
       else raise "unexpected request type: #{req.class}"
       end
 
