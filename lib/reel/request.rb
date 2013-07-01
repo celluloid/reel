@@ -23,19 +23,28 @@ module Reel
       REQUEST_METHODS[parser.http_method] ||
         raise(ArgumentError, "Unknown Request Method: %s" % parser.http_method)
 
-      upgrade = parser.headers[UPGRADE]
-      if upgrade && upgrade.downcase == WEBSOCKET
-        WebSocket.new(parser, connection.socket)
-      else
+      #upgrade = parser.headers[UPGRADE]
+      #if upgrade && upgrade.downcase == WEBSOCKET
+      #  WebSocket.new(parser, connection.socket)
+      #else
         Request.new(parser, connection)
-      end
+      #end
     end
 
     def_delegators :@connection, :respond, :finish_response, :close, :read
 
     def initialize(http_parser, connection = nil)
       @http_parser, @connection = http_parser, connection
+      @hijacked = false
     end
+
+    def hijack
+      @hijacked = true
+      @connection.detach
+      @connection.socket
+    end
+
+    def hijacked?; @hijacked; end
 
     def body
       @body ||= begin
