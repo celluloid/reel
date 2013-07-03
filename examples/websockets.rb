@@ -32,6 +32,9 @@ class TimeClient
 
   def notify_time_change(topic, new_time)
     @socket << new_time.inspect
+  rescue Errno::EPIPE
+    info "Socket no longer writable (client disconnected)"
+    terminate
   rescue Reel::SocketError
     info "Time client disconnected"
     terminate
