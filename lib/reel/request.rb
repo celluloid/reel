@@ -12,13 +12,25 @@ module Reel
     request_methods = Http::METHODS.map { |m| m.to_s.upcase }
     REQUEST_METHODS = Hash[request_methods.zip(request_methods)].freeze
 
+    # Read request data from the connection. Because we read the
+    # socket in large chunks and requests may be pipelined, we buffer
+    # them in the connection for further reads.
     def self.read(connection)
       parser = connection.parser
+      parser.reset if parser.finished?
 
-      begin
+      if connection.buffered_data.empty?
         data = connection.socket.readpartial(Connection::BUFFER_SIZE)
-        parser << data
-      end until parser.headers
+        connection.buffered_data << data
+      end
+
+      parsed_index = 0
+      begin
+        parser << connection.buffered_data[parsed_index]
+        parsed_index += 1
+      end until parser.headers? or connection.buffered_data.size == parsed_index
+
+      connection.buffered_data = connection.buffered_data[parsed_index..-1] || ""
 
       REQUEST_METHODS[parser.http_method] ||
         raise(ArgumentError, "Unknown Request Method: %s" % parser.http_method)
