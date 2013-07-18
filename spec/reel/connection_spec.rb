@@ -95,6 +95,50 @@ describe Reel::Connection do
     end
   end
 
+  it "reads pipelined requests without bodies" do
+    with_socket_pair do |client, connection|
+      3.times do
+        client << ExampleRequest.new.to_s
+      end
+
+      3.times do
+        request = connection.request
+
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+
+        request['Host'].should eq "www.example.com"
+        request['Connection'].should eq "keep-alive"
+        request['User-Agent'].should eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
+        request['Accept'].should eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        request['Accept-Encoding'].should eq "gzip,deflate,sdch"
+        request['Accept-Language'].should eq "en-US,en;q=0.8"
+        request['Accept-Charset'].should eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
+      end
+    end
+  end
+
+  it "reads pipelined requests with bodies" do
+    with_socket_pair do |client, connection|
+      3.times do |i|
+        body = "Hello, world number #{i}!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+      end
+
+      3.times do |i|
+        request = connection.request
+
+        expected_body = "Hello, world number #{i}!"
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+        request['Content-Length'].should eq expected_body.length.to_s
+        request.body.should eq expected_body
+      end
+    end
+  end
   describe "Connection#read behaving like IO#read" do
     it "raises an exception if length is a negative value" do
       with_socket_pair do |client, connection|
