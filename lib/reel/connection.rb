@@ -21,7 +21,7 @@ module Reel
       @attached  = true
       @socket    = socket
       @keepalive = true
-      @parser    = Request::Parser.new
+      @parser    = Request::Parser.new(socket, self)
       reset_request
 
       @response_state = :header
@@ -40,20 +40,21 @@ module Reel
     end
 
     # Reset the current request state
-    def reset_request(state = :header)
+    def reset_request(state = :standard)
       @request_state = state
-      @header_buffer = "" # Buffer headers in case of an upgrade request
       @parser.reset
     end
 
     # Read a request object from the connection
     def request
       return if @request_state == :websocket
-      req = Request.read(self)
+      req = @parser.current_request
+
+      @parser.reset
 
       case req
       when Request
-        @request_state = :body
+        @request_state = :standard
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
       when WebSocket
         @request_state = @response_state = :websocket
@@ -67,41 +68,6 @@ module Reel
       @request_state = :closed
       @keepalive = false
       nil
-    end
-
-    # Read a chunk from the request
-    def readpartial(size = BUFFER_SIZE)
-      raise StateError, "can't read in the `#{@request_state}' state" unless @request_state == :body
-
-      chunk = @parser.chunk
-      unless chunk || @parser.finished?
-        @parser << @socket.readpartial(size)
-        chunk = @parser.chunk
-      end
-
-      chunk
-    end
-
-    # read length bytes from request body
-    def read(length = nil, buffer = nil)
-      raise ArgumentError, "negative length #{length} given" if length && length < 0
-
-      return '' if length == 0
-
-      res = buffer.nil? ? '' : buffer.clear
-
-      chunk_size = length.nil? ? BUFFER_SIZE : length
-      begin
-        while chunk_size > 0
-          chunk = readpartial(chunk_size)
-          break unless chunk
-          res << chunk
-          chunk_size = length - res.length unless length.nil?
-        end
-      rescue EOFError
-      end
-
-      return length && res.length == 0 ? nil : res
     end
 
     # Send a response back to the client

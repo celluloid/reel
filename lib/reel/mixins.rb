@@ -28,7 +28,7 @@ module Reel
     end
 
     def headers
-      @http_parser.headers
+      @headers
     end
 
     def [] header

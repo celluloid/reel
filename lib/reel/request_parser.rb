@@ -2,10 +2,18 @@ module Reel
   class Request
     class Parser
       include HTTPVersionsMixin
-      attr_reader :headers
+      BUFFER_SIZE = 16384
 
-      def initialize
+      attr_reader :socket, :connection
+
+      def initialize(sock, conn)
         @parser = Http::Parser.new(self)
+        @socket = sock
+        @connection = conn
+        @current = nil
+        @incoming = []
+        @pending = []
+
         reset
       end
 
@@ -13,10 +21,6 @@ module Reel
         @parser << data
       end
       alias_method :<<, :add
-
-      def headers?
-        !!@headers
-      end
 
       def http_method
         @parser.http_method
@@ -31,39 +35,48 @@ module Reel
         @parser.request_url
       end
 
-      def finished?; @finished; end
+      def current_request
+        until @current
+          readpartial
+        end
+        @current
+      end
+
+      def readpartial(size = BUFFER_SIZE)
+        bytes = @socket.readpartial(size)
+        @parser << bytes
+        bytes
+      end
 
       #
       # Http::Parser callbacks
       #
-
       def on_headers_complete(headers)
-        @headers = headers
+        @incoming << Request.build(headers, self, connection)
       end
 
       def on_body(chunk)
-        if @chunk
-          @chunk << chunk
-        else
-          @chunk = chunk
-        end
-      end
-
-      def chunk
-        if (chunk = @chunk)
-          @chunk = nil
-          chunk
-        end
+        @incoming.first.add_body(chunk)
       end
 
       def on_message_complete
-        @finished = true
+        req = @incoming.shift
+        req.finish_reading if req.is_a?(Request)
+        if @current.nil?
+          @current = req
+        else
+          @pending << req
+        end
       end
 
       def reset
-        @finished = false
-        @headers  = nil
-        @chunk    = nil
+        popped = @current
+        if req = @pending.shift
+          @current = req
+        elsif @current
+          @current = nil
+        end
+        popped
       end
     end
   end
