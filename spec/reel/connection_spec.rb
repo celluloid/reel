@@ -59,12 +59,12 @@ describe Reel::Connection do
       request = connection.request
 
       # Sending transfer_encoding chunked without a body enables streaming mode
-      connection.respond :ok, :transfer_encoding => :chunked
+      request.respond :ok, :transfer_encoding => :chunked
 
       # This will send individual chunks
-      connection << "Hello"
-      connection << "World"
-      connection.finish_response # Write trailer and reset connection to header mode
+      request << "Hello"
+      request << "World"
+      request.finish_response # Write trailer and reset connection to header mode
       connection.close
 
       response = ""

@@ -24,7 +24,7 @@ module Reel
       end
     end
 
-    def_delegators :@connection, :respond, :finish_response, :close
+    def_delegators :@connection, :<<, :write, :respond, :finish_response
 
     def initialize(request_info, connection = nil)
       @request_info = request_info
@@ -66,6 +66,9 @@ module Reel
       end
     end
 
+    # Reads a certain amount of bytes, checking current body buffer
+    # then asking the connection to read until the remainder of bytes
+    # is available.
     def read_from_body(length = nil)
       if length.nil?
         slice = body
@@ -76,6 +79,8 @@ module Reel
         end
         @body ||= ''
         slice = @body[0..length]
+
+        # Reset buffer to not include bytes already read
         @body = @body[length..-1]
       end
       slice || ''
