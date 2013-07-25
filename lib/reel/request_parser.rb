@@ -59,7 +59,7 @@ module Reel
 
       def on_message_complete
         req = @incoming.shift
-        req.finish_reading if req.is_a?(Request)
+        req.finish_reading! if req.is_a?(Request)
         if @current.nil?
           @current = req
         else
