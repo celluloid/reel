@@ -39,6 +39,10 @@ module Reel
       @version = http_version
     end
 
+    def chunked?
+      headers[TRANSFER_ENCODING] == CHUNKED
+    end
+
     # Set the status
     def status=(status, reason=nil)
       case status

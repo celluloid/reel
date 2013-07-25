@@ -11,7 +11,6 @@ module Reel
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     KEEP_ALIVE         = 'Keep-Alive'.freeze
     CLOSE              = 'close'.freeze
-    CHUNKED            = 'chunked'.freeze
 
     attr_reader :socket, :parser
 
@@ -107,10 +106,10 @@ module Reel
       else raise TypeError, "invalid response: #{response.inspect}"
       end
 
-      @writer.render_response(response)
+      @writer.handle_response(response)
 
       # Enable streaming mode
-      if response.headers[TRANSFER_ENCODING] == CHUNKED and response.body.nil?
+      if response.chunked? and response.body.nil?
         @response_state = :chunked_body
       end
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE

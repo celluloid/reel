@@ -107,7 +107,6 @@ module Reel
     end
 
     def render(socket)
-      socket << render_header
       @body.call socket
     end
   end
