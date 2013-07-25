@@ -1,13 +1,9 @@
-require 'forwardable'
-
 module Reel
   # A connection to the HTTP server
   class Connection
     extend Forwardable
     include HTTPVersionsMixin
     include ConnectionMixin
-
-    def_delegators :@parser, :readpartial
 
     class StateError < RuntimeError; end # wrong state for a given operation
 
@@ -50,6 +46,11 @@ module Reel
       @request_state = state
       @outstanding_request = nil
       @parser.reset
+    end
+
+    def readpartial(size = BUFFER_SIZE)
+      raise StateError, "can't read in the '#{@request_state}' state" unless @request_state == :standard
+      @parser.readpartial(size)
     end
 
     def outstanding_request
@@ -117,7 +118,7 @@ module Reel
       @keepalive = false
     ensure
       if @keepalive
-        reset_request(:header)
+        reset_request(:standard)
       else
         @socket.close unless @socket.closed?
         reset_request(:closed)

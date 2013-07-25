@@ -2,8 +2,6 @@ module Reel
   class Request
     class Parser
       include HTTPVersionsMixin
-      BUFFER_SIZE = 16384
-
       attr_reader :socket, :connection
 
       def initialize(sock, conn)
@@ -42,10 +40,9 @@ module Reel
         @current
       end
 
-      def readpartial(size = BUFFER_SIZE)
+      def readpartial(size = Connection::BUFFER_SIZE)
         bytes = @socket.readpartial(size)
         @parser << bytes
-        bytes
       end
 
       #
