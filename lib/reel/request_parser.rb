@@ -52,7 +52,8 @@ module Reel
       # Http::Parser callbacks
       #
       def on_headers_complete(headers)
-        @incoming << Request.build(headers, self, connection)
+        info = RequestInfo.new(http_method, url, http_version, headers)
+        @incoming << Request.build(info, connection)
       end
 
       def on_body(chunk)

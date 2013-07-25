@@ -24,11 +24,11 @@ module Reel
   module RequestMixin
 
     def method
-      @http_parser.http_method
+      @request_info.http_method
     end
 
     def headers
-      @headers
+      @request_info.headers
     end
 
     def [] header
@@ -36,11 +36,11 @@ module Reel
     end
 
     def version
-      @http_parser.http_version || HTTPVersionsMixin::DEFAULT_HTTP_VERSION
+      @request_info.http_version || HTTPVersionsMixin::DEFAULT_HTTP_VERSION
     end
 
     def url
-      @http_parser.url
+      @request_info.url
     end
 
     def uri

@@ -1,8 +1,13 @@
+require 'forwardable'
+
 module Reel
   # A connection to the HTTP server
   class Connection
+    extend Forwardable
     include HTTPVersionsMixin
     include ConnectionMixin
+
+    def_delegators :@parser, :readpartial
 
     class StateError < RuntimeError; end # wrong state for a given operation
 

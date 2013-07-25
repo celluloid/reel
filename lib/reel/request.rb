@@ -12,23 +12,23 @@ module Reel
     request_methods = Http::METHODS.map { |m| m.to_s.upcase }
     REQUEST_METHODS = Hash[request_methods.zip(request_methods)].freeze
 
-    def self.build(headers, parser, connection)
-      REQUEST_METHODS[parser.http_method] ||
-        raise(ArgumentError, "Unknown Request Method: %s" % parser.http_method)
+    def self.build(request_info, connection)
+      REQUEST_METHODS[request_info.http_method] ||
+        raise(ArgumentError, "Unknown Request Method: %s" % request_info.http_method)
 
-      upgrade = headers[UPGRADE]
+      upgrade = request_info.headers[UPGRADE]
       if upgrade && upgrade.downcase == WEBSOCKET
-        WebSocket.new(headers, parser, connection.socket)
+        WebSocket.new(request_info, connection.socket)
       else
-        Request.new(headers, parser, connection)
+        Request.new(request_info, connection)
       end
     end
 
     def_delegators :@connection, :respond, :finish_response, :close
 
-    def initialize(headers, http_parser, connection = nil)
-      @headers = headers
-      @http_parser, @connection = http_parser, connection
+    def initialize(request_info, connection = nil)
+      @request_info = request_info
+      @connection = connection
       @finished_read = false
     end
 
@@ -49,18 +49,18 @@ module Reel
     end
 
     def body
-      raise "no http_parser given" unless @http_parser
+      raise "no connection given" unless @connection
 
       if block_given?
         @on_body = Proc.new(&block)
         yield @body if @body
         until finished_reading?
-          @http_parser.readpartial
+          @connection.readpartial
           yield chunk
         end
       else
         until finished_reading?
-          @http_parser.readpartial
+          @connection.readpartial
         end
         @body
       end
@@ -72,7 +72,7 @@ module Reel
         @body = nil
       else
         unless finished_reading? || @body.length >= length
-          @http_parser.readpartial(length - @body.length)
+          @connection.readpartial(length - @body.length)
         end
         @body ||= ''
         slice = @body[0..length]

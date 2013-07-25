@@ -9,9 +9,9 @@ module Reel
 
     def_delegators :@socket, :addr, :peeraddr
 
-    def initialize(headers, http_parser, socket)
-      @headers = headers
-      @http_parser, @socket = http_parser, socket
+    def initialize(info, socket)
+      @request_info = info
+      @socket = socket
 
       handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
 
