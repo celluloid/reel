@@ -95,6 +95,19 @@ describe Reel::Connection do
     end
   end
 
+  it "raises an error trying to read two pipelines without responding first" do
+    with_socket_pair do |client, connection|
+      2.times do
+        client << ExampleRequest.new.to_s
+      end
+
+      lambda{
+        2.times do
+          request = connection.request
+        end
+      }.should raise_error(Reel::Connection::StateError)
+    end
+  end
   it "reads pipelined requests without bodies" do
     with_socket_pair do |client, connection|
       3.times do
@@ -114,6 +127,7 @@ describe Reel::Connection do
         request['Accept-Encoding'].should eq "gzip,deflate,sdch"
         request['Accept-Language'].should eq "en-US,en;q=0.8"
         request['Accept-Charset'].should eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
+        connection.respond :ok, {}, ""
       end
     end
   end
@@ -136,6 +150,8 @@ describe Reel::Connection do
         request.version.should eq "1.1"
         request['Content-Length'].should eq expected_body.length.to_s
         request.body.should eq expected_body
+
+        connection.respond :ok, {}, ""
       end
     end
   end

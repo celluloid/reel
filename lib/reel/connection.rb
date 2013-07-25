@@ -22,6 +22,7 @@ module Reel
       @socket    = socket
       @keepalive = true
       @parser    = Request::Parser.new(socket, self)
+      # @writer    = Response::Writer.new(socket, self)
       reset_request
 
       @response_state = :header
@@ -42,20 +43,25 @@ module Reel
     # Reset the current request state
     def reset_request(state = :standard)
       @request_state = state
+      @outstanding_request = nil
       @parser.reset
+    end
+
+    def outstanding_request
+      @outstanding_request
     end
 
     # Read a request object from the connection
     def request
       return if @request_state == :websocket
+      raise StateError, "current request not responded to" if outstanding_request
       req = @parser.current_request
-
-      @parser.reset
 
       case req
       when Request
         @request_state = :standard
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
+        @outstanding_request = req
       when WebSocket
         @request_state = @response_state = :websocket
         @socket = SocketUpgradedError
@@ -73,7 +79,7 @@ module Reel
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
-      raise StateError "not in header state" if @response_state != :header
+      raise StateError, "not in header state" if @response_state != :header
 
       if headers_or_body.is_a? Hash
         headers = headers_or_body
