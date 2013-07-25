@@ -1,7 +1,6 @@
 module Reel
   # A connection to the HTTP server
   class Connection
-    extend Forwardable
     include HTTPVersionsMixin
     include ConnectionMixin
 
