@@ -23,7 +23,7 @@ module Reel
       @socket    = socket
       @keepalive = true
       @parser    = Request::Parser.new(socket, self)
-      # @writer    = Response::Writer.new(socket, self)
+      @writer    = Response::Writer.new(socket, self)
       reset_request
 
       @response_state = :header
@@ -107,7 +107,7 @@ module Reel
       else raise TypeError, "invalid response: #{response.inspect}"
       end
 
-      response.render(@socket)
+      @writer.render_response(response)
 
       # Enable streaming mode
       if response.headers[TRANSFER_ENCODING] == CHUNKED and response.body.nil?
@@ -128,16 +128,14 @@ module Reel
     # Write body chunks directly to the connection
     def write(chunk)
       raise StateError, "not in chunked body mode" unless @response_state == :chunked_body
-      chunk_header = chunk.bytesize.to_s(16)
-      @socket << chunk_header + Response::CRLF
-      @socket << chunk + Response::CRLF
+      @writer.write(chunk)
     end
     alias_method :<<, :write
 
     # Finish the response and reset the response state to header
     def finish_response
       raise StateError, "not in body state" if @response_state != :chunked_body
-      @socket << "0#{Response::CRLF * 2}"
+      @writer.finish_response
       @response_state = :header
     end
 
