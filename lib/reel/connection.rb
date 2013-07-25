@@ -49,7 +49,7 @@ module Reel
     end
 
     def readpartial(size = BUFFER_SIZE)
-      raise StateError, "can't read in the '#{@request_state}' state" unless @request_state == :standard
+      raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :standard
       @parser.readpartial(size)
     end
 
@@ -143,6 +143,7 @@ module Reel
 
     # Close the connection
     def close
+      raise StateError, "connection upgraded to Reel::WebSocket, call close on the websocket instance" if @response_state == :websocket
       @keepalive = false
       @socket.close unless @socket.closed?
     end
