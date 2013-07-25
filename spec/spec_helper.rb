@@ -24,7 +24,7 @@ ensure
   server.terminate if server && server.alive?
 end
 
-def with_socket_pair
+def with_socket_pair(buffer_size = nil)
   host = '127.0.0.1'
   port = 10101
 
@@ -33,7 +33,8 @@ def with_socket_pair
   peer   = server.accept
 
   begin
-    connection = Reel::Connection.new(peer)
+
+    connection = Reel::Connection.new(peer, buffer_size)
     yield client, connection
   ensure
     server.close rescue nil
@@ -93,7 +94,7 @@ module WebSocketHelpers
         }
       end
 
-      let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) } 
+      let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) }
     end
   end
 end

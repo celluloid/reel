@@ -178,6 +178,19 @@ describe Reel::Connection do
       end
     end
 
+    it "reads to EOF if length is nil, even small buffer" do
+      with_socket_pair(4) do |client, connection|
+        body = "Hello, world!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+        connection.buffer_size.should == 4
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read.should eq "Hello, world!"
+      end
+    end
     it "reads to EOF if length is nil" do
       with_socket_pair do |client, connection|
         body = "Hello, world!"

@@ -15,13 +15,15 @@ module Reel
 
     # Attempt to read this much data
     BUFFER_SIZE = 16384
+    attr_reader :buffer_size
 
-    def initialize(socket)
+    def initialize(socket, buffer_size = nil)
       @attached  = true
       @socket    = socket
       @keepalive = true
       @parser    = Request::Parser.new(socket, self)
       @writer    = Response::Writer.new(socket, self)
+      @buffer_size = buffer_size.nil? ? BUFFER_SIZE : buffer_size
       reset_request
 
       @response_state = :header
@@ -46,7 +48,7 @@ module Reel
       @parser.reset
     end
 
-    def readpartial(size = BUFFER_SIZE)
+    def readpartial(size = @buffer_size)
       raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :standard
       @parser.readpartial(size)
     end

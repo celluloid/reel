@@ -86,7 +86,7 @@ module Reel
       return '' if length == 0
       res = buffer.nil? ? '' : buffer.clear
 
-      chunk_size = length.nil? ? Connection::BUFFER_SIZE : length
+      chunk_size = length.nil? ? @connection.buffer_size : length
       begin
         while chunk_size > 0
           chunk = read_from_body(chunk_size)
@@ -114,7 +114,7 @@ module Reel
           @connection.readpartial(length - @body.length)
         end
         @body ||= ''
-        slice = @body[0..length]
+        slice = @body[0..(length-1)]
 
         # Reset buffer to not include bytes already read
         @body = @body[length..-1]

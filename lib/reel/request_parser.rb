@@ -40,7 +40,7 @@ module Reel
         @current
       end
 
-      def readpartial(size = Connection::BUFFER_SIZE)
+      def readpartial(size = @connection.buffer_size)
         bytes = @socket.readpartial(size)
         @parser << bytes
       end
