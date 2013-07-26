@@ -8,9 +8,9 @@ module Reel
         @parser = Http::Parser.new(self)
         @socket = sock
         @connection = conn
-        @current = nil
-        @incoming = []
-        @pending = []
+        @currently_reading = @currently_responding = nil
+        @pending_reads     = []
+        @pending_responses = []
 
         reset
       end
@@ -34,10 +34,10 @@ module Reel
       end
 
       def current_request
-        until @current
+        until @currently_responding || @currently_reading
           readpartial
         end
-        @current
+        @currently_responding || @currently_reading
       end
 
       def readpartial(size = @connection.buffer_size)
@@ -50,29 +50,36 @@ module Reel
       #
       def on_headers_complete(headers)
         info = RequestInfo.new(http_method, url, http_version, headers)
-        @incoming << Request.build(info, connection)
-      end
-
-      def on_body(chunk)
-        @incoming.first.add_body(chunk)
-      end
-
-      def on_message_complete
-        req = @incoming.shift
-        req.finish_reading! if req.is_a?(Request)
-        if @current.nil?
-          @current = req
+        req = Request.build(info, connection)
+        if @currently_reading.nil?
+          @currently_reading = req
         else
-          @pending << req
+          @pending_reads << req
         end
       end
 
+      # Send body directly to Reel::Response to be buffered.
+      def on_body(chunk)
+        @currently_reading.add_body(chunk)
+      end
+
+      # Mark current request as complete, set this as ready to respond.
+      def on_message_complete
+        @currently_reading.finish_reading! if @currently_reading.is_a?(Request)
+        if @currently_responding.nil?
+          @currently_responding = @currently_reading
+        else
+          @pending_responses << @currently_reading
+        end
+        @currently_reading = @pending_reads.shift
+      end
+
       def reset
-        popped = @current
-        if req = @pending.shift
-          @current = req
-        elsif @current
-          @current = nil
+        popped = @currently_responding
+        if req = @pending_responses.shift
+          @currently_responding = req
+        elsif @currently_responding
+          @currently_responding = nil
         end
         popped
       end

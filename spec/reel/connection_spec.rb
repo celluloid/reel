@@ -155,6 +155,43 @@ describe Reel::Connection do
       end
     end
   end
+
+  # This test will deadlock rspec waiting unless
+  # connection.request works properly
+  it 'does not block waiting for body to read before handling request' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "Hi guys! Sorry I'm late to the party."
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      client << content
+      request.body.should == content
+    end
+  end
+
+  it 'streams body properly' do
+    with_socket_pair(8) do |client, connection|
+      example_request = ExampleRequest.new
+      content = "I'm data you can stream!"
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      request.should_not be_finished_reading
+      client << content
+      rebuilt = []
+      request.body do |chunk|
+        rebuilt << chunk
+      end
+      request.should be_finished_reading
+      rebuilt.should == ["I'm data", " you can", " stream!"]
+    end
+  end
+
   describe "Connection#read behaving like IO#read" do
     it "raises an exception if length is a negative value" do
       with_socket_pair do |client, connection|

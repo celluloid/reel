@@ -53,7 +53,7 @@ module Reel
     #
     # If no block is given, the entire body will be read from the
     # connection into the body buffer and then returned.
-    def body
+    def body(&block)
       raise "no connection given" unless @connection
 
       if block_given?
@@ -110,10 +110,10 @@ module Reel
         slice = body
         @body = nil
       else
+        @body ||= ''
         unless finished_reading? || @body.length >= length
           @connection.readpartial(length - @body.length)
         end
-        @body ||= ''
         slice = @body[0..(length-1)]
 
         # Reset buffer to not include bytes already read
