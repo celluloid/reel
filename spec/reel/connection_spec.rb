@@ -59,12 +59,12 @@ describe Reel::Connection do
       request = connection.request
 
       # Sending transfer_encoding chunked without a body enables streaming mode
-      connection.respond :ok, :transfer_encoding => :chunked
+      request.respond :ok, :transfer_encoding => :chunked
 
       # This will send individual chunks
-      connection << "Hello"
-      connection << "World"
-      connection.finish_response # Write trailer and reset connection to header mode
+      request << "Hello"
+      request << "World"
+      request.finish_response # Write trailer and reset connection to header mode
       connection.close
 
       response = ""
@@ -95,6 +95,176 @@ describe Reel::Connection do
     end
   end
 
+  it "raises an error trying to read two pipelines without responding first" do
+    with_socket_pair do |client, connection|
+      2.times do
+        client << ExampleRequest.new.to_s
+      end
+
+      lambda{
+        2.times do
+          request = connection.request
+        end
+      }.should raise_error(Reel::Connection::StateError)
+    end
+  end
+  it "reads pipelined requests without bodies" do
+    with_socket_pair do |client, connection|
+      3.times do
+        client << ExampleRequest.new.to_s
+      end
+
+      3.times do
+        request = connection.request
+
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+
+        request['Host'].should eq "www.example.com"
+        request['Connection'].should eq "keep-alive"
+        request['User-Agent'].should eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
+        request['Accept'].should eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        request['Accept-Encoding'].should eq "gzip,deflate,sdch"
+        request['Accept-Language'].should eq "en-US,en;q=0.8"
+        request['Accept-Charset'].should eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
+        connection.respond :ok, {}, ""
+      end
+    end
+  end
+
+  it "reads pipelined requests with bodies" do
+    with_socket_pair do |client, connection|
+      3.times do |i|
+        body = "Hello, world number #{i}!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+      end
+
+      3.times do |i|
+        request = connection.request
+
+        expected_body = "Hello, world number #{i}!"
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+        request['Content-Length'].should eq expected_body.length.to_s
+        request.body.should eq expected_body
+
+        connection.respond :ok, {}, ""
+      end
+    end
+  end
+  it "reads pipelined requests with streamed bodies" do
+    with_socket_pair(4) do |client, connection|
+      3.times do |i|
+        body = "Hello, world number #{i}!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+      end
+
+      3.times do |i|
+        request = connection.request
+
+        expected_body = "Hello, world number #{i}!"
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+        request['Content-Length'].should eq expected_body.length.to_s
+        request.should_not be_finished_reading
+        new_content = ""
+        request.body do |chunk|
+          new_content << chunk
+        end
+        new_content.should == expected_body
+        request.should be_finished_reading
+
+        connection.respond :ok, {}, ""
+      end
+    end
+  end
+
+  # This test will deadlock rspec waiting unless
+  # connection.request works properly
+  it 'does not block waiting for body to read before handling request' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "Hi guys! Sorry I'm late to the party."
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      client << content
+      request.body.should == content
+    end
+  end
+
+  it 'blocks on read until written' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "Hi guys! Sorry I'm late to the party."
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      timers = Timers.new
+      timers.after(0.2){
+        client << content
+      }
+      read_body = ""
+      timers.after(0.1){
+        timers.wait # continue timers, the next bit will block waiting for content
+        read_body = request.read(8)
+      }
+      timers.wait
+
+      request.should be_a(Reel::Request)
+      read_body.should == content[0..7]
+    end
+  end
+
+  it 'streams body properly with #read and buffered body' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "I'm data you can stream!"
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      request.should_not be_finished_reading
+      client << content
+      rebuilt = []
+      connection.readpartial(64) # Buffer some body
+      while chunk = request.read(8)
+        rebuilt << chunk
+      end
+      request.should be_finished_reading
+      rebuilt.should == ["I'm data", " you can", " stream!"]
+    end
+  end
+  it 'streams body properly with #body &block' do
+    with_socket_pair(8) do |client, connection|
+      example_request = ExampleRequest.new
+      content = "I'm data you can stream!"
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      request.should_not be_finished_reading
+      client << content
+      rebuilt = []
+      request.body do |chunk|
+        rebuilt << chunk
+      end
+      request.should be_finished_reading
+      rebuilt.should == ["I'm data", " you can", " stream!"]
+    end
+  end
+
   describe "Connection#read behaving like IO#read" do
     it "raises an exception if length is a negative value" do
       with_socket_pair do |client, connection|
@@ -118,6 +288,19 @@ describe Reel::Connection do
       end
     end
 
+    it "reads to EOF if length is nil, even small buffer" do
+      with_socket_pair(4) do |client, connection|
+        body = "Hello, world!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+        connection.buffer_size.should == 4
+
+        client << example_request.to_s
+        request = connection.request
+
+        request.read.should eq "Hello, world!"
+      end
+    end
     it "reads to EOF if length is nil" do
       with_socket_pair do |client, connection|
         body = "Hello, world!"

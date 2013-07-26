@@ -10,18 +10,20 @@ module Reel
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     KEEP_ALIVE         = 'Keep-Alive'.freeze
     CLOSE              = 'close'.freeze
-    CHUNKED            = 'chunked'.freeze
 
     attr_reader :socket, :parser
 
     # Attempt to read this much data
     BUFFER_SIZE = 16384
+    attr_reader :buffer_size
 
-    def initialize(socket)
+    def initialize(socket, buffer_size = nil)
       @attached  = true
       @socket    = socket
       @keepalive = true
-      @parser    = Request::Parser.new
+      @parser    = Request::Parser.new(socket, self)
+      @writer    = Response::Writer.new(socket, self)
+      @buffer_size = buffer_size.nil? ? BUFFER_SIZE : buffer_size
       reset_request
 
       @response_state = :header
@@ -40,21 +42,32 @@ module Reel
     end
 
     # Reset the current request state
-    def reset_request(state = :header)
+    def reset_request(state = :ready)
       @request_state = state
-      @header_buffer = "" # Buffer headers in case of an upgrade request
+      @current_request = nil
       @parser.reset
+    end
+
+    def readpartial(size = @buffer_size)
+      raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :ready
+      @parser.readpartial(size)
+    end
+
+    def current_request
+      @current_request
     end
 
     # Read a request object from the connection
     def request
       return if @request_state == :websocket
-      req = Request.read(self)
+      raise StateError, "current request not responded to" if current_request
+      req = @parser.current_request
 
       case req
       when Request
-        @request_state = :body
+        @request_state = :ready
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
+        @current_request = req
       when WebSocket
         @request_state = @response_state = :websocket
         @socket = SocketUpgradedError
@@ -69,45 +82,10 @@ module Reel
       nil
     end
 
-    # Read a chunk from the request
-    def readpartial(size = BUFFER_SIZE)
-      raise StateError, "can't read in the `#{@request_state}' state" unless @request_state == :body
-
-      chunk = @parser.chunk
-      unless chunk || @parser.finished?
-        @parser << @socket.readpartial(size)
-        chunk = @parser.chunk
-      end
-
-      chunk
-    end
-
-    # read length bytes from request body
-    def read(length = nil, buffer = nil)
-      raise ArgumentError, "negative length #{length} given" if length && length < 0
-
-      return '' if length == 0
-
-      res = buffer.nil? ? '' : buffer.clear
-
-      chunk_size = length.nil? ? BUFFER_SIZE : length
-      begin
-        while chunk_size > 0
-          chunk = readpartial(chunk_size)
-          break unless chunk
-          res << chunk
-          chunk_size = length - res.length unless length.nil?
-        end
-      rescue EOFError
-      end
-
-      return length && res.length == 0 ? nil : res
-    end
-
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
-      raise StateError "not in header state" if @response_state != :header
+      raise StateError, "not in header state" if @response_state != :header
 
       if headers_or_body.is_a? Hash
         headers = headers_or_body
@@ -129,10 +107,10 @@ module Reel
       else raise TypeError, "invalid response: #{response.inspect}"
       end
 
-      response.render(@socket)
+      @writer.handle_response(response)
 
       # Enable streaming mode
-      if response.headers[TRANSFER_ENCODING] == CHUNKED and response.body.nil?
+      if response.chunked? and response.body.nil?
         @response_state = :chunked_body
       end
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
@@ -140,7 +118,7 @@ module Reel
       @keepalive = false
     ensure
       if @keepalive
-        reset_request(:header)
+        reset_request(:ready)
       else
         @socket.close unless @socket.closed?
         reset_request(:closed)
@@ -150,21 +128,20 @@ module Reel
     # Write body chunks directly to the connection
     def write(chunk)
       raise StateError, "not in chunked body mode" unless @response_state == :chunked_body
-      chunk_header = chunk.bytesize.to_s(16)
-      @socket << chunk_header + Response::CRLF
-      @socket << chunk + Response::CRLF
+      @writer.write(chunk)
     end
     alias_method :<<, :write
 
     # Finish the response and reset the response state to header
     def finish_response
       raise StateError, "not in body state" if @response_state != :chunked_body
-      @socket << "0#{Response::CRLF * 2}"
+      @writer.finish_response
       @response_state = :header
     end
 
     # Close the connection
     def close
+      raise StateError, "connection upgraded to Reel::WebSocket, call close on the websocket instance" if @response_state == :websocket
       @keepalive = false
       @socket.close unless @socket.closed?
     end

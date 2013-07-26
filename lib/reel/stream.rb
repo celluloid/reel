@@ -31,7 +31,7 @@ module Reel
       @socket.closed?
     end
   end
-    
+
   class EventStream < Stream
 
     # EventSource-related helpers
@@ -60,12 +60,12 @@ module Reel
     end
 
   end
-  
+
   class ChunkStream < Stream
     def write(chunk)
       chunk_header = chunk.bytesize.to_s(16)
-      write chunk_header + Response::CRLF
-      write chunk + Response::CRLF
+      write chunk_header + Response::Writer::CRLF
+      write chunk + Response::Writer::CRLF
       self
     end
     alias :<< :write
@@ -73,7 +73,7 @@ module Reel
     # finish does not actually close the socket,
     # it only inform the browser there are no more messages
     def finish
-      write "0#{Response::CRLF * 2}"
+      write "0#{Response::Writer::CRLF * 2}"
     end
 
     def close
@@ -107,7 +107,6 @@ module Reel
     end
 
     def render(socket)
-      socket << render_header
       @body.call socket
     end
   end

@@ -17,6 +17,18 @@ describe Reel::WebSocket do
     end
   end
 
+  it "raises an error if trying to close a connection upgraded to socket" do
+    with_socket_pair do |client, connection|
+      client << handshake.to_data
+
+      websocket = connection.request
+      websocket.should be_a Reel::WebSocket
+      lambda {
+        connection.close
+      }.should raise_error(Reel::Connection::StateError)
+    end
+  end
+
   it "knows its URL" do
     with_websocket_pair do |_, websocket|
       websocket.url.should == example_path
@@ -65,7 +77,7 @@ describe Reel::WebSocket do
   it "raises a RequestError when connection used after it was upgraded" do
     with_socket_pair do |client, connection|
       client << handshake.to_data
-      
+
       remote_host = connection.remote_host
 
       websocket = connection.request
