@@ -53,12 +53,12 @@ module Reel
     #
     # If no block is given, the entire body will be read from the
     # connection into the body buffer and then returned.
-    def body(&block)
+    def body
       raise "no connection given" unless @connection
 
       if block_given?
         # Callback from the http_parser will be calling add_body directly
-        @on_body = Proc.new(&block)
+        @on_body = Proc.new
 
         # clear out body buffered so far
         yield read_from_body(nil) if @body
@@ -114,7 +114,7 @@ module Reel
         unless finished_reading? || @body.length >= length
           @connection.readpartial(length - @body.length)
         end
-        slice = @body.slice!(0...length)
+        slice = @body.slice!(0, length)
       end
       slice && slice.length == 0 ? nil : slice
     end
