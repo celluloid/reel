@@ -33,7 +33,6 @@ def with_socket_pair(buffer_size = nil)
   peer   = server.accept
 
   begin
-
     connection = Reel::Connection.new(peer, buffer_size)
     yield client, connection
   ensure

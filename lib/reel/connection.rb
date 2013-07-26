@@ -44,7 +44,7 @@ module Reel
     # Reset the current request state
     def reset_request(state = :standard)
       @request_state = state
-      @outstanding_request = nil
+      @current_request = nil
       @parser.reset
     end
 
@@ -53,21 +53,21 @@ module Reel
       @parser.readpartial(size)
     end
 
-    def outstanding_request
-      @outstanding_request
+    def current_request
+      @current_request
     end
 
     # Read a request object from the connection
     def request
       return if @request_state == :websocket
-      raise StateError, "current request not responded to" if outstanding_request
+      raise StateError, "current request not responded to" if current_request
       req = @parser.current_request
 
       case req
       when Request
         @request_state = :standard
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
-        @outstanding_request = req
+        @current_request = req
       when WebSocket
         @request_state = @response_state = :websocket
         @socket = SocketUpgradedError

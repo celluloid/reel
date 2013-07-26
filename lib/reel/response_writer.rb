@@ -56,18 +56,14 @@ module Reel
       # Convert headers into a string
       def render_header(response)
         response_header = "#{response.version} #{response.status} #{response.reason}#{CRLF}"
-
         unless response.headers.empty?
           response_header << response.headers.map do |header, value|
             "#{header}: #{value}"
           end.join(CRLF) << CRLF
         end
-
         response_header << CRLF
       end
       private :render_header
-
-
     end
   end
 end
