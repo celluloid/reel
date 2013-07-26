@@ -42,14 +42,14 @@ module Reel
     end
 
     # Reset the current request state
-    def reset_request(state = :standard)
+    def reset_request(state = :ready)
       @request_state = state
       @current_request = nil
       @parser.reset
     end
 
     def readpartial(size = @buffer_size)
-      raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :standard
+      raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :ready
       @parser.readpartial(size)
     end
 
@@ -65,7 +65,7 @@ module Reel
 
       case req
       when Request
-        @request_state = :standard
+        @request_state = :ready
         @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
         @current_request = req
       when WebSocket
@@ -118,7 +118,7 @@ module Reel
       @keepalive = false
     ensure
       if @keepalive
-        reset_request(:standard)
+        reset_request(:ready)
       else
         @socket.close unless @socket.closed?
         reset_request(:closed)
