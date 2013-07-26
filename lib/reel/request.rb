@@ -114,10 +114,7 @@ module Reel
         unless finished_reading? || @body.length >= length
           @connection.readpartial(length - @body.length)
         end
-        slice = @body[0..(length-1)]
-
-        # Reset buffer to not include bytes already read
-        @body = @body[length..-1]
+        slice = @body.slice!(0...length)
       end
       slice && slice.length == 0 ? nil : slice
     end

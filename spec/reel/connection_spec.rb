@@ -225,7 +225,27 @@ describe Reel::Connection do
     end
   end
 
-  it 'streams body properly' do
+  it 'streams body properly with #read and buffered body' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "I'm data you can stream!"
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      request.should be_a(Reel::Request)
+      request.should_not be_finished_reading
+      client << content
+      rebuilt = []
+      connection.readpartial(64) # Buffer some body
+      while chunk = request.read(8)
+        rebuilt << chunk
+      end
+      request.should be_finished_reading
+      rebuilt.should == ["I'm data", " you can", " stream!"]
+    end
+  end
+  it 'streams body properly with #body &block' do
     with_socket_pair(8) do |client, connection|
       example_request = ExampleRequest.new
       content = "I'm data you can stream!"
