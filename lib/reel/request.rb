@@ -107,7 +107,7 @@ module Reel
     # Body buffer is cleared as bytes are read from it.
     def read_from_body(length = nil)
       if length.nil?
-        slice = body
+        slice = @body
         @body = nil
       else
         @body ||= ''

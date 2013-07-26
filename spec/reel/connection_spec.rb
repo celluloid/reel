@@ -155,6 +155,35 @@ describe Reel::Connection do
       end
     end
   end
+  it "reads pipelined requests with streamed bodies" do
+    with_socket_pair(4) do |client, connection|
+      3.times do |i|
+        body = "Hello, world number #{i}!"
+        example_request = ExampleRequest.new
+        example_request.body = body
+
+        client << example_request.to_s
+      end
+
+      3.times do |i|
+        request = connection.request
+
+        expected_body = "Hello, world number #{i}!"
+        request.url.should     eq "/"
+        request.version.should eq "1.1"
+        request['Content-Length'].should eq expected_body.length.to_s
+        request.should_not be_finished_reading
+        new_content = ""
+        request.body do |chunk|
+          new_content << chunk
+        end
+        new_content.should == expected_body
+        request.should be_finished_reading
+
+        connection.respond :ok, {}, ""
+      end
+    end
+  end
 
   # This test will deadlock rspec waiting unless
   # connection.request works properly
@@ -169,6 +198,30 @@ describe Reel::Connection do
       request.should be_a(Reel::Request)
       client << content
       request.body.should == content
+    end
+  end
+
+  it 'blocks on read until written' do
+    with_socket_pair do |client, connection|
+      example_request = ExampleRequest.new
+      content = "Hi guys! Sorry I'm late to the party."
+      example_request['Content-Length'] = content.length
+      client << example_request.to_s
+
+      request = connection.request
+      timers = Timers.new
+      timers.after(0.2){
+        client << content
+      }
+      read_body = ""
+      timers.after(0.1){
+        timers.wait # continue timers, the next bit will block waiting for content
+        read_body = request.read(8)
+      }
+      timers.wait
+
+      request.should be_a(Reel::Request)
+      read_body.should == content[0..7]
     end
   end
 
