@@ -60,7 +60,7 @@ module Reel
 
       # Send body directly to Reel::Response to be buffered.
       def on_body(chunk)
-        @currently_reading.add_body(chunk)
+        @currently_reading.fill_buffer(chunk)
       end
 
       # Mark current request as complete, set this as ready to respond.

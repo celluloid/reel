@@ -35,7 +35,7 @@ describe Reel::Server do
       begin
         request = connection.request
         request.method.should eq 'POST'
-        connection.respond :ok, request.body
+        connection.respond :ok, request.body.to_s
       rescue => ex
       end
     end

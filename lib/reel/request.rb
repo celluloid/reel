@@ -17,69 +17,37 @@ module Reel
     end
 
     def_delegators :@connection, :<<, :write, :respond, :finish_response
+    attr_reader :body
 
     # request_info is a RequestInfo object including the headers and
     # the url, method and http version.
     #
     # Access it through the RequestMixin methods.
     def initialize(request_info, connection = nil)
-      @request_info = request_info
-      @connection = connection
+      @request_info  = request_info
+      @connection    = connection
+      @finished      = false
+      @buffer        = ""
+      @body          = RequestBody.new(self)
       @finished_read = false
     end
 
     # Returns true if request fully finished reading
-    def finished_reading?;  @finished_read;  end
+    def finished_reading?; @finished_read; end
 
     # When HTTP Parser marks the message parsing as complete, this will be set.
     def finish_reading!
+      raise StateError, "already finished" if @finished_read
       @finished_read = true
     end
 
-    # Buffer body sent from connection, or send it directly to
-    # the @on_body callback if set (calling #body with a block)
-    def add_body(chunk)
-      if @on_body
-        @on_body.call(chunk)
-      else
-        @body ||= ""
-        @body << chunk
-      end
-    end
-
-    # Returns the body, if a block is given, the body is streamed
-    # to the block as the chunks become available, until the body
-    # has been read.
-    #
-    # If no block is given, the entire body will be read from the
-    # connection into the body buffer and then returned.
-    def body
-      raise "no connection given" unless @connection
-
-      if block_given?
-        # Callback from the http_parser will be calling add_body directly
-        @on_body = Proc.new
-
-        # clear out body buffered so far
-        yield read_from_body(nil) if @body
-
-        until finished_reading?
-          @connection.readpartial
-        end
-        @on_body = nil
-      else
-        until finished_reading?
-          @connection.readpartial
-        end
-        @body
-      end
+    # Fill the request buffer with data as it becomes available
+    def fill_buffer(chunk)
+      @buffer << chunk
     end
 
     # Read a number of bytes, looping until they are available or until
-    # read_from_body returns nil, indicating there are no more bytes to read
-    #
-    # Note that bytes read from the body buffer will be cleared as they are
-    # read.
+    # readpartial returns nil, indicating there are no more bytes to read
     def read(length = nil, buffer = nil)
       raise ArgumentError, "negative length #{length} given" if length && length < 0
 
@@ -89,7 +57,7 @@ module Reel
       chunk_size = length.nil? ? @connection.buffer_size : length
       begin
         while chunk_size > 0
-          chunk = read_from_body(chunk_size)
+          chunk = readpartial(chunk_size)
           break unless chunk
           res << chunk
           chunk_size = length - res.length unless length.nil?
@@ -99,26 +67,27 @@ module Reel
       return length && res.length == 0 ? nil : res
     end
 
-    # @private
-    # Reads a number of bytes from the byte buffer, asking
-    # the connection to add to the buffer if there are not enough
-    # bytes available.
-    #
-    # Body buffer is cleared as bytes are read from it.
-    def read_from_body(length = nil)
-      if length.nil?
-        slice = @body
-        @body = nil
+    # Read a string up to the given number of bytes, blocking until some
+    # data is available but returning immediately if some data is available
+    def readpartial(length = nil)
+      if length.nil? && @buffer.length > 0
+        slice = @buffer
+        @buffer = ""
       else
-        @body ||= ''
-        unless finished_reading? || @body.length >= length
-          @connection.readpartial(length - @body.length)
+        unless finished_reading? || (length && length <= @buffer.length)
+          @connection.readpartial(length ? length - @buffer.length : Connection::BUFFER_SIZE)
         end
-        slice = @body.slice!(0, length)
+
+        if length
+          slice = @buffer.slice!(0, length)
+        else
+          slice = @buffer
+          @buffer = ""
+        end
       end
+
       slice && slice.length == 0 ? nil : slice
     end
-    private :read_from_body
 
   end
 end

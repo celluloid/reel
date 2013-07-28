@@ -1,3 +1,8 @@
+0.5.0
+-----
+* Pipelining support
+* Reel::Request#body now returns a Reel::RequestBody object instead of a String
+
 0.4.0
 ----
 * Allow Reel to stop cleanly
