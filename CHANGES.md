@@ -2,6 +2,9 @@
 -----
 * Pipelining support
 * Reel::Request#body now returns a Reel::RequestBody object instead of a String
+* New WebSocket API: obtain WebSockets through Reel::Request#websocket instead
+  of through Reel::Connection#request. Allows processing of WebSockets through
+  other means than the built-in WebSocket support
 
 0.4.0
 ----

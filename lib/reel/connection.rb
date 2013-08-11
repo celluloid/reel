@@ -59,20 +59,12 @@ module Reel
 
     # Read a request object from the connection
     def request
-      return if @request_state == :websocket
-      raise StateError, "current request not responded to" if current_request
-      req = @parser.current_request
+      raise StateError, "already processing a request" if current_request
 
-      case req
-      when Request
-        @request_state = :ready
-        @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
-        @current_request = req
-      when WebSocket
-        @request_state = @response_state = :websocket
-        @socket = SocketUpgradedError
-      else raise "unexpected request type: #{req.class}"
-      end
+      req = @parser.current_request
+      @request_state = :ready
+      @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
+      @current_request = req
 
       req
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
@@ -141,9 +133,30 @@ module Reel
 
     # Close the connection
     def close
-      raise StateError, "connection upgraded to Reel::WebSocket, call close on the websocket instance" if @response_state == :websocket
+      raise StateError, "socket has been hijacked from this connection" unless @socket
+
       @keepalive = false
       @socket.close unless @socket.closed?
+    end
+
+    # Hijack the socket from the connection
+    def hijack_socket
+      # FIXME: this doesn't do a great job of ensuring we can hijack the socket
+      # in its current state. Improve the state detection.
+      if @request_state != :ready && @response_state != :header
+        raise StateError, "connection is not in a hijackable state"
+      end
+
+      @request_state = @response_state = :hijacked
+      socket  = @socket
+      @socket = nil
+      socket
+    end
+
+    # Raw access to the underlying socket
+    def socket
+      raise StateError, "socket has already been hijacked" unless @socket
+      @socket
     end
   end
 end

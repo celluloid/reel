@@ -5,17 +5,6 @@ module Reel
     extend Forwardable
     include RequestMixin
 
-    def self.build(request_info, connection)
-      request_info.method ||
-        raise(ArgumentError, "Unknown Request Method: %s" % request_info.http_method)
-
-      if request_info.websocket_request?
-        WebSocket.new(request_info, connection.socket)
-      else
-        Request.new(request_info, connection)
-      end
-    end
-
     def_delegators :@connection, :<<, :write, :respond, :finish_response
     attr_reader :body
 
@@ -30,6 +19,7 @@ module Reel
       @buffer        = ""
       @body          = RequestBody.new(self)
       @finished_read = false
+      @websocket     = nil
     end
 
     # Returns true if request fully finished reading
@@ -89,5 +79,16 @@ module Reel
       slice && slice.length == 0 ? nil : slice
     end
 
+    # Can the current request be upgraded to a WebSocket?
+    def websocket?; @request_info.websocket_request?; end
+
+    # Return a Reel::WebSocket for this request, hijacking the socket from
+    # the underlying connection
+    def websocket
+      @websocket ||= begin
+        raise StateError, "can't upgrade this request to a websocket" unless websocket?
+        WebSocket.new(@request_info, @connection.hijack_socket)
+      end
+    end
   end
 end

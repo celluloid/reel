@@ -88,8 +88,8 @@ module Reel
 
     def websocket_env request
       env = env(request)
-      env[REMOTE_ADDR]    = request.remote_ip
-      env[RACK_WEBSOCKET] = request
+      env[RACK_WEBSOCKET] = request.websocket
+      env[REMOTE_ADDR]    = request.websocket.remote_ip
       env
     end
 
