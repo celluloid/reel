@@ -111,7 +111,7 @@ module Reel
     def env request
       env = Hash[PROTO_RACK_ENV]
 
-      env[RACK_INPUT] = StringIO.new(request.body || INITIAL_BODY)
+      env[RACK_INPUT] = StringIO.new(request.body.to_s || INITIAL_BODY)
       env[RACK_INPUT].set_encoding(Encoding::BINARY) if env[RACK_INPUT].respond_to?(:set_encoding)
       env[SERVER_NAME], env[SERVER_PORT] = (request[HOST]||'').split(':', 2)
       env[SERVER_PORT] ||= @handler[:port].to_s
