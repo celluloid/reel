@@ -16,7 +16,7 @@ module Reel
       super()
       @server = Reel::Server.supervise(host, port) do |connection|
         while request = connection.request
-          status, headers, body = call Rack::MockRequest.env_for(request.url, :method => request.method, :input => request.body)
+          status, headers, body = call Rack::MockRequest.env_for(request.url, :method => request.method, :input => request.body.to_s)
           response_klass = body.is_a?(Stream) ? StreamResponse : Response
           connection.respond(response_klass.new(status_symbol(status), headers, body))
         end
