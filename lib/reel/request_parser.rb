@@ -50,7 +50,7 @@ module Reel
       #
       def on_headers_complete(headers)
         info = RequestInfo.new(http_method, url, http_version, headers)
-        req = Request.build(info, connection)
+        req = Request.new(info, connection)
         if @currently_reading.nil?
           @currently_reading = req
         else

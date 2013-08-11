@@ -75,15 +75,16 @@ require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
   while request = connection.request
-    case request
-    when Reel::Request
+    if request.websocket?
+      puts "Client made a WebSocket request to: #{request.url}"
+      websocket = request.websocket
+
+      websocket << "Hello everyone out there in WebSocket land"
+      websocket.close
+      break
+    else
       puts "Client requested: #{request.method} #{request.url}"
       request.respond :ok, "Hello, world!"
-    when Reel::WebSocket
-      puts "Client made a WebSocket request to: #{request.url}"
-      request << "Hello everyone out there in WebSocket land"
-      request.close
-      break
     end
   end
 end
@@ -109,11 +110,11 @@ class MyServer < Reel::Server
 
   def on_connection(connection)
     while request = connection.request
-      case request
-      when Reel::Request
-        handle_request(request)
-      when Reel::WebSocket
+      if request.websocket?
         handle_websocket(request)
+        break
+      else
+        handle_request(request)
       end
     end
   end
@@ -133,6 +134,7 @@ MyServer.run
 
 Framework Adapters
 ------------------
+
 ### Rack
 
 Reel can be used as a standard Rack server via the "reel" command line
@@ -179,7 +181,7 @@ MyApp = Webmachine::Application.new do |app|
     config.port    = MYAPP_PORT
     config.adapter = :Reel
 
-    # Optional: (WM master only) handler for incoming websockets
+    # Optional: handler for incoming websockets
     config.adapter_options[:websocket_handler] = proc do |websocket|
       # socket is a Reel::WebSocket
       socket << "hello, world"

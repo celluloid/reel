@@ -48,12 +48,13 @@ class WebServer < Reel::Server
 
   def on_connection(connection)
     while request = connection.request
-      case request
-      when Reel::Request
-        route_request connection, request
-      when Reel::WebSocket
+      if request.websocket?
         info "Received a WebSocket connection"
-        route_websocket request
+        connection.detach
+        route_websocket request.websocket
+        return
+      else
+        route_request connection, request
       end
     end
   end
