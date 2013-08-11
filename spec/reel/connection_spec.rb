@@ -248,27 +248,50 @@ describe Reel::Connection do
     end
   end
 
-  it "streams request bodies" do
-    with_socket_pair(8) do |client, connection|
-      example_request = ExampleRequest.new
-      content = "I'm data you can stream!"
-      example_request['Content-Length'] = content.length
-      client << example_request.to_s
+  context "#readpartial" do
+    it "streams request bodies" do
+      with_socket_pair(8) do |client, connection|
+        example_request = ExampleRequest.new
+        content = "I'm data you can stream!"
+        example_request['Content-Length'] = content.length
+        client << example_request.to_s
 
-      request = connection.request
-      request.should be_a(Reel::Request)
-      request.should_not be_finished_reading
-      client << content
-      rebuilt = []
-      while chunk = request.body.readpartial(8)
-        rebuilt << chunk
+        request = connection.request
+        request.should be_a(Reel::Request)
+        request.should_not be_finished_reading
+        client << content
+        rebuilt = []
+        while chunk = request.body.readpartial(8)
+          rebuilt << chunk
+        end
+        request.should be_finished_reading
+        rebuilt.should == ["I'm data", " you can", " stream!"]
       end
-      request.should be_finished_reading
-      rebuilt.should == ["I'm data", " you can", " stream!"]
     end
   end
 
-  describe "Connection#read behaving like IO#read" do
+  context "#each" do
+    it "streams request bodies" do
+      with_socket_pair(8) do |client, connection|
+        example_request = ExampleRequest.new
+        content = "I'm data you can stream!"
+        example_request['Content-Length'] = content.length
+        client << example_request.to_s
+
+        request = connection.request
+        request.should be_a(Reel::Request)
+        request.should_not be_finished_reading
+        client << content
+
+        data = ""
+        request.body.each { |chunk| data << chunk }
+        request.should be_finished_reading
+        data.should == "I'm data you can stream!"
+      end
+    end
+  end
+
+  describe "IO#read duck typing" do
     it "raises an exception if length is a negative value" do
       with_socket_pair do |client, connection|
         example_request = ExampleRequest.new

@@ -1,6 +1,8 @@
 module Reel
   # Represents the bodies of Requests
   class RequestBody
+    include Enumerable
+
     def initialize(request)
       @request   = request
       @streaming = nil
@@ -17,6 +19,13 @@ module Reel
     def readpartial(length = nil)
       stream!
       @request.readpartial(length)
+    end
+
+    # Iterate over the body, allowing it to be enumerable
+    def each
+      while chunk = readpartial
+        yield chunk
+      end
     end
 
     # Eagerly consume the entire body as a string
