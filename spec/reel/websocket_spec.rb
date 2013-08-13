@@ -10,7 +10,10 @@ describe Reel::WebSocket do
     with_socket_pair do |client, connection|
       client << handshake.to_data
 
-      websocket = connection.request
+      request = connection.request
+      request.should be_websocket
+
+      websocket = request.websocket
       websocket.should be_a Reel::WebSocket
 
       handshake.errors.should be_empty
@@ -21,11 +24,9 @@ describe Reel::WebSocket do
     with_socket_pair do |client, connection|
       client << handshake.to_data
 
-      websocket = connection.request
+      websocket = connection.request.websocket
       websocket.should be_a Reel::WebSocket
-      lambda {
-        connection.close
-      }.should raise_error(Reel::Connection::StateError)
+      expect { connection.close }.to raise_error(Reel::Connection::StateError)
     end
   end
 
@@ -80,10 +81,12 @@ describe Reel::WebSocket do
 
       remote_host = connection.remote_host
 
-      websocket = connection.request
+      request = connection.request
+      request.should be_websocket
+      websocket = request.websocket
       websocket.should be_a Reel::WebSocket
 
-      lambda { connection.remote_host }.should raise_error(Reel::RequestError)
+      expect { connection.remote_host }.to raise_error(Reel::Connection::StateError)
       websocket.remote_host.should == remote_host
     end
   end
@@ -91,7 +94,10 @@ describe Reel::WebSocket do
   def with_websocket_pair
     with_socket_pair do |client, connection|
       client << handshake.to_data
-      websocket = connection.request
+      request = connection.request
+
+      request.should be_websocket
+      websocket = request.websocket
       websocket.should be_a Reel::WebSocket
 
       # Discard handshake

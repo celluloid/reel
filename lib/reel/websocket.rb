@@ -7,6 +7,7 @@ module Reel
     include ConnectionMixin
     include RequestMixin
 
+    attr_reader :socket
     def_delegators :@socket, :addr, :peeraddr
 
     def initialize(info, socket)
