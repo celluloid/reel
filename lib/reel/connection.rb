@@ -74,6 +74,19 @@ module Reel
       nil
     end
 
+    # Enumerate the requests from this connection, since we might receive
+    # many if the client is using keep-alive
+    def each_request
+      while req = request
+        yield req
+
+        # Websockets upgrade the connection to the Websocket protocol
+        # Once we have finished processing a Websocket, we can't handle
+        # additional requests
+        break if req.websocket?
+      end
+    end
+
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
