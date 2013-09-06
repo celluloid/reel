@@ -15,8 +15,8 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
 
-  gem.add_runtime_dependency 'celluloid',        '>= 0.14.1'
-  gem.add_runtime_dependency 'celluloid-io',     '>= 0.14.1'
+  gem.add_runtime_dependency 'celluloid',        '>= 0.15.0'
+  gem.add_runtime_dependency 'celluloid-io',     '>= 0.15.0'
   gem.add_runtime_dependency 'http',             '>= 0.5.0.pre'
   gem.add_runtime_dependency 'http_parser.rb',   '>= 0.6.0.beta.2'
   gem.add_runtime_dependency 'websocket_parser', '>= 0.1.4'
