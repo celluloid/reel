@@ -2,7 +2,6 @@
 =======
 [![Gem Version](https://badge.fury.io/rb/reel.png)](http://rubygems.org/gems/reel)
 [![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
-[![Dependency Status](https://gemnasium.com/celluloid/reel.png)](https://gemnasium.com/celluloid/reel)
 [![Code Climate](https://codeclimate.com/github/celluloid/reel.png)](https://codeclimate.com/github/celluloid/reel)
 [![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.png?branch=master)](https://coveralls.io/r/celluloid/reel)
 
