@@ -1,5 +1,6 @@
-0.4.0.pre2
+0.4.0.pre3
 ----------
+* Rack adapter moved to the reel-rack project
 * Pipelining support
 * Reel::Connection#each_request for iterating through keep-alive requests
 * Reel::Request#body now returns a Reel::RequestBody object instead of a String
@@ -10,6 +11,7 @@
 * Remove `on_error` callback system
 * Increase buffer size
 * Remove Reel::App (unmaintained, sorry)
+* Reel::CODENAME added (presently "Garbo")
 
 0.3.0
 -----
