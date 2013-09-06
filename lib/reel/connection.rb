@@ -41,13 +41,6 @@ module Reel
       self
     end
 
-    # Reset the current request state
-    def reset_request(state = :ready)
-      @request_state = state
-      @current_request = nil
-      @parser.reset
-    end
-
     def readpartial(size = @buffer_size)
       raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :ready
       @parser.readpartial(size)
@@ -171,5 +164,13 @@ module Reel
       raise StateError, "socket has already been hijacked" unless @socket
       @socket
     end
+
+    # Reset the current request state
+    def reset_request(state = :ready)
+      @request_state = state
+      @current_request = nil
+      @parser.reset
+    end
+    private :reset_request
   end
 end
