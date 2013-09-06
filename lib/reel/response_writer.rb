@@ -13,6 +13,8 @@ module Reel
         chunk_header = chunk.bytesize.to_s(16)
         @socket << chunk_header + CRLF
         @socket << chunk + CRLF
+      rescue Errno::ECONNRESET => ex
+        raise Reel::SocketError, ex.to_s
       end
 
       # Finish the response and reset the response state to header
