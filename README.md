@@ -65,8 +65,9 @@ API
 
 *NOTE: these examples are for the Reel 0.4.0.pre2 API*
 
-Reel also provides a "bare metal" API which was used in the benchmarks above.
-Here are some examples:
+Reel aims to provide a "bare metal" API that other frameworks (such as Rack
+and Webmachine) can leverage. This API can also be nice in performance critical
+applications.
 
 ### Block Form
 
