@@ -22,11 +22,6 @@ require 'reel/ssl_server'
 require 'reel/websocket'
 require 'reel/stream'
 
-require 'rack'
-require 'rack/handler'
-require 'rack/handler/reel'
-require 'reel/rack_worker'
-
 # A Reel good HTTP server
 module Reel
 
