@@ -37,7 +37,7 @@ describe Reel::Connection do
     end
   end
 
-  it "serves static files" do
+  it "reads requests with large bodies" do
     with_socket_pair do |client, connection|
       client << ExampleRequest.new.to_s
       request = connection.request
@@ -50,6 +50,22 @@ describe Reel::Connection do
 
       response = client.read(4096)
       response[(response.length - fixture_text.length)..-1].should eq fixture_text
+    end
+  end
+
+  it "enumerates requests with #each_request" do
+    with_socket_pair do |client, connection|
+      client << ExampleRequest.new.to_s
+
+      request_count = 0
+      connection.each_request do |request|
+        request_count += 1
+        request.url.should eq "/"
+        request.respond :ok
+        client.close
+      end
+
+      request_count.should eq 1
     end
   end
 

@@ -74,14 +74,15 @@ Reel lets you pass a block to initialize which receives connections:
 require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
-  while request = connection.request
+  # Support multiple keep-alive requests per connection
+  connection.each_request do |request|
+    # WebSocket support
     if request.websocket?
       puts "Client made a WebSocket request to: #{request.url}"
       websocket = request.websocket
 
       websocket << "Hello everyone out there in WebSocket land"
       websocket.close
-      break
     else
       puts "Client requested: #{request.method} #{request.url}"
       request.respond :ok, "Hello, world!"
@@ -109,10 +110,9 @@ class MyServer < Reel::Server
   end
 
   def on_connection(connection)
-    while request = connection.request
+    connection.each_request do |request|
       if request.websocket?
         handle_websocket(request)
-        break
       else
         handle_request(request)
       end
