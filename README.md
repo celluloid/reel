@@ -63,6 +63,8 @@ and are not amortized across all concurrent requests.
 API
 ---
 
+*NOTE: these examples are for the Reel 0.4.0.pre2 API*
+
 Reel also provides a "bare metal" API which was used in the benchmarks above.
 Here are some examples:
 
