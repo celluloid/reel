@@ -9,6 +9,7 @@
 * Allow Reel to stop cleanly
 * Remove `on_error` callback system
 * Increase buffer size
+* Remove Reel::App (unmaintained, sorry)
 
 0.3.0
 -----
