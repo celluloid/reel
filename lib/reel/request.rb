@@ -5,7 +5,7 @@ module Reel
     extend Forwardable
     include RequestMixin
 
-    def_delegators :@connection, :<<, :write, :respond, :finish_response
+    def_delegators :@connection, :<<, :write, :remote_addr, :respond, :finish_response
     attr_reader :body
 
     # request_info is a RequestInfo object including the headers and
