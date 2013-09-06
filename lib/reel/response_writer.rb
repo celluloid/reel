@@ -13,7 +13,7 @@ module Reel
         chunk_header = chunk.bytesize.to_s(16)
         @socket << chunk_header + CRLF
         @socket << chunk + CRLF
-      rescue Errno::EPIPE, Errno::ECONNRESET => ex
+      rescue IOError, Errno::EPIPE, Errno::ECONNRESET => ex
         raise Reel::SocketError, ex.to_s
       end
 
