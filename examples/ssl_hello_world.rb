@@ -13,15 +13,16 @@ options = {
 
 puts "*** Starting server on #{addr}:#{port}"
 Reel::SSLServer.supervise(addr, port, options) do |connection|
-  # To use keep-alive with Reel, use a while loop that repeatedly calls
-  # connection.request and consumes connection objects
-  while request = connection.request
+  # For keep-alive support
+  connection.each_request do |request|
     # Ordinarily we'd route the request here, e.g.
     # route request.url
-    connection.respond :ok, "hello, world!"
+    request.respond :ok, "hello, world!"
   end
 
-  # Reel takes care of closing the connection
+  # Reel takes care of closing the connection for you
+  # If you would like to hand the connection off to another thread or actor,
+  # use, connection.detach and then manually call connection.close when done
 end
 
 sleep
