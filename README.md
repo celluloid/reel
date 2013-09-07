@@ -2,11 +2,10 @@
 =======
 [![Gem Version](https://badge.fury.io/rb/reel.png)](http://rubygems.org/gems/reel)
 [![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
-[![Dependency Status](https://gemnasium.com/celluloid/reel.png)](https://gemnasium.com/celluloid/reel)
 [![Code Climate](https://codeclimate.com/github/celluloid/reel.png)](https://codeclimate.com/github/celluloid/reel)
 [![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.png?branch=master)](https://coveralls.io/r/celluloid/reel)
 
-> "A dizzying lifetime... reeling by on Celluloid" _-- Rush / Between The Wheels_
+> "A dizzying lifetime... reeling by on celluloid" _-- Rush / Between The Wheels_
 
 Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
 [websocket_parser][websockets], [Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
@@ -63,8 +62,11 @@ and are not amortized across all concurrent requests.
 API
 ---
 
-Reel also provides a "bare metal" API which was used in the benchmarks above.
-Here are some examples:
+*NOTE: these examples are for the Reel 0.4.0.pre2 API*
+
+Reel aims to provide a "bare metal" API that other frameworks (such as Rack
+and Webmachine) can leverage. This API can also be nice in performance critical
+applications.
 
 ### Block Form
 
@@ -74,14 +76,15 @@ Reel lets you pass a block to initialize which receives connections:
 require 'reel'
 
 Reel::Server.supervise("0.0.0.0", 3000) do |connection|
-  while request = connection.request
+  # Support multiple keep-alive requests per connection
+  connection.each_request do |request|
+    # WebSocket support
     if request.websocket?
       puts "Client made a WebSocket request to: #{request.url}"
       websocket = request.websocket
 
       websocket << "Hello everyone out there in WebSocket land"
       websocket.close
-      break
     else
       puts "Client requested: #{request.method} #{request.url}"
       request.respond :ok, "Hello, world!"
@@ -109,10 +112,9 @@ class MyServer < Reel::Server
   end
 
   def on_connection(connection)
-    while request = connection.request
+    connection.each_request do |request|
       if request.websocket?
         handle_websocket(request)
-        break
       else
         handle_request(request)
       end
@@ -137,22 +139,9 @@ Framework Adapters
 
 ### Rack
 
-Reel can be used as a standard Rack server via the "reel" command line
-application. Please be aware that Rack support is experimental and that there
-are potential complications between using large numbers of rack middlewares
-and the limited 4kB stack depth of Ruby Fibers, which are used extensively
-by Celluloid. In addition, the Rack specification mandates that request bodies
-are rewindable, which prevents streaming request bodies as the spec dictates
-they must be written to disk.
+A Rack adapter for Reel is available at:
 
-To run `.ru` file using Reel w/ 16 workers
-
-```
-rackup -p 1234 -s reel config.ru -Enone -O "workers=16" 
-```
-
-To really leverage Reel's capabilities, you must use Reel via its own API,
-or another Ruby library with direct Reel support.
+https://github.com/celluloid/reel-rack
 
 ### Webmachine
 

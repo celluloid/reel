@@ -1,8 +1,8 @@
 module Reel
   class Response
     class Writer
-
       CRLF = "\r\n"
+
       def initialize(socket, connection)
         @socket = socket
         @connection = connection
@@ -13,6 +13,8 @@ module Reel
         chunk_header = chunk.bytesize.to_s(16)
         @socket << chunk_header + CRLF
         @socket << chunk + CRLF
+      rescue IOError, Errno::EPIPE, Errno::ECONNRESET => ex
+        raise Reel::SocketError, ex.to_s
       end
 
       # Finish the response and reset the response state to header

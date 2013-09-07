@@ -41,13 +41,6 @@ module Reel
       self
     end
 
-    # Reset the current request state
-    def reset_request(state = :ready)
-      @request_state = state
-      @current_request = nil
-      @parser.reset
-    end
-
     def readpartial(size = @buffer_size)
       raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :ready
       @parser.readpartial(size)
@@ -72,6 +65,19 @@ module Reel
       @request_state = :closed
       @keepalive = false
       nil
+    end
+
+    # Enumerate the requests from this connection, since we might receive
+    # many if the client is using keep-alive
+    def each_request
+      while req = request
+        yield req
+
+        # Websockets upgrade the connection to the Websocket protocol
+        # Once we have finished processing a Websocket, we can't handle
+        # additional requests
+        break if req.websocket?
+      end
     end
 
     # Send a response back to the client
@@ -158,5 +164,13 @@ module Reel
       raise StateError, "socket has already been hijacked" unless @socket
       @socket
     end
+
+    # Reset the current request state
+    def reset_request(state = :ready)
+      @request_state = state
+      @current_request = nil
+      @parser.reset
+    end
+    private :reset_request
   end
 end
