@@ -17,7 +17,7 @@ module Reel
       self.status = status
 
       if body_or_headers.is_a?(Hash)
-        headers = body_or_headers
+        headers = {}.merge body_or_headers
         @body = body
       else
         headers = {}
