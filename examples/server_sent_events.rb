@@ -3,35 +3,18 @@
 # Test with: curl -vNH 'Accept: text/event-stream' -H 'Last-Event-ID: 1' -H 'Cache-Control: no-cache' http://localhost:63310
 
 require 'bundler/setup'
-require 'celluloid/autostart'
 require 'time'
 require 'reel'
 
-class TimePusher
-  include Celluloid
-  include Celluloid::Notifications
-
-  def initialize
-    async.ring
-  end
-
-  def ring
-    every(2) do
-      publish(:time, Time.now.httpdate)
-    end
-  end
-end
-
 class ServerSentEvents < Reel::Server
   include Celluloid::Logger
-  include Celluloid::Notifications
   
   def initialize(ip = '127.0.0.1', port = 63310)
     @connections = []
     @history = []
     @lastMessageId = 0
     async.ping
-    subscribe(/.*/, :broadcast)
+    async.ring
     super(ip, port, &method(:on_connection))
   end
 
@@ -56,7 +39,7 @@ class ServerSentEvents < Reel::Server
       socket.id id if id
       socket.event event if event
       socket.data data
-    rescue
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       @connections.delete(socket)
     end
   end
@@ -66,7 +49,7 @@ class ServerSentEvents < Reel::Server
       begin
         #Lines that start with a Colon are Comments and will be ignored
         socket << ":\n"
-      rescue
+      rescue IOError, Errno::ECONNRESET, Errno::EPIPE
         @connections.delete(socket)
       end
     end
@@ -76,6 +59,12 @@ class ServerSentEvents < Reel::Server
     #apache 2.2 closes connections after five seconds when nothing is send
     every(5) do
       send_ping
+    end
+  end
+
+  def ring
+    every(2) do
+      broadcast(:time, Time.now.httpdate)
     end
   end
 
@@ -100,7 +89,7 @@ class ServerSentEvents < Reel::Server
           else
             socket << "id\n\n"
           end
-        rescue
+        rescue ArgumentError, IOError, Errno::ECONNRESET, Errno::EPIPE
           @connections.delete(socket)
           request.close
         end
