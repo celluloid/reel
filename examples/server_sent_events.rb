@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-# Run with: bundle exec examples/ServerSentEvents.rb
-# Test with: curl -vNH 'Accept: text/event-stream' -H 'Last-Event-ID: 1' -H 'Cache-Control: no-cache' http://localhost:63334
+# Run with: bundle exec examples/server_sent_events.rb
+# Test with: curl -vNH 'Accept: text/event-stream' -H 'Last-Event-ID: 1' -H 'Cache-Control: no-cache' http://localhost:63310
 
 require 'bundler/setup'
 require 'celluloid/autostart'
