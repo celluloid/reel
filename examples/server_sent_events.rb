@@ -112,5 +112,4 @@ class ServerSentEvents < Reel::Server
   end
 end
 
-TimePusher.new
 ServerSentEvents.run
