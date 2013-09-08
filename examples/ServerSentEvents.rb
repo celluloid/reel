@@ -23,7 +23,7 @@ class TimePusher
 end
 
 class ServerSentEvents < Reel::Server
-#  include Celluloid::Logger
+  include Celluloid::Logger
   include Celluloid::Notifications
   
   def initialize(ip = '127.0.0.1', port = 63310)
@@ -42,6 +42,7 @@ class ServerSentEvents < Reel::Server
     end
     @lastMessageId += 1
     @history << {id: @lastMessageId, event: event, data: data}
+    info "Sending Event: #{event} Data: #{data} to #{@connections.count} Clients"
     @connections.each do |socket|
       async.send_sse(socket, data, event, @lastMessageId)
     end
