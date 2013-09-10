@@ -59,8 +59,58 @@ Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
 and are not amortized across all concurrent requests.
 
-API
----
+Framework Adapters
+------------------
+
+### Rack
+
+A Rack adapter for Reel is available at:
+
+https://github.com/celluloid/reel-rack
+
+### Webmachine
+
+The most notable library with native Reel support is
+[webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
+an advanced HTTP framework for Ruby with a complete state machine for proper
+processing of HTTP/1.1 requests. Together with Reel, Webmachine provides
+full streaming support for both requests and responses.
+
+To use Reel with Webmachine, add the following to your Gemfile:
+
+```ruby
+gem 'webmachine', git: 'git://github.com/seancribbs/webmachine-ruby.git'
+```
+
+Then use `config.adapter = :Reel` when configuring a Webmachine app, e.g:
+
+```ruby
+MyApp = Webmachine::Application.new do |app|
+  app.routes do
+    add ['*'], MyHome
+  end
+
+  app.configure do |config|
+    config.ip      = MYAPP_IP
+    config.port    = MYAPP_PORT
+    config.adapter = :Reel
+
+    # Optional: handler for incoming websockets
+    config.adapter_options[:websocket_handler] = proc do |websocket|
+      # socket is a Reel::WebSocket
+      socket << "hello, world"
+    end
+  end
+end
+
+MyApp.run
+```
+
+See the [Webmachine documentation](http://rubydoc.info/gems/webmachine/frames/file/README.md)
+for further information
+
+Ruby API
+--------
 
 *NOTE: these examples are for the Reel 0.4.0.pre2 API*
 
@@ -133,56 +183,6 @@ end
 
 MyServer.run
 ```
-
-Framework Adapters
-------------------
-
-### Rack
-
-A Rack adapter for Reel is available at:
-
-https://github.com/celluloid/reel-rack
-
-### Webmachine
-
-The most notable library with native Reel support is
-[webmachine-ruby](https://github.com/seancribbs/webmachine-ruby),
-an advanced HTTP framework for Ruby with a complete state machine for proper
-processing of HTTP/1.1 requests. Together with Reel, Webmachine provides
-full streaming support for both requests and responses.
-
-To use Reel with Webmachine, add the following to your Gemfile:
-
-```ruby
-gem 'webmachine', git: 'git://github.com/seancribbs/webmachine-ruby.git'
-```
-
-Then use `config.adapter = :Reel` when configuring a Webmachine app, e.g:
-
-```ruby
-MyApp = Webmachine::Application.new do |app|
-  app.routes do
-    add ['*'], MyHome
-  end
-
-  app.configure do |config|
-    config.ip      = MYAPP_IP
-    config.port    = MYAPP_PORT
-    config.adapter = :Reel
-
-    # Optional: handler for incoming websockets
-    config.adapter_options[:websocket_handler] = proc do |websocket|
-      # socket is a Reel::WebSocket
-      socket << "hello, world"
-    end
-  end
-end
-
-MyApp.run
-```
-
-See the [Webmachine documentation](http://rubydoc.info/gems/webmachine/frames/file/README.md)
-for further information
 
 Contributing
 ------------
