@@ -1,4 +1,4 @@
-0.4.0.pre6
+0.4.0.pre7
 ----------
 * Rack adapter moved to the reel-rack project
 * Pipelining support
