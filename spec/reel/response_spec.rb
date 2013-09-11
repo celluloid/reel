@@ -15,4 +15,17 @@ describe Reel::Response do
       response[(response.length - fixture.length)..-1].should eq fixture
     end
   end
+
+  it "canonicalizes response headers" do
+    with_socket_pair do |client, connection|
+      client << ExampleRequest.new.to_s
+      request = connection.request
+
+      connection.respond Reel::Response.new(:ok, {"content-type" => "application/json"}, "['mmmkay']")
+      connection.close
+
+      response = client.read(4096)
+      expect(response["Content-Type: application/json"]).to_not be_nil
+    end
+  end
 end

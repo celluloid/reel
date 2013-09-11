@@ -1,13 +1,14 @@
 module Reel
   class Response
+    include HTTP::Header
 
     CONTENT_LENGTH     = 'Content-Length'.freeze
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     CHUNKED            = 'chunked'.freeze
 
-    # Use status code tables from the Http gem
-    STATUS_CODES          = Http::Response::STATUS_CODES
-    SYMBOL_TO_STATUS_CODE = Http::Response::SYMBOL_TO_STATUS_CODE
+    # Use status code tables from the HTTP gem
+    STATUS_CODES          = HTTP::Response::STATUS_CODES
+    SYMBOL_TO_STATUS_CODE = HTTP::Response::SYMBOL_TO_STATUS_CODE
 
     attr_reader   :status # Status has a special setter to coerce symbol names
     attr_accessor :reason # Reason can be set explicitly if desired
@@ -62,7 +63,7 @@ module Reel
 
     def canonicalize_headers(headers)
       headers.inject({}) do |headers, (header, value)|
-        headers.merge Http.canonicalize_header(header) => value.to_s
+        headers.merge canonicalize_header(header) => value.to_s
       end.freeze
     end
     private :canonicalize_headers
