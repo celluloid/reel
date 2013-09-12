@@ -4,7 +4,8 @@ describe Reel::Connection do
   let(:fixture_path) { File.expand_path("../../fixtures/example.txt", __FILE__) }
 
   it "reads requests without bodies" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
       request = connection.request
 
@@ -22,7 +23,8 @@ describe Reel::Connection do
   end
 
   it "reads requests with bodies" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       body = "Hello, world!"
       example_request = ExampleRequest.new
       example_request.body = body
@@ -38,7 +40,8 @@ describe Reel::Connection do
   end
 
   it "reads requests with large bodies" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
       request = connection.request
 
@@ -54,7 +57,8 @@ describe Reel::Connection do
   end
 
   it "enumerates requests with #each_request" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
 
       request_count = 0
@@ -70,7 +74,8 @@ describe Reel::Connection do
   end
 
   it "streams responses when transfer-encoding is chunked" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
       request = connection.request
 
@@ -99,7 +104,8 @@ describe Reel::Connection do
   end
 
   it "reset the request after a response is sent" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       example_request = ExampleRequest.new(:get, "/", "1.1", {'Connection' => 'close'})
       client << example_request
 
@@ -112,24 +118,24 @@ describe Reel::Connection do
   end
 
   it "raises an error trying to read two pipelines without responding first" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+
       2.times do
         client << ExampleRequest.new.to_s
       end
 
-      lambda{
-        2.times do
-          request = connection.request
-        end
-      }.should raise_error(Reel::Connection::StateError)
+      expect do
+        2.times { request = connection.request }
+      end.to raise_error(Reel::Connection::StateError)
     end
   end
 
   it "reads pipelined requests without bodies" do
-    with_socket_pair do |client, connection|
-      3.times do
-        client << ExampleRequest.new.to_s
-      end
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+
+      3.times { client << ExampleRequest.new.to_s }
 
       3.times do
         request = connection.request
@@ -150,7 +156,9 @@ describe Reel::Connection do
   end
 
   it "reads pipelined requests with bodies" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+
       3.times do |i|
         body = "Hello, world number #{i}!"
         example_request = ExampleRequest.new
@@ -174,7 +182,9 @@ describe Reel::Connection do
   end
 
   it "reads pipelined requests with streamed bodies" do
-    with_socket_pair(4) do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer, 4)
+
       3.times do |i|
         body = "Hello, world number #{i}!"
         example_request = ExampleRequest.new
@@ -206,8 +216,10 @@ describe Reel::Connection do
   # This test will deadlock rspec waiting unless
   # connection.request works properly
   it "does not block waiting for body to read before handling request" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       example_request = ExampleRequest.new
+
       content = "Hi guys! Sorry I'm late to the party."
       example_request['Content-Length'] = content.length
       client << example_request.to_s
@@ -220,8 +232,10 @@ describe Reel::Connection do
   end
 
   it "blocks on read until written" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       example_request = ExampleRequest.new
+
       content = "Hi guys! Sorry I'm late to the party."
       example_request['Content-Length'] = content.length
       client << example_request.to_s
@@ -244,8 +258,10 @@ describe Reel::Connection do
   end
 
   it "streams body properly with #read and buffered body" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       example_request = ExampleRequest.new
+
       content = "I'm data you can stream!"
       example_request['Content-Length'] = content.length
       client << example_request.to_s
@@ -266,8 +282,10 @@ describe Reel::Connection do
 
   context "#readpartial" do
     it "streams request bodies" do
-      with_socket_pair(8) do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer, 8)
         example_request = ExampleRequest.new
+
         content = "I'm data you can stream!"
         example_request['Content-Length'] = content.length
         client << example_request.to_s
@@ -288,8 +306,10 @@ describe Reel::Connection do
 
   context "#each" do
     it "streams request bodies" do
-      with_socket_pair(8) do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
+
         content = "I'm data you can stream!"
         example_request['Content-Length'] = content.length
         client << example_request.to_s
@@ -309,7 +329,8 @@ describe Reel::Connection do
 
   describe "IO#read duck typing" do
     it "raises an exception if length is a negative value" do
-      with_socket_pair do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
 
         client << example_request.to_s
@@ -320,7 +341,8 @@ describe Reel::Connection do
     end
 
     it "returns an empty string if the length is zero" do
-      with_socket_pair do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
 
         client << example_request.to_s
@@ -331,10 +353,10 @@ describe Reel::Connection do
     end
 
     it "reads to EOF if length is nil, even small buffer" do
-      with_socket_pair(4) do |client, connection|
-        body = "Hello, world!"
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer, 4)
         example_request = ExampleRequest.new
-        example_request.body = body
+        example_request.body = "Hello, world!"
         connection.buffer_size.should == 4
 
         client << example_request.to_s
@@ -345,10 +367,11 @@ describe Reel::Connection do
     end
 
     it "reads to EOF if length is nil" do
-      with_socket_pair do |client, connection|
-        body = "Hello, world!"
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
-        example_request.body = body
+        example_request.body = "Hello, world!"
+
 
         client << example_request.to_s
         request = connection.request
@@ -358,10 +381,10 @@ describe Reel::Connection do
     end
 
     it "uses the optional buffer to recieve data" do
-      with_socket_pair do |client, connection|
-        body = "Hello, world!"
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
-        example_request.body = body
+        example_request.body = "Hello, world!"
 
         client << example_request.to_s
         request = connection.request
@@ -373,10 +396,10 @@ describe Reel::Connection do
     end
 
     it "returns with the content it could read when the length longer than EOF" do
-      with_socket_pair do |client, connection|
-        body = "Hello, world!"
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
-        example_request.body = body
+        example_request.body = "Hello, world!"
 
         client << example_request.to_s
         request = connection.request
@@ -386,7 +409,8 @@ describe Reel::Connection do
     end
 
     it "returns nil at EOF if a length is passed" do
-      with_socket_pair do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
 
         client << example_request.to_s
@@ -397,7 +421,8 @@ describe Reel::Connection do
     end
 
     it "returns an empty string at EOF if length is nil" do
-      with_socket_pair do |client, connection|
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
         example_request = ExampleRequest.new
 
         client << example_request.to_s
@@ -406,7 +431,5 @@ describe Reel::Connection do
         request.read.should be_empty
       end
     end
-
   end
-
 end

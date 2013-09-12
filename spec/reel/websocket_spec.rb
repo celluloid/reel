@@ -7,7 +7,8 @@ describe Reel::WebSocket do
   let(:another_message) { "What's going on?" }
 
   it "performs websocket handshakes" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << handshake.to_data
 
       request = connection.request
@@ -21,7 +22,8 @@ describe Reel::WebSocket do
   end
 
   it "raises an error if trying to close a connection upgraded to socket" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << handshake.to_data
 
       websocket = connection.request.websocket
@@ -76,7 +78,8 @@ describe Reel::WebSocket do
   end
 
   it "raises a RequestError when connection used after it was upgraded" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << handshake.to_data
 
       remote_host = connection.remote_host
@@ -92,7 +95,8 @@ describe Reel::WebSocket do
   end
 
   def with_websocket_pair
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << handshake.to_data
       request = connection.request
 
