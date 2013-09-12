@@ -18,14 +18,14 @@ module Reel
     attr_reader :buffer_size
 
     def initialize(socket, buffer_size = nil)
-      @attached  = true
-      @socket    = socket
-      @keepalive = true
-      @parser    = Request::Parser.new(socket, self)
-      @writer    = Response::Writer.new(socket, self)
-      @buffer_size = buffer_size.nil? ? BUFFER_SIZE : buffer_size
-      reset_request
+      @attached    = true
+      @socket      = socket
+      @keepalive   = true
+      @buffer_size = buffer_size || BUFFER_SIZE
+      @parser      = Request::Parser.new(self)
+      @writer      = Response::Writer.new(socket)
 
+      reset_request
       @response_state = :header
     end
 

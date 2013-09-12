@@ -3,9 +3,8 @@ module Reel
     class Writer
       CRLF = "\r\n"
 
-      def initialize(socket, connection)
+      def initialize(socket)
         @socket = socket
-        @connection = connection
       end
 
       # Write body chunks directly to the connection
