@@ -12,7 +12,8 @@ module Reel
       ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
       ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
 
-      # FIXME: VERY VERY VERY VERY BAD RELEASE BLOCKER BAD
+      # We don't presently support verifying client certificates
+      # TODO: support client certificates!
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       @tcpserver  = Celluloid::IO::TCPServer.new(host, port)
