@@ -112,8 +112,6 @@ for further information
 Ruby API
 --------
 
-*NOTE: these examples are for the Reel 0.4.0.pre2 API*
-
 Reel aims to provide a "bare metal" API that other frameworks (such as Rack
 and Webmachine) can leverage. This API can also be nice in performance critical
 applications.
