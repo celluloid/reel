@@ -8,7 +8,7 @@ module Reel
       # Ideally we can encapsulate this rather than making Ruby OpenSSL a
       # mandatory part of the Reel API. It would be nice to support
       # alternatives (e.g. Puma's MiniSSL)
-      ssl_context = OpenSSL::SSL::SSLContext.new
+      ssl_context      = OpenSSL::SSL::SSLContext.new
       ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
       ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
 
@@ -17,7 +17,8 @@ module Reel
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       @tcpserver  = Celluloid::IO::TCPServer.new(host, port)
-      @server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
+      @server     = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
+
       @server.listen(backlog)
       @callback = callback
 
@@ -28,8 +29,8 @@ module Reel
       loop do
         begin
           socket = @server.accept
-        rescue OpenSSL::SSL::SSLError
-          # TODO: log this?
+        rescue OpenSSL::SSL::SSLError => ex
+          Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
           retry
         end
 
