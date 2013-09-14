@@ -1,4 +1,4 @@
 module Reel
-  VERSION  = "0.4.0.pre7"
+  VERSION  = "0.4.0"
   CODENAME = "Garbo"
 end
