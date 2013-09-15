@@ -59,6 +59,15 @@ Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
 and are not amortized across all concurrent requests.
 
+Documentation
+-------------
+
+[Please see the Reel Wiki](https://github.com/celluloid/reel/wiki)
+for detailed documentation and usage notes.
+
+[YARD documentation](http://rubydoc.info/github/celluloid/reel/master/frames) is
+also available.
+
 Framework Adapters
 ------------------
 
