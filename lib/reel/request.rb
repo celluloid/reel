@@ -90,5 +90,10 @@ module Reel
         WebSocket.new(@request_info, @connection.hijack_socket)
       end
     end
+
+    # Friendlier inspect
+    def inspect
+      "#<#{self.class} #{method} #{url} HTTP/#{version} @headers=#{headers.inspect}>"
+    end
   end
 end
