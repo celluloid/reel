@@ -106,8 +106,8 @@ MyApp = Webmachine::Application.new do |app|
 
     # Optional: handler for incoming websockets
     config.adapter_options[:websocket_handler] = proc do |websocket|
-      # socket is a Reel::WebSocket
-      socket << "hello, world"
+      # websocket is a Reel::WebSocket
+      websocket << "hello, world"
     end
   end
 end
