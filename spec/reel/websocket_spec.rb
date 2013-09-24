@@ -28,7 +28,7 @@ describe Reel::WebSocket do
 
       websocket = connection.request.websocket
       websocket.should be_a Reel::WebSocket
-      expect { connection.close }.to raise_error(Reel::Connection::StateError)
+      expect { connection.close }.to raise_error(Reel::StateError)
     end
   end
 
