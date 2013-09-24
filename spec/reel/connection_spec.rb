@@ -127,7 +127,7 @@ describe Reel::Connection do
 
       expect do
         2.times { request = connection.request }
-      end.to raise_error(Reel::Connection::StateError)
+      end.to raise_error(Reel::StateError)
     end
   end
 
