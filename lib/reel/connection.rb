@@ -4,8 +4,6 @@ module Reel
     include HTTPVersionsMixin
     include ConnectionMixin
 
-    class StateError < RuntimeError; end # wrong state for a given operation
-
     CONNECTION         = 'Connection'.freeze
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     KEEP_ALIVE         = 'Keep-Alive'.freeze
