@@ -89,7 +89,7 @@ describe Reel::WebSocket do
       websocket = request.websocket
       websocket.should be_a Reel::WebSocket
 
-      expect { connection.remote_host }.to raise_error(Reel::Connection::StateError)
+      expect { connection.remote_host }.to raise_error(Reel::StateError)
       websocket.remote_host.should == remote_host
     end
   end
