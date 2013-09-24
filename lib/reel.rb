@@ -44,4 +44,6 @@ module Reel
   # The method given was not understood
   class UnsupportedMethodError < ArgumentError; end
 
+  # wrong state for a given operation
+  class StateError < RuntimeError; end
 end
