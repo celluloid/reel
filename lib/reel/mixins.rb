@@ -54,6 +54,18 @@ module Reel
     def query_string
       uri.query
     end
+    
+    def query
+      q = {}
+      (query_string || '').split('&').each do |kv|
+        key, value = kv.split('=')
+        if key && value
+          key, value = CGI.unescape(key), CGI.unescape(value)
+          q[key] = value
+        end
+      end
+      q
+    end
 
     def fragment
       uri.fragment
