@@ -39,13 +39,7 @@ module Reel
                   @socket << data
                 end
               else
-                # Use OS sendfile via IO.copy_stream
-                # FIXME: should use Celluloid::IO.copy_stream and allow these
-                # calls to be multiplexed through Celluloid::IO's reactor
-                # Until then we need a thread for each of these responses
-                Celluloid.defer { IO.copy_stream(response.body, @socket.to_io) }
-                # @socket currently not being converted to appropriate IO object automatically.
-                # Convert the object in advance to still enjoy IO.copy_stream coverage.
+                Celluloid::IO.copy_stream( response.body, @socket )
               end
             ensure
               response.body.close
