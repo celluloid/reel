@@ -12,7 +12,7 @@ module Reel
     def write(data)
       @socket << data
       data
-    rescue Errno::EPIPE
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       raise SocketError, "error writing to socket"
     end
     alias :<< :write
