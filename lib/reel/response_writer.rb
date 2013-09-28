@@ -21,36 +21,24 @@ module Reel
         @socket << "0#{CRLF * 2}"
       end
 
-      # Takes a Reel::Response and renders it
-      # back over the socket.
+      # Render a given response object to the network socket
       def handle_response(response)
         @socket << render_header(response)
-        if response.respond_to?(:render)
-          response.render(@socket)
-        else
-          case response.body
-          when String
-            @socket << response.body
-          when IO
-            begin
-              if defined?(JRUBY_VERSION) && JRUBY_VERSION <= "1.6.7"
-                # JRuby 1.6.7 doesn't support IO.copy_stream :(
-                while data = response.body.read(4096)
-                  @socket << data
-                end
-              else
-                Celluloid::IO.copy_stream( response.body, @socket )
-              end
-            ensure
-              response.body.close
-            end
-          when Enumerable
-            response.body.each do |chunk|
-              write(chunk)
-            end
+        return response.render(@socket) if response.respond_to?(:render)
 
-            finish_response
-          end
+        case response.body
+        when String
+          @socket << response.body
+        when IO
+          Celluloid::IO.copy_stream(response.body, @socket)
+        when Enumerable
+          response.body.each { |chunk| write(chunk) }
+          finish_response
+        when NilClass
+          # Used for streaming Transfer-Encoding chunked responses
+          return
+        else
+          raise TypeError, "don't know how to render a #{response.body.class}"
         end
       end
 
