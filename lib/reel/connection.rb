@@ -9,7 +9,8 @@ module Reel
     KEEP_ALIVE         = 'Keep-Alive'.freeze
     CLOSE              = 'close'.freeze
 
-    attr_reader :socket, :parser
+    attr_reader   :socket, :parser, :current_request
+    attr_accessor :request_state, :response_state
 
     # Attempt to read this much data
     BUFFER_SIZE = 16384
@@ -21,7 +22,6 @@ module Reel
       @keepalive   = true
       @buffer_size = buffer_size || BUFFER_SIZE
       @parser      = Request::Parser.new(self)
-      @writer      = Response::Writer.new(socket)
 
       reset_request
       @response_state = :header
@@ -42,10 +42,6 @@ module Reel
     def readpartial(size = @buffer_size)
       raise StateError, "can't read in the '#{@request_state}' request state" unless @request_state == :ready
       @parser.readpartial(size)
-    end
-
-    def current_request
-      @current_request
     end
 
     # Read a request object from the connection
@@ -103,7 +99,7 @@ module Reel
       else raise TypeError, "invalid response: #{response.inspect}"
       end
 
-      @writer.handle_response(response)
+      current_request.handle_response(response)
 
       # Enable streaming mode
       if response.chunked? and response.body.nil?
@@ -119,20 +115,6 @@ module Reel
         @socket.close unless @socket.closed?
         reset_request(:closed)
       end
-    end
-
-    # Write body chunks directly to the connection
-    def write(chunk)
-      raise StateError, "not in chunked body mode" unless @response_state == :chunked_body
-      @writer.write(chunk)
-    end
-    alias_method :<<, :write
-
-    # Finish the response and reset the response state to header
-    def finish_response
-      raise StateError, "not in body state" if @response_state != :chunked_body
-      @writer.finish_response
-      @response_state = :header
     end
 
     # Close the connection

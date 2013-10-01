@@ -5,7 +5,8 @@ module Reel
     extend Forwardable
     include RequestMixin
 
-    def_delegators :@connection, :<<, :write, :remote_addr, :respond, :finish_response
+    def_delegators :@connection, :remote_addr, :respond
+    def_delegator  :@response_writer, :handle_response
     attr_reader :body
 
     # request_info is a RequestInfo object including the headers and
@@ -13,13 +14,14 @@ module Reel
     #
     # Access it through the RequestMixin methods.
     def initialize(request_info, connection = nil)
-      @request_info  = request_info
-      @connection    = connection
-      @finished      = false
-      @buffer        = ""
-      @body          = RequestBody.new(self)
-      @finished_read = false
-      @websocket     = nil
+      @request_info    = request_info
+      @connection      = connection
+      @finished        = false
+      @buffer          = ""
+      @body            = RequestBody.new(self)
+      @finished_read   = false
+      @websocket       = nil
+      @response_writer = Response::Writer.new(connection.socket)
     end
 
     # Returns true if request fully finished reading
@@ -77,6 +79,23 @@ module Reel
       end
 
       slice && slice.length == 0 ? nil : slice
+    end
+
+    # Write body chunks directly to the connection
+    def write(chunk)
+      unless @connection.response_state == :chunked_body
+        raise StateError, "not in chunked body mode"
+      end
+
+      @response_writer.write(chunk)
+    end
+    alias_method :<<, :write
+
+    # Finish the response and reset the response state to header
+    def finish_response
+      raise StateError, "not in body state" if @connection.response_state != :chunked_body
+      @response_writer.finish_response
+      @connection.response_state = :header
     end
 
     # Can the current request be upgraded to a WebSocket?

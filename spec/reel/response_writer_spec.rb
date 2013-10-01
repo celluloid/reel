@@ -12,7 +12,14 @@ describe Reel::Response::Writer do
         writer.handle_response(response)
       end
 
-      peer.readpartial(4096).should eq expected_response
+      buf = ""
+      begin
+        buf << peer.readpartial(4096)
+      rescue IOError
+        # End of body!
+      end
+
+      expect(buf).to eq expected_response
     end
   end
 end
