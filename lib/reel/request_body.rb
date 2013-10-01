@@ -47,10 +47,16 @@ module Reel
       @contents
     end
 
+    # Easier to interpret string inspect
+    def inspect
+      "#<#{self.class}:#{object_id.to_s(16)} @streaming=#{!!@streaming}>"
+    end
+
     # Assert that the body is actively being streamed
     def stream!
       raise StateError, "body has already been consumed" if @streaming == false
       @streaming = true
     end
+    private :stream!
   end
 end
