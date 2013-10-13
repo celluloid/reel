@@ -1,104 +1,74 @@
 require 'forwardable'
-require 'websocket_parser'
+require 'websocket/driver'
 
 module Reel
   class WebSocket
+    include Celluloid::Logger
     extend Forwardable
-    include ConnectionMixin
-    include RequestMixin
 
-    attr_reader :socket
-    def_delegators :@socket, :addr, :peeraddr
+    def initialize(request, connection)
+      @request = request
+      @connection = connection
+      @socket = nil
+    end
+    
+    def_delegators :driver, :on, :text, :binary, :ping, :close
 
-    def initialize(info, socket)
-      @request_info = info
-      @socket = socket
+    def run
+      # detach the connection and manage it ourselves
+      @connection.detach
 
-      handshake = ::WebSocket::ClientHandshake.new(:get, url, headers)
+      # grab socket
+      @socket = @connection.socket
 
-      if handshake.valid?
-        response = handshake.accept_response
-        response.render(socket)
-      else
-        error = handshake.errors.first
+      # start the driver
+      driver.start
 
-        response = Response.new(400)
-        response.reason = handshake.errors.first
-        response.render(@socket)
+      # hook into close message from client
+      driver.on(:close) { @connection.close }
 
-        raise HandshakeError, "error during handshake: #{error}"
+      begin
+        loop do
+          break unless @connection.alive?
+          buffer = @socket.readpartial(@connection.buffer_size)
+          driver.parse(buffer)
+        end
+      ensure
+        @connection.close
       end
-
-      @parser = ::WebSocket::Parser.new
-
-      @parser.on_close do |status, reason|
-        # According to the spec the server must respond with another
-        # close message before closing the connection
-        @socket << ::WebSocket::Message.close.to_data
-        close
-      end
-
-      @parser.on_ping do |payload|
-        @socket << ::WebSocket::Message.pong(payload).to_data
-      end
+    rescue EOFError
+      @connection.close
     end
 
-    [:next_message, :next_messages, :on_message, :on_error, :on_close, :on_ping, :on_pong].each do |meth|
-      define_method meth do |&proc|
-        @parser.send __method__, &proc
+    def url
+      @request.url
+    end
+
+    def env
+      @env ||= begin
+        e = {
+          :method       => @request.method,
+          :input        => @request.body.to_s,
+          'REMOTE_ADDR' => @request.remote_addr
+        }.merge(Hash[@request.headers.map { |key, value| ['HTTP_' + key.upcase.gsub('-','_'),value ] }])
+        ::Rack::MockRequest.env_for(url, e)
       end
     end
 
-    def read_every(n, unit = :s)
-      cancel_timer! # only one timer allowed per stream
-      seconds = case unit.to_s
-      when /\Am/
-        n * 60
-      when /\Ah/
-        n * 3600
-      else
-        n
-      end
-      @timer = Celluloid.every(seconds) { read }
-    end
-    alias read_interval  read_every
-    alias read_frequency read_every
-
-    def read
-      @parser.append @socket.readpartial(Connection::BUFFER_SIZE) until msg = @parser.next_message
-      msg
-    rescue
-      cancel_timer!
-      raise
-    end
-
-    def body
-      nil
-    end
-
-    def write(msg)
-      @socket << ::WebSocket::Message.new(msg).to_data
-      msg
-    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
-      cancel_timer!
-      raise SocketError, "error writing to socket"
-    rescue
-      cancel_timer!
-      raise
-    end
-    alias_method :<<, :write
-
-    def closed?
-      @socket.closed?
+    def write(buffer)
+      # should probably raise an error here if
+      # writing to socket that has not been started up yet
+      @socket.write(buffer)
     end
 
     def close
-      cancel_timer!
-      @socket.close unless closed?
+      @connection.close if @connection.alive? && !@connection.attached?
     end
 
-    def cancel_timer!
-      @timer && @timer.cancel
+    protected
+
+    def driver
+      @driver ||= ::WebSocket::Driver.rack(self)
     end
 
   end

@@ -112,8 +112,8 @@ module Reel
     # the underlying connection
     def websocket
       @websocket ||= begin
-        raise StateError, "can't upgrade this request to a websocket" unless websocket?
-        WebSocket.new(@request_info, @connection.hijack_socket)
+        raise StateError, "can't upgrade this request to a websocket" unless websocket?  
+        WebSocket.new(self, @connection)
       end
     end
 
