@@ -1,6 +1,6 @@
 module Reel
   class Request
-      class Info
+    class Info
       attr_reader :http_method, :url, :http_version, :headers
 
       def initialize(http_method, url, http_version, headers)
