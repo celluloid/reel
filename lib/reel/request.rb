@@ -1,5 +1,9 @@
 require 'forwardable'
 
+require 'reel/request/body'
+require 'reel/request/info'
+require 'reel/request/parser'
+
 module Reel
   class Request
     extend Forwardable
@@ -18,7 +22,7 @@ module Reel
       @connection      = connection
       @finished        = false
       @buffer          = ""
-      @body            = RequestBody.new(self)
+      @body            = Body.new(self)
       @finished_read   = false
       @websocket       = nil
       @response_writer = Response::Writer.new(connection.socket)

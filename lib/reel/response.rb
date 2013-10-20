@@ -1,3 +1,5 @@
+require 'reel/response/writer'
+
 module Reel
   class Response
     include HTTP::Header

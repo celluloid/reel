@@ -50,7 +50,7 @@ module Reel
       # HTTP::Parser callbacks
       #
       def on_headers_complete(headers)
-        info = RequestInfo.new(http_method, url, http_version, headers)
+        info = Info.new(http_method, url, http_version, headers)
         req  = Request.new(info, connection)
 
         if @currently_reading
