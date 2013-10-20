@@ -3,6 +3,7 @@ require 'forwardable'
 require 'reel/request/body'
 require 'reel/request/info'
 require 'reel/request/parser'
+require 'reel/request/state_machine'
 
 module Reel
   class Request
