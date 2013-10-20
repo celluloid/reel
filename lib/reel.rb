@@ -17,7 +17,6 @@ require 'reel/stream'
 
 # A Reel good HTTP server
 module Reel
-
   # Error reading a request
   class RequestError < StandardError; end
 
