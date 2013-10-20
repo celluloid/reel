@@ -2,12 +2,9 @@ require 'uri'
 
 require 'http/parser'
 require 'http'
-
-require 'celluloid/autostart'
 require 'celluloid/io'
 
 require 'reel/version'
-
 require 'reel/mixins'
 require 'reel/connection'
 require 'reel/logger'
