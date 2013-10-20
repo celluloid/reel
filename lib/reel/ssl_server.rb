@@ -11,6 +11,7 @@ module Reel
     # @return [Reel::SSLServer] Reel HTTPS server actor
     def initialize(host, port, options = {}, &callback)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
+      @spy    = STDOUT if options[:spy]
 
       # Ideally we can encapsulate this rather than making Ruby OpenSSL a
       # mandatory part of the Reel API. It would be nice to support
