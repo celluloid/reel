@@ -56,6 +56,7 @@ module Reel
       req
     rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       # The client is disconnected
+      @socket.close unless @socket.closed?
       @request_state = :closed
       @keepalive = false
       nil

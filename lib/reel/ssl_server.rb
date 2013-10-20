@@ -2,6 +2,13 @@ module Reel
   class SSLServer < Server
     execute_block_on_receiver :initialize
 
+    # Create a new Reel HTTPS server
+    #
+    # @param [String] host address to bind to
+    # @param [Fixnum] port to bind to
+    # @option options [Fixnum] backlog of requests to accept
+    #
+    # @return [Reel::SSLServer] Reel HTTPS server actor
     def initialize(host, port, options = {}, &callback)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
 

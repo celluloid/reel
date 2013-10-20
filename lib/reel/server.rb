@@ -1,4 +1,8 @@
 module Reel
+  # The Reel HTTP server class
+  #
+  # This class is a Celluloid::IO actor which provides a bareboens HTTP server
+  # For HTTPS support, use Reel::SSLServer
   class Server
     include Celluloid::IO
 
@@ -8,7 +12,18 @@ module Reel
     execute_block_on_receiver :initialize
     finalizer :shutdown
 
-    def initialize(host, port, backlog = DEFAULT_BACKLOG, &callback)
+    # Create a new Reel HTTP server
+    #
+    # @param [String] host address to bind to
+    # @param [Fixnum] port to bind to
+    # @option options [Fixnum] backlog of requests to accept
+    # @option options [true] spy on the request
+    #
+    # @return [Reel::SSLServer] Reel HTTPS server actor
+    def initialize(host, port, options = {}, &callback)
+      backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
+      @spy    = STDOUT if options[:spy]
+
       # This is actually an evented Celluloid::IO::TCPServer
       @server = TCPServer.new(host, port)
       @server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
@@ -26,6 +41,11 @@ module Reel
     end
 
     def handle_connection(socket)
+      if @spy
+        require 'reel/spy'
+        socket = Reel::Spy.new(socket, @spy)
+      end
+
       connection = Connection.new(socket)
 
       begin
