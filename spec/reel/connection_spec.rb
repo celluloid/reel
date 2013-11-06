@@ -103,6 +103,38 @@ describe Reel::Connection do
     end
   end
 
+  it "streams responses when transfer-encoding is chunked without keep-alive" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << ExampleRequest.new.tap{ |r|
+        r['Connection'] = 'close'
+      }.to_s
+      request = connection.request
+
+      # Sending transfer_encoding chunked without a body enables streaming mode
+      request.respond :ok, :transfer_encoding => :chunked
+
+      # This will send individual chunks
+      request << "Hello"
+      request << "World"
+      request.finish_response # Write trailer and reset connection to header mode
+      connection.close
+
+      response = ""
+
+      begin
+        while chunk = client.readpartial(4096)
+          response << chunk
+        end
+      rescue EOFError
+      end
+
+      crlf = "\r\n"
+      fixture = "5#{crlf}Hello#{crlf}5#{crlf}World#{crlf}0#{crlf*2}"
+      response[(response.length - fixture.length)..-1].should eq fixture
+    end
+  end
+  
   it "reset the request after a response is sent" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
