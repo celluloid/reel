@@ -30,11 +30,10 @@ describe Reel::SSLServer do
     end
 
     with_reel_sslserver(handler) do
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
+      http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
+      http.ca_file = self.ca_file
 
-      # FIXME: VERIFY_NONE is bad! Authenticate the server cert!
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
       request = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
 
@@ -62,11 +61,9 @@ describe Reel::SSLServer do
     with_reel_sslserver(handler, :ca_file => self.ca_file) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
+      http.ca_file = self.ca_file
       http.cert    = OpenSSL::X509::Certificate.new self.client_cert
       http.key     = OpenSSL::PKey::RSA.new         self.client_key
-
-      # FIXME: VERIFY_NONE is bad! Authenticate the server cert!
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       request  = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
