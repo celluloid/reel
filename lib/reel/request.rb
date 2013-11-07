@@ -100,7 +100,6 @@ module Reel
     def finish_response
       raise StateError, "not in body state" if @connection.response_state != :chunked_body
       @response_writer.finish_response
-      @connection.reset_request
       @connection.response_state = :header
     end
 

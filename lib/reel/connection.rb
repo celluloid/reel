@@ -157,5 +157,14 @@ module Reel
       @current_request = nil
       @parser.reset
     end
+    private :reset_request
+
+    # Set response state for the connection.
+    def response_state=(state)
+      if state == :header
+        reset_request
+      end
+      @response_state = state
+    end
   end
 end
