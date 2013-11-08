@@ -4,10 +4,11 @@ module Reel
       include HTTPVersionsMixin
       attr_reader :socket, :connection
 
-      def initialize(sock, conn)
-        @parser = Http::Parser.new(self)
-        @socket = sock
-        @connection = conn
+      def initialize(connection)
+        @parser      = Http::Parser.new(self)
+        @connection  = connection
+        @socket      = connection.socket
+        @buffer_size = connection.buffer_size
         @currently_reading = @currently_responding = nil
         @pending_reads     = []
         @pending_responses = []
@@ -40,21 +41,22 @@ module Reel
         @currently_responding || @currently_reading
       end
 
-      def readpartial(size = @connection.buffer_size)
+      def readpartial(size = @buffer_size)
         bytes = @socket.readpartial(size)
         @parser << bytes
       end
 
       #
-      # Http::Parser callbacks
+      # HTTP::Parser callbacks
       #
       def on_headers_complete(headers)
-        info = RequestInfo.new(http_method, url, http_version, headers)
-        req = Request.new(info, connection)
-        if @currently_reading.nil?
-          @currently_reading = req
-        else
+        info = Info.new(http_method, url, http_version, headers)
+        req  = Request.new(info, connection)
+
+        if @currently_reading
           @pending_reads << req
+        else
+          @currently_reading = req
         end
       end
 
@@ -66,21 +68,25 @@ module Reel
       # Mark current request as complete, set this as ready to respond.
       def on_message_complete
         @currently_reading.finish_reading! if @currently_reading.is_a?(Request)
-        if @currently_responding.nil?
-          @currently_responding = @currently_reading
-        else
+
+        if @currently_responding
           @pending_responses << @currently_reading
+        else
+          @currently_responding = @currently_reading
         end
+
         @currently_reading = @pending_reads.shift
       end
 
       def reset
         popped = @currently_responding
+
         if req = @pending_responses.shift
           @currently_responding = req
         elsif @currently_responding
           @currently_responding = nil
         end
+
         popped
       end
     end

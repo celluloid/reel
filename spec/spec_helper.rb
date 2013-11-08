@@ -24,7 +24,7 @@ ensure
   server.terminate if server && server.alive?
 end
 
-def with_socket_pair(buffer_size = nil)
+def with_socket_pair
   host = '127.0.0.1'
   port = 10101
 
@@ -33,8 +33,7 @@ def with_socket_pair(buffer_size = nil)
   peer   = server.accept
 
   begin
-    connection = Reel::Connection.new(peer, buffer_size)
-    yield client, connection
+    yield client, peer
   ensure
     server.close rescue nil
     client.close rescue nil

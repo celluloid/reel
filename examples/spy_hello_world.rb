@@ -8,12 +8,12 @@ require 'reel'
 addr, port = '127.0.0.1', 1234
 
 puts "*** Starting server on http://#{addr}:#{port}"
-Reel::Server.run(addr, port) do |connection|
+Reel::Server.run(addr, port, spy: true) do |connection|
   # For keep-alive support
   connection.each_request do |request|
     # Ordinarily we'd route the request here, e.g.
     # route request.url
-    request.respond :ok, "hello, world!"
+    request.respond :ok, "hello, world!\n"
   end
 
   # Reel takes care of closing the connection for you

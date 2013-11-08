@@ -2,21 +2,14 @@ require 'uri'
 
 require 'http/parser'
 require 'http'
-
-require 'celluloid/autostart'
 require 'celluloid/io'
 
 require 'reel/version'
-
 require 'reel/mixins'
 require 'reel/connection'
 require 'reel/logger'
-require 'reel/request_info'
 require 'reel/request'
-require 'reel/request_body'
-require 'reel/request_parser'
 require 'reel/response'
-require 'reel/response_writer'
 require 'reel/server'
 require 'reel/ssl_server'
 require 'reel/websocket'
@@ -24,7 +17,6 @@ require 'reel/stream'
 
 # A Reel good HTTP server
 module Reel
-
   # Error reading a request
   class RequestError < StandardError; end
 
@@ -44,4 +36,6 @@ module Reel
   # The method given was not understood
   class UnsupportedMethodError < ArgumentError; end
 
+  # wrong state for a given operation
+  class StateError < RuntimeError; end
 end

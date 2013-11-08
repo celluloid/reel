@@ -59,6 +59,15 @@ Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
 All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
 and are not amortized across all concurrent requests.
 
+Documentation
+-------------
+
+[Please see the Reel Wiki](https://github.com/celluloid/reel/wiki)
+for detailed documentation and usage notes.
+
+[YARD documentation](http://rubydoc.info/github/celluloid/reel/master/frames) is
+also available.
+
 Framework Adapters
 ------------------
 
@@ -97,8 +106,8 @@ MyApp = Webmachine::Application.new do |app|
 
     # Optional: handler for incoming websockets
     config.adapter_options[:websocket_handler] = proc do |websocket|
-      # socket is a Reel::WebSocket
-      socket << "hello, world"
+      # websocket is a Reel::WebSocket
+      websocket << "hello, world"
     end
   end
 end
@@ -111,8 +120,6 @@ for further information
 
 Ruby API
 --------
-
-*NOTE: these examples are for the Reel 0.4.0.pre2 API*
 
 Reel aims to provide a "bare metal" API that other frameworks (such as Rack
 and Webmachine) can leverage. This API can also be nice in performance critical

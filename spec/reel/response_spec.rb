@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe Reel::Response do
   it "streams enumerables" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
       request = connection.request
 
@@ -17,7 +18,8 @@ describe Reel::Response do
   end
 
   it "canonicalizes response headers" do
-    with_socket_pair do |client, connection|
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
       client << ExampleRequest.new.to_s
       request = connection.request
 

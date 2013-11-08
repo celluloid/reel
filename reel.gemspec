@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Tony Arcieri"]
   gem.email         = ["tony.arcieri@gmail.com"]
   gem.description   = "A Celluloid::IO-powered HTTP server"
-  gem.summary       = "A reel good HTTP server"
+  gem.summary       = "A Reel good HTTP server"
   gem.homepage      = "https://github.com/celluloid/reel"
 
   gem.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
@@ -15,9 +15,9 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
 
-  gem.add_runtime_dependency 'celluloid',        '>= 0.15.0'
+  gem.add_runtime_dependency 'celluloid',        '>= 0.15.1'
   gem.add_runtime_dependency 'celluloid-io',     '>= 0.15.0'
-  gem.add_runtime_dependency 'http',             '>= 0.5.0.pre2'
+  gem.add_runtime_dependency 'http',             '>= 0.5.0'
   gem.add_runtime_dependency 'http_parser.rb',   '>= 0.6.0.beta.2'
   gem.add_runtime_dependency 'websocket_parser', '>= 0.1.4'
 

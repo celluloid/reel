@@ -79,7 +79,7 @@ module Reel
     def write(msg)
       @socket << ::WebSocket::Message.new(msg).to_data
       msg
-    rescue Errno::EPIPE
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
       cancel_timer!
       raise SocketError, "error writing to socket"
     rescue
