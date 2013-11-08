@@ -5,6 +5,7 @@ module Reel
   # For HTTPS support, use Reel::SSLServer
   class Server
     include Celluloid::IO
+    include SocketMixin
 
     # How many connections to backlog in the TCP accept queue
     DEFAULT_BACKLOG = 100
@@ -25,14 +26,19 @@ module Reel
       @spy    = STDOUT if options[:spy]
 
       # This is actually an evented Celluloid::IO::TCPServer
+
       @server = TCPServer.new(host, port)
-      @server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+      optimize_socket @server
+      #de @server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       @server.listen(backlog)
       @callback = callback
       async.run
+
+      # TODO: Catch Errno::EADDRINUSE and kill overall process, even if supervised.
     end
 
     def shutdown
+      deoptimize_socket @server
       @server.close if @server
     end
 

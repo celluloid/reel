@@ -19,14 +19,16 @@ module Reel
       ssl_context      = OpenSSL::SSL::SSLContext.new
       ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
       ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
+      #de ssl_context.cert_store.set_default_paths
 
       # We don't presently support verifying client certificates
       # TODO: support client certificates!
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       @tcpserver  = Celluloid::IO::TCPServer.new(host, port)
+      optimize_socket @tcpserver
       @server     = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
-
+      
       @server.listen(backlog)
       @callback = callback
 
@@ -38,8 +40,12 @@ module Reel
         begin
           socket = @server.accept
         rescue OpenSSL::SSL::SSLError => ex
+          _except ex
           Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
           retry
+        rescue => ex
+          _except ex
+          raise ex
         end
 
         async.handle_connection socket
