@@ -29,7 +29,6 @@ module Reel
 
       @server = TCPServer.new(host, port)
       optimize_socket @server
-      #de @server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       @server.listen(backlog)
       @callback = callback
       async.run
