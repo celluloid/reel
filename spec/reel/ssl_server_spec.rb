@@ -9,10 +9,11 @@ describe Reel::SSLServer do
 
   let(:ca_file) { fixture_dir.join('ca.crt').to_s }
 
-  let(:server_cert) { fixture_dir.join("server.crt").read }
-  let(:server_key)  { fixture_dir.join("server.key").read }
-  let(:client_cert) { fixture_dir.join("client.crt").read }
-  let(:client_key)  { fixture_dir.join("client.key").read }
+  let(:server_cert)          { fixture_dir.join("server.crt")         .read }
+  let(:server_key)           { fixture_dir.join("server.key")         .read }
+  let(:client_cert)          { fixture_dir.join("client.crt")         .read }
+  let(:client_cert_unsigned) { fixture_dir.join("client.unsigned.crt").read }
+  let(:client_key)           { fixture_dir.join("client.key")         .read }
 
   it "receives HTTP requests and sends responses" do
     ex = nil
@@ -69,6 +70,36 @@ describe Reel::SSLServer do
       response = http.request(request)
 
       response.body.should eq response_body
+    end
+
+    raise ex if ex
+  end
+
+  it %{fails to verify client certificates that aren't signed} do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        request = connection.request
+        request.method.should eq 'GET'
+        request.version.should eq '1.1'
+        request.url.should eq example_path
+
+        connection.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel_sslserver(handler, :ca_file => self.ca_file) do
+      http         = Net::HTTP.new(endpoint.host, endpoint.port)
+      http.use_ssl = true
+      http.ca_file = self.ca_file
+      http.cert    = OpenSSL::X509::Certificate.new self.client_cert_unsigned
+      http.key     = OpenSSL::PKey::RSA.new         self.client_key
+
+      request  = Net::HTTP::Get.new(endpoint.path)
+
+      proc { http.request(request) }.should raise_error(OpenSSL::SSL::SSLError)
     end
 
     raise ex if ex
