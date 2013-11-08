@@ -7,12 +7,11 @@ module Reel
     # @param [String] host address to bind to
     # @param [Fixnum] port to bind to
     # @option options [Fixnum] backlog of requests to accept
+    # @option options [String] :cert the server's SSL certificate
+    # @option options [String] :key  the server's SSL key
     #
     # @return [Reel::SSLServer] Reel HTTPS server actor
-    def initialize(host, port, options = {}, &callback)
-      backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
-      @spy    = STDOUT if options[:spy]
-
+    def initialize(server, options = {}, &callback)
       # Ideally we can encapsulate this rather than making Ruby OpenSSL a
       # mandatory part of the Reel API. It would be nice to support
       # alternatives (e.g. Puma's MiniSSL)
@@ -24,13 +23,10 @@ module Reel
       # TODO: support client certificates!
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      @tcpserver  = Celluloid::IO::TCPServer.new(host, port)
-      @server     = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
+      # wrap an SSLServer around the TCPServer we've been given
+      ssl_server = Celluloid::IO::SSLServer.new(server, ssl_context)
 
-      @server.listen(backlog)
-      @callback = callback
-
-      async.run
+      super(ssl_server, options, &callback)
     end
 
     def run
