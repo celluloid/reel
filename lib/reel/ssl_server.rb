@@ -42,8 +42,6 @@ module Reel
         rescue OpenSSL::SSL::SSLError => ex
           Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
           retry
-        rescue => ex
-          raise ex
         end
 
         async.handle_connection socket
