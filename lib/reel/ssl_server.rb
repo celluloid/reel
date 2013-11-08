@@ -19,7 +19,6 @@ module Reel
       ssl_context      = OpenSSL::SSL::SSLContext.new
       ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
       ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
-      #de ssl_context.cert_store.set_default_paths
 
       # We don't presently support verifying client certificates
       # TODO: support client certificates!
