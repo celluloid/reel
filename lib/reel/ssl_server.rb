@@ -25,8 +25,9 @@ module Reel
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
       @tcpserver  = Celluloid::IO::TCPServer.new(host, port)
+      optimize_socket @tcpserver
       @server     = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
-
+      
       @server.listen(backlog)
       @callback = callback
 
