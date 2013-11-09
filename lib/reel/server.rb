@@ -20,6 +20,13 @@ module Reel
     # @option options [true] spy on the request
     #
     # @return [Reel::SSLServer] Reel HTTPS server actor
+    #
+    # ::new was overridden for backwards compatibility. The underlying
+    # #initialize method now accepts a `server` param that is
+    # responsible for having established the bi-directional
+    # communication channel. ::new uses the existing (sane) default of
+    # setting up the TCP channel for the user.
+    #
     def self.new(host, port, options = {} , &callback)
       server  = Celluloid::IO::TCPServer.new(host, port)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)

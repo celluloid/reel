@@ -23,7 +23,7 @@ module Reel
       # TODO: support client certificates!
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
 
-      # wrap an SSLServer around the TCPServer we've been given
+      # wrap an SSLServer around the Reel::Server we've been given
       ssl_server = Celluloid::IO::SSLServer.new(server, ssl_context)
 
       super(ssl_server, options, &callback)
