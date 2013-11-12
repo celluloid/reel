@@ -73,12 +73,8 @@ describe Reel::Connection do
     end
   end
 
-  it "streams responses when transfer-encoding is chunked" do
-    with_socket_pair do |client, peer|
-      connection = Reel::Connection.new(peer)
-      client << ExampleRequest.new.to_s
-      request = connection.request
-
+  context "streams responses when transfer-encoding is chunked" do
+    def test_chunked_response(request, client)
       # Sending transfer_encoding chunked without a body enables streaming mode
       request.respond :ok, :transfer_encoding => :chunked
 
@@ -86,13 +82,13 @@ describe Reel::Connection do
       request << "Hello"
       request << "World"
       request.finish_response # Write trailer and reset connection to header mode
-      connection.close
 
       response = ""
 
       begin
         while chunk = client.readpartial(4096)
           response << chunk
+          break if response =~ /0\r\n\r\n$/
         end
       rescue EOFError
       end
@@ -101,8 +97,51 @@ describe Reel::Connection do
       fixture = "5#{crlf}Hello#{crlf}5#{crlf}World#{crlf}0#{crlf*2}"
       response[(response.length - fixture.length)..-1].should eq fixture
     end
-  end
+    
+    it "with keep-alive" do
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
+        client << ExampleRequest.new.to_s
+        request = connection.request
 
+        test_chunked_response(request, client)
+        connection.close
+      end
+    end
+
+    it "without keep-alive" do
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
+        client << ExampleRequest.new.tap{ |r|
+          r['Connection'] = 'close'
+        }.to_s
+        request = connection.request
+
+        test_chunked_response(request, client)
+        connection.close
+      end
+    end
+
+    it "with pipelined requests" do
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
+
+        2.times do
+          client << ExampleRequest.new.to_s
+        end
+        client << ExampleRequest.new.tap { |r|
+          r['Connection'] = 'close'
+        }.to_s
+
+        3.times do
+          request = connection.request
+          test_chunked_response(request, client)
+        end
+        connection.close
+      end
+    end
+  end
+  
   it "reset the request after a response is sent" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
