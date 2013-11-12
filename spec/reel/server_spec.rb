@@ -52,4 +52,29 @@ describe Reel::Server do
 
     raise ex if ex
   end
+
+  it 'allows connections over UNIX sockets' do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        request = connection.request
+        request.method.should eq 'GET'
+        connection.respond :ok, request.body.to_s
+      rescue => ex
+      end
+    end
+
+    Dir::Tmpname.create('reel-sock') do |path|
+      begin
+        server  = Reel::Server.unix(path, handler)
+        sock    = Net::BufferedIO.new UNIXSocket.new(path)
+        request = Net::HTTP::Get.new('/')
+
+        request.exec(sock, '1.1', path)
+      ensure
+        server.terminate if server && server.alive?
+      end
+    end
+  end
 end
