@@ -20,17 +20,43 @@ module Reel
     # @option options [true] spy on the request
     #
     # @return [Reel::SSLServer] Reel HTTPS server actor
-    def initialize(host, port, options = {}, &callback)
+    #
+    # ::new was overridden for backwards compatibility. The underlying
+    # #initialize method now accepts a `server` param that is
+    # responsible for having established the bi-directional
+    # communication channel. ::new uses the existing (sane) default of
+    # setting up the TCP channel for the user.
+    #
+    def self.new(host, port, options = {} , &callback)
+      server  = Celluloid::IO::TCPServer.new(host, port)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
-      @spy    = STDOUT if options[:spy]
 
-      # This is actually an evented Celluloid::IO::TCPServer
-      @server = TCPServer.new(host, port)
-      @server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-      @server.listen(backlog)
-      @callback = callback
-      async.run
+      # prevent TCP packets from being buffered
+      server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+      server.listen(backlog)
+
+      super(server, options, &callback)
     end
+
+    # Create a Reel HTTP server over a UNIX socket.
+    #
+    # @param [String] socket_path path to the UNIX socket
+    # @option options [true] spy on the request
+    #
+    def self.unix(socket_path, options = {}, &callback)
+      server = Celluloid::IO::UNIXServer.new(socket_path)
+
+      super(server, options, &callback)
+    end
+
+    def initialize(server, options = {}, &callback)
+      @spy      = STDOUT if options[:spy]
+      @server   = server
+      @callback = callback
+
+      async.run
+   end
+
 
     def shutdown
       @server.close if @server
