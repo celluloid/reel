@@ -12,6 +12,15 @@ module Reel
     execute_block_on_receiver :initialize
     finalizer :shutdown
 
+    # Allow the existing `new` to be called, even though we will
+    # replace it with a default version that creates HTTP servers over
+    # TCP sockets.
+    #
+    class << self
+      alias_method :_new, :new
+      protected    :_new
+    end
+
     # Create a new Reel HTTP server
     #
     # @param [String] host address to bind to
@@ -35,7 +44,7 @@ module Reel
       server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       server.listen(backlog)
 
-      super(server, options, &callback)
+      self._new(server, options, &callback)
     end
 
     # Create a Reel HTTP server over a UNIX socket.
@@ -46,7 +55,7 @@ module Reel
     def self.unix(socket_path, options = {}, &callback)
       server = Celluloid::IO::UNIXServer.new(socket_path)
 
-      super(server, options, &callback)
+      self._new(server, options, &callback)
     end
 
     def initialize(server, options = {}, &callback)
