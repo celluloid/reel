@@ -109,9 +109,7 @@ module Reel
       # Enable streaming mode
       if response.chunked? and response.body.nil?
         @response_state = :chunked_body
-      end
-
-      if @keepalive
+      elsif @keepalive
         reset_request
       else
         @current_request = nil
@@ -160,5 +158,13 @@ module Reel
       @parser.reset
     end
     private :reset_request
+
+    # Set response state for the connection.
+    def response_state=(state)
+      if state == :header
+        reset_request
+      end
+      @response_state = state
+    end
   end
 end
