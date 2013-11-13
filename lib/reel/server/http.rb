@@ -11,14 +11,9 @@ module Reel
     #
     # @return [Reel::HTTPServer] Reel HTTP server actor
     def initialize(host, port, options={}, &callback)
-      optimize_socket server = Celluloid::IO::TCPServer.new(host, port)
+      optimize server = Celluloid::IO::TCPServer.new(host, port)
       options.merge!({ :host => host, :port => port })
       super(server, options, &callback)
-    end
-
-    def shutdown
-      deoptimize_socket @server
-      super
     end
 
   end

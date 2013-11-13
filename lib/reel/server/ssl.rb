@@ -32,17 +32,12 @@ module Reel
         else                                     OpenSSL::SSL::VERIFY_NONE
       end
 
-      optimize_socket @tcpserver = Celluloid::IO::TCPServer.new(host, port)
+      optimize @tcpserver = Celluloid::IO::TCPServer.new(host, port)
 
       server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
       options.merge!({ :host => host, :port => port })
 
       super(server, options, &callback)
-    end
-
-    def shutdown
-      deoptimize_socket @tcpserver
-      super
     end
 
     def run
