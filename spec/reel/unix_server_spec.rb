@@ -17,22 +17,16 @@ describe Reel::Server::UNIX do
       end
     end
 
-=begin
     Dir::Tmpname.create('reel-sock') do |path|
       begin
-  
-        sock    = Net::BufferedIO.new UNIXSocket.new(path)
+        server  = Reel::Server::UNIX.new(path, &handler)
+        sock    = Net::BufferedIO.new Celluloid::IO::UNIXSocket.new(path)
         request = Net::HTTP::Get.new('/')
 
-        server = Reel::Server::UNIX.new(sock, &handler)
-        yield server
-
         request.exec(sock, '1.1', path)
-        
       ensure
         server.terminate if server && server.alive?
       end
-=end
     end
 
   end
