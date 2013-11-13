@@ -11,7 +11,9 @@ require 'reel/logger'
 require 'reel/request'
 require 'reel/response'
 require 'reel/server'
-require 'reel/ssl_server'
+require 'reel/server/http'
+require 'reel/server/ssl' # Only load as needed?
+require 'reel/server/unix' # Only load as needed?
 require 'reel/websocket'
 require 'reel/stream'
 
