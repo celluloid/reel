@@ -67,7 +67,7 @@ describe Reel::Server do
 
     Dir::Tmpname.create('reel-sock') do |path|
       begin
-        server  = Reel::Server.unix(path, handler)
+        server  = Reel::Server::UNIX.new(path, handler)
         sock    = Net::BufferedIO.new UNIXSocket.new(path)
         request = Net::HTTP::Get.new('/')
 
