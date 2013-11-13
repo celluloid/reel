@@ -15,7 +15,7 @@ describe Reel::Response::Writer do
 
       buf = ""
       begin
-        buf << peer.readpartial(4096)
+        buf << peer.read(95)
       rescue IOError
         # End of body!
       end
