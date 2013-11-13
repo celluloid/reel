@@ -34,7 +34,7 @@ module Reel
 
         optimize @tcpserver = Celluloid::IO::TCPServer.new(host, port)
 
-        server = Celluloid::IO::Server::SSL.new(@tcpserver, ssl_context)
+        server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
         options.merge!(host: host, port: port)
 
         super(server, options, &callback)
