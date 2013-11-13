@@ -26,7 +26,7 @@ module Reel
       @server   = server
 
       @server.listen(options.fetch(:backlog, DEFAULT_BACKLOG))
-      
+
       async.run
     end
 
