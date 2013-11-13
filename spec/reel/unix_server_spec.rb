@@ -27,10 +27,10 @@ describe Reel::Server::UNIX do
 
         response = Net::HTTPResponse.read_new(sock)
         response.reading_body(sock, request.response_body_permitted?) { }
-      ensure
-        server.terminate if server && server.alive?
 
         expect(response.body).to eq(self.response_body)
+      ensure
+        server.terminate if server && server.alive?
       end
     end
 
