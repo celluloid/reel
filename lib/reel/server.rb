@@ -5,7 +5,6 @@ module Reel
   # For HTTPS support, use Reel::SSLServer
   class Server
     include Celluloid::IO
-    include SocketMixin
 
     # How many connections to backlog in the TCP accept queue
     DEFAULT_BACKLOG = 100
@@ -18,6 +17,7 @@ module Reel
     # TCP sockets.
     #
     class << self
+      include SocketMixin
       alias_method :_new, :new
       protected    :_new
     end
@@ -41,7 +41,7 @@ module Reel
       server  = Celluloid::IO::TCPServer.new(host, port)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
 
-      optimize_socket server
+      self.optimize_socket server
       server.listen(backlog)
 
       self._new(server, options, &callback)
@@ -68,7 +68,7 @@ module Reel
     
     def shutdown
       if @server
-        deoptimize_socket @server
+        self.deoptimize_socket @server
         @server.close
       end
     end
