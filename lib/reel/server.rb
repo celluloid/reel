@@ -1,5 +1,5 @@
 module Reel
-  # The Reel server class
+  # The Reel server ( foundation ) class
   #
   # This class is a Celluloid::IO actor which provides a barebones server
   # which does not open a socket itself, it just begin handling connections once
@@ -13,6 +13,7 @@ module Reel
 
   class Server
     include Celluloid::IO
+    include SocketMixin
 
     # How many connections to backlog in the TCP accept queue
     DEFAULT_BACKLOG = 100
