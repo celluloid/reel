@@ -66,8 +66,8 @@ module Reel
     
     # optimizations possible, depending on OS:
     # TCP_NODELAY:    prevent TCP packets from being buffered
-    # TCP_CORK:       yet to be tersely described
-    # SO_REUSEADDR:   yet to be tersely described
+    # TCP_CORK:       TODO: tersely describe
+    # SO_REUSEADDR:   TODO: tersely describe
 
     if RUBY_PLATFORM =~ /linux/
       # Only Linux supports the mix of socket behaviors given in these optimizations.
