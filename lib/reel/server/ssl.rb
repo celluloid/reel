@@ -43,7 +43,7 @@ module Reel
       def run
         loop do
           begin
-            socket = @handler.accept
+            socket = @server.accept
           rescue OpenSSL::SSL::SSLError => ex
             Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
             retry
