@@ -21,7 +21,7 @@ module Reel
     execute_block_on_receiver :initialize
     finalizer :shutdown
 
-    def initialize(server,options={}, &callback)
+    def initialize(server, options={}, &callback)
       @spy      = STDOUT if options[:spy]
       @options  = options
       @callback = callback
