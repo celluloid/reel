@@ -62,20 +62,4 @@ module Reel
 
   end
 
-  module SocketMixin
-
-    def optimize_socket(socket)
-      if socket.is_a? TCPSocket
-        socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
-      end
-    end
-
-    def deoptimize_socket(socket)
-      if socket.is_a? TCPSocket
-        socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 0 )
-      end
-    end
-
-  end
-
 end
