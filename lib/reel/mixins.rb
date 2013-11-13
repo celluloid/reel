@@ -63,46 +63,49 @@ module Reel
   end
 
   module SocketMixin
-    class << self
 
-      # optimizations possible, depending on OS:
-      # TCP_NODELAY:    prevent TCP packets from being buffered
-      # TCP_CORK:       TODO: tersely describe
-      # SO_REUSEADDR:   TODO: tersely describe
+    # Optimizations possible, depending on OS:
+    
+    # TCP_NODELAY:    prevent TCP packets from being buffered
+    # TCP_CORK:       TODO: tersely describe
+    # SO_REUSEADDR:   TODO: tersely describe
 
-      if RUBY_PLATFORM =~ /linux/
-        # Only Linux supports the mix of socket behaviors given in these optimizations.
-        # Beaware, certain optimizations may work individually off Linux; not together.
-        def optimize_socket socket
-          if TCPSocket === socket
-            socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
-            socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
-            socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
-          end
+    if RUBY_PLATFORM =~ /linux/
+
+      # Only Linux supports the mix of socket behaviors given in these optimizations.
+      # Beaware, certain optimizations may work individually off Linux; not together.
+      def optimize_socket socket
+        if TCPSocket === socket
+          socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
+          socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
+          socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
         end
+      end
 
-        def deoptimize_socket socket
-          if TCPSocket === socket
-            socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
-            socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
-            socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
-          end
+      def deoptimize_socket socket
+        if TCPSocket === socket
+          socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
+          socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
+          socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
         end
-      else
-        # If the underying OS is not Linux, apply the remaining available optimizations.
-        def optimize_socket socket
-          if TCPSocket === socket
-            socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
-          end
-        end
+      end
 
-        def deoptimize_socket socket
-          if TCPSocket === socket
-            socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 0 )
-          end
+    else
+
+      # If the underying OS is not Linux, apply the remaining available optimizations.
+      def optimize_socket socket
+        if TCPSocket === socket
+          socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
+        end
+      end
+
+      def deoptimize_socket socket
+        if TCPSocket === socket
+          socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 0 )
         end
       end
     end
+
   end
-  
+
 end
