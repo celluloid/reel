@@ -81,8 +81,6 @@ module Reel
 
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
-    # Send a response back to the client
-    # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
       raise StateError, "not in header state" if @response_state != :header
 
