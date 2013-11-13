@@ -9,7 +9,7 @@ module Reel
 
   # Reel::Server::HTTP
   # Reel::Server::SSL
-  # Reel::UNIXServer
+  # Reel::Server::SSL::UNIX
 
   class Server
     include Celluloid::IO
