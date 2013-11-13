@@ -1,5 +1,5 @@
 module Reel
-  # The Reel server ( foundation ) class
+  # Base class for Reel servers.
   #
   # This class is a Celluloid::IO actor which provides a barebones server
   # which does not open a socket itself, it just begin handling connections once
