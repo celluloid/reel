@@ -1,6 +1,7 @@
 module Reel
   class Server
     class SSL
+      
       execute_block_on_receiver :initialize
 
       # Create a new Reel HTTPS server
