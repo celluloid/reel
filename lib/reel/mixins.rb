@@ -75,7 +75,7 @@ module Reel
       # Only Linux supports the mix of socket behaviors given in these optimizations.
       # Beaware, certain optimizations may work individually off Linux; not together.
       def optimize_socket socket
-        if TCPSocket === socket
+        if socket.is_a? TCPSocket
           socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
           socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
           socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
@@ -83,7 +83,7 @@ module Reel
       end
 
       def deoptimize_socket socket
-        if TCPSocket === socket
+        if socket.is_a? TCPSocket
           socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
           socket.setsockopt( Socket::IPPROTO_TCP, 3, 1 ) # TCP_CORK
           socket.setsockopt( Socket::SOL_SOCKET, Socket::SO_REUSEADDR, 1 )
@@ -94,13 +94,13 @@ module Reel
 
       # If the underying OS is not Linux, apply the remaining available optimizations.
       def optimize_socket socket
-        if TCPSocket === socket
+        if socket.is_a? TCPSocket
           socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
         end
       end
 
       def deoptimize_socket socket
-        if TCPSocket === socket
+        if socket.is_a? TCPSocket
           socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 0 )
         end
       end
