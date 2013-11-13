@@ -17,7 +17,7 @@ end
 
 connectionPool = MyConnectionHandler.pool
 
-Reel::HTTPServer.run('127.0.0.1', 3000) do |connection|
+Reel::Server::HTTP.run('127.0.0.1', 3000) do |connection|
   # We're handing this connection off to another actor, so
   # we detach it first before handing it off
   connection.detach

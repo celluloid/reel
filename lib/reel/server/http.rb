@@ -10,7 +10,7 @@ module Reel
       # @param [Fixnum] port to bind to
       # @option options [Fixnum] backlog of requests to accept
       #
-      # @return [Reel::HTTPServer] Reel HTTP server actor
+      # @return [Reel::Server::HTTP] Reel HTTP server actor
       def initialize(host, port, options={}, &callback)
         optimize server = Celluloid::IO::TCPServer.new(host, port)
         options.merge!(host: host, port: port)

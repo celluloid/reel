@@ -133,7 +133,7 @@ Reel lets you pass a block to initialize which receives connections:
 ```ruby
 require 'reel'
 
-Reel::HTTPServer.supervise("0.0.0.0", 3000) do |connection|
+Reel::Server::HTTP.supervise("0.0.0.0", 3000) do |connection|
   # Support multiple keep-alive requests per connection
   connection.each_request do |request|
     # WebSocket support
@@ -164,7 +164,7 @@ You can also subclass Reel, which allows additional customizations:
 ```ruby
 require 'reel'
 
-class MyServer < Reel::HTTPServer
+class MyServer < Reel::Server::HTTP
   def initialize(host = "127.0.0.1", port = 3000)
     super(host, port, &method(:on_connection))
   end

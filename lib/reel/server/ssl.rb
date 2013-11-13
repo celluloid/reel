@@ -12,7 +12,7 @@ module Reel
       # @option options [String] :cert the server's SSL certificate
       # @option options [String] :key  the server's SSL key
       #
-      # @return [Reel::SSLServer] Reel HTTPS server actor
+      # @return [Reel::Server::SSL] Reel HTTPS server actor
       def initialize(host, port, options={}, &callback)
 
         # Ideally we can encapsulate this rather than making Ruby OpenSSL a
@@ -36,7 +36,7 @@ module Reel
 
         optimize @tcpserver = Celluloid::IO::TCPServer.new(host, port)
 
-        server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
+        server = Celluloid::IO::Server::SSL.new(@tcpserver, ssl_context)
         options.merge!(host: host, port: port)
 
         super(server, options, &callback)

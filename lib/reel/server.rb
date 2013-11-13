@@ -7,8 +7,8 @@ module Reel
 
   # For specific protocol support, use:
 
-  # Reel::HTTPServer
-  # Reel::SSLServer
+  # Reel::Server::HTTP
+  # Reel::Server::SSL
   # Reel::UNIXServer
 
   class Server
