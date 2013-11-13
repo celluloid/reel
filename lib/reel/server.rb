@@ -68,8 +68,8 @@ module Reel
     
     def shutdown
       if @server
-        @server.close
         deoptimize_socket @server
+        @server.close
       end
     end
 
