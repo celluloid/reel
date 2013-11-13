@@ -2,8 +2,6 @@ module Reel
   class Server
     class HTTP < Server
 
-      execute_block_on_receiver :initialize
-
       # Create a new Reel HTTPS server
       #
       # @param [String] host address to bind to
