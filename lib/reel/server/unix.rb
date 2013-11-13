@@ -9,7 +9,7 @@ module Reel
       #
       # @return [Reel::Server::UNIX] Reel UNIX server actor
       def initialize(socket_path, options={}, &callback)
-      	server = Celluloid::IO::SSLServer::UNIX.new(socket_path)
+      	server = Celluloid::IO::UNIXServer.new(socket_path)
       	options[:socket_path] = socket_path
         super(server, options, &callback)
       end
