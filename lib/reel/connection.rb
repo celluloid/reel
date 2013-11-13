@@ -81,6 +81,8 @@ module Reel
 
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
+    # Send a response back to the client
+    # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
       raise StateError, "not in header state" if @response_state != :header
 
@@ -104,7 +106,11 @@ module Reel
       else raise TypeError, "invalid response: #{response.inspect}"
       end
 
-      current_request.handle_response(response)
+      if current_request
+        current_request.handle_response(response)
+      else
+        raise RequestError
+      end
 
       # Enable streaming mode
       if response.chunked? and response.body.nil?
@@ -116,8 +122,8 @@ module Reel
         @parser.reset
         @request_fsm.transition :closed
       end
-    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
-      # The client disconnected early
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE, RequestError
+      # The client disconnected early, or there is no request
       @keepalive = false
       @request_fsm.transition :closed
     end
