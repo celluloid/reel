@@ -1,6 +1,6 @@
 module Reel
   class Server
-    class SSL
+    class SSL < Server
       
       execute_block_on_receiver :initialize
 

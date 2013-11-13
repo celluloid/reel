@@ -1,6 +1,6 @@
 module Reel
   class Server
-    class HTTP
+    class HTTP < Server
 
       execute_block_on_receiver :initialize
 

@@ -1,6 +1,6 @@
 module Reel
   class Server
-    class UNIX
+    class UNIX < Server
       
       execute_block_on_receiver :initialize
 
