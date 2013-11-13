@@ -18,7 +18,8 @@ traditional multithreaded blocking I/O support too.
 [nio4r]: https://github.com/celluloid/nio4r
 
 Connections to Reel can be either non-blocking and handled entirely within
-the Reel::Server thread, or the same connections can be dispatched to worker
+the Reel::Server thread ( handling an HTTP, SSL, or UNIX socket ),
+or the same connections can be dispatched to worker
 threads where they will perform ordinary blocking IO. Reel provides no
 built-in thread pool, however you can build one yourself using Celluloid.pool,
 or because Celluloid already pools threads to begin with, you can simply use
@@ -132,7 +133,7 @@ Reel lets you pass a block to initialize which receives connections:
 ```ruby
 require 'reel'
 
-Reel::Server.supervise("0.0.0.0", 3000) do |connection|
+Reel::HTTPServer.supervise("0.0.0.0", 3000) do |connection|
   # Support multiple keep-alive requests per connection
   connection.each_request do |request|
     # WebSocket support
@@ -163,7 +164,7 @@ You can also subclass Reel, which allows additional customizations:
 ```ruby
 require 'reel'
 
-class MyServer < Reel::Server
+class MyServer < Reel::HTTPServer
   def initialize(host = "127.0.0.1", port = 3000)
     super(host, port, &method(:on_connection))
   end
