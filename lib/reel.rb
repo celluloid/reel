@@ -11,7 +11,8 @@ require 'reel/logger'
 require 'reel/request'
 require 'reel/response'
 require 'reel/server'
-require 'reel/ssl_server'
+require 'reel/ssl_server' # will be deleted by #121
+require 'reel/server/unix' #required by #123 after #121
 require 'reel/websocket'
 require 'reel/stream'
 
