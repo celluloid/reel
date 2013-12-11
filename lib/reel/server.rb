@@ -17,6 +17,7 @@ module Reel
     # TCP sockets.
     #
     class << self
+      include SocketMixin
       alias_method :_new, :new
       protected    :_new
     end
@@ -40,8 +41,7 @@ module Reel
       server  = Celluloid::IO::TCPServer.new(host, port)
       backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
 
-      # prevent TCP packets from being buffered
-      server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
+      self.optimize_socket server
       server.listen(backlog)
 
       self._new(server, options, &callback)
@@ -64,11 +64,13 @@ module Reel
       @callback = callback
 
       async.run
-   end
-
-
+    end
+    
     def shutdown
-      @server.close if @server
+      if @server
+        self.deoptimize_socket @server
+        @server.close
+      end
     end
 
     def run
