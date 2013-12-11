@@ -57,7 +57,7 @@ class WebServer < Reel::Server::HTTP
         # lifecycle (e.g. error handling) for us.
         # 
         # If we want to hand this connection off to another actor, we first
-        # need to detach it from the Reel::Server ( in this case, Reel::Server::HTTP )
+        # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
         connection.detach
 
         route_websocket request.websocket
