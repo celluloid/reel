@@ -40,7 +40,7 @@ module Reel
 
     def optimize(socket)
       if socket.is_a? TCPSocket
-        socket.setsockopt( Socket::IPPROTO_TCP, :TCP_NODELAY, 1 )
+        socket.setsockopt(Socket::IPPROTO_TCP, :TCP_NODELAY, 1)
       end
     end
 
