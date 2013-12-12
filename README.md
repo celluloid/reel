@@ -20,11 +20,12 @@ and provides traditional multithreaded blocking I/O support too.
 
 Connections to Reel can be either non-blocking and handled entirely within
 the Reel::Server thread (handling HTTP, SSL, or UNIX sockets),
-or the same connections can be dispatched to worker
-threads where they will perform ordinary blocking IO. Reel provides no
-built-in thread pool, however you can build one yourself using Celluloid.pool,
-or because Celluloid already pools threads to begin with, you can simply use
-an actor per connection.
+or the same connections can be dispatched to worker threads
+where they will perform ordinary blocking IO.
+Reel provides no built-in thread pool,
+however you can build one yourself using Celluloid.pool,
+or because Celluloid already pools threads to begin with,
+you can simply use an actor per connection.
 
 This gives you the best of both worlds: non-blocking I/O for when you're
 primarily I/O bound, and threads for where you're compute bound.
