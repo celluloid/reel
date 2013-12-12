@@ -18,7 +18,7 @@ def example_path; "/example"; end
 def example_url;  "http://#{example_addr}:#{example_port}#{example_path}"; end
 
 def with_reel(handler)
-  server = Reel::Server.new(example_addr, example_port, &handler)
+  server = Reel::Server::HTTP.new(example_addr, example_port, &handler)
   yield server
 ensure
   server.terminate if server && server.alive?

@@ -61,7 +61,7 @@ class Reader
   end
 end
 
-class WebServer < Reel::Server
+class WebServer < Reel::Server::HTTP
   include Celluloid::Logger
 
   def initialize(host = "0.0.0.0", port = 9000)

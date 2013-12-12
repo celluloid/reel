@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::SSLServer do
+describe Reel::Server::SSL do
   let(:example_ssl_port) { example_port + 1 }
   let(:example_url)      { "https://#{example_addr}:#{example_ssl_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }
@@ -111,7 +111,7 @@ describe Reel::SSLServer do
       :key  => server_key
     }.merge(options)
 
-    server = Reel::SSLServer.new(example_addr, example_ssl_port, options, &handler)
+    server = Reel::Server::SSL.new(example_addr, example_ssl_port, options, &handler)
     yield server
   ensure
     server.terminate if server && server.alive?

@@ -1,71 +1,34 @@
 module Reel
-  # The Reel HTTP server class
+  # Base class for Reel servers.
   #
-  # This class is a Celluloid::IO actor which provides a bareboens HTTP server
-  # For HTTPS support, use Reel::SSLServer
+  # This class is a Celluloid::IO actor which provides a barebones server
+  # which does not open a socket itself, it just begin handling connections once
+  # initialized with a specific kind of protocol-based server.
+
+  # For specific protocol support, use:
+
+  # Reel::Server::HTTP
+  # Reel::Server::SSL
+  # Reel::Server::SSL::UNIX
+
   class Server
     include Celluloid::IO
-
     # How many connections to backlog in the TCP accept queue
     DEFAULT_BACKLOG = 100
 
     execute_block_on_receiver :initialize
     finalizer :shutdown
 
-    # Allow the existing `new` to be called, even though we will
-    # replace it with a default version that creates HTTP servers over
-    # TCP sockets.
-    #
-    class << self
-      alias_method :_new, :new
-      protected    :_new
-    end
-
-    # Create a new Reel HTTP server
-    #
-    # @param [String] host address to bind to
-    # @param [Fixnum] port to bind to
-    # @option options [Fixnum] backlog of requests to accept
-    # @option options [true] spy on the request
-    #
-    # @return [Reel::SSLServer] Reel HTTPS server actor
-    #
-    # ::new was overridden for backwards compatibility. The underlying
-    # #initialize method now accepts a `server` param that is
-    # responsible for having established the bi-directional
-    # communication channel. ::new uses the existing (sane) default of
-    # setting up the TCP channel for the user.
-    #
-    def self.new(host, port, options = {} , &callback)
-      server  = Celluloid::IO::TCPServer.new(host, port)
-      backlog = options.fetch(:backlog, DEFAULT_BACKLOG)
-
-      # prevent TCP packets from being buffered
-      server.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
-      server.listen(backlog)
-
-      self._new(server, options, &callback)
-    end
-
-    # Create a Reel HTTP server over a UNIX socket.
-    #
-    # @param [String] socket_path path to the UNIX socket
-    # @option options [true] spy on the request
-    #
-    def self.unix(socket_path, options = {}, &callback)
-      server = Celluloid::IO::UNIXServer.new(socket_path)
-
-      self._new(server, options, &callback)
-    end
-
-    def initialize(server, options = {}, &callback)
+    def initialize(server, options={}, &callback)
       @spy      = STDOUT if options[:spy]
-      @server   = server
+      @options  = options
       @callback = callback
+      @server   = server
+
+      @server.listen(options.fetch(:backlog, DEFAULT_BACKLOG))
 
       async.run
-   end
-
+    end
 
     def shutdown
       @server.close if @server
@@ -73,6 +36,12 @@ module Reel
 
     def run
       loop { async.handle_connection @server.accept }
+    end
+
+    def optimize(socket)
+      if socket.is_a? TCPSocket
+        socket.setsockopt(Socket::IPPROTO_TCP, :TCP_NODELAY, 1)
+      end
     end
 
     def handle_connection(socket)

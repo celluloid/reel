@@ -38,7 +38,7 @@ class TimeClient
   end
 end
 
-class WebServer < Reel::Server
+class WebServer < Reel::Server::HTTP
   include Celluloid::Logger
 
   def initialize(host = "127.0.0.1", port = 1234)
@@ -53,11 +53,11 @@ class WebServer < Reel::Server
 
         # We're going to hand off this connection to another actor (TimeClient)
         # However, initially Reel::Connections are "attached" to the
-        # Reel::Server actor, meaning that the server manages the connection
+        # Reel::Server::HTTP actor, meaning that the server manages the connection
         # lifecycle (e.g. error handling) for us.
         # 
         # If we want to hand this connection off to another actor, we first
-        # need to detach it from the Reel::Server
+        # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
         connection.detach
 
         route_websocket request.websocket
