@@ -14,3 +14,9 @@ group :development do
   gem 'guard-rspec'
   gem 'pry'
 end
+
+platforms :rbx do
+  gem 'racc'
+  gem 'rubinius-coverage'
+  gem 'rubysl', '~> 2.0'
+end
