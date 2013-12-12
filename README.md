@@ -7,10 +7,11 @@
 
 > "A dizzying lifetime... reeling by on celluloid" _-- Rush / Between The Wheels_
 
-Reel is a fast, non-blocking "evented" web server built on [http_parser.rb][parser],
-[websocket_parser][websockets], [Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks
-to Celluloid, Reel also works great for multithreaded applications and provides
-traditional multithreaded blocking I/O support too.
+Reel is a fast, non-blocking "evented" web server
+built on [http_parser.rb][parser], [websocket_parser][websockets],
+[Celluloid::IO][celluloidio], and [nio4r][nio4r]. Thanks to Celluloid,
+Reel also works great for multithreaded applications
+and provides traditional multithreaded blocking I/O support too.
 
 [parser]: https://github.com/tmm1/http_parser.rb
 [websockets]: https://github.com/afcapel/websocket_parser
