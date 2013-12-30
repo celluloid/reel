@@ -2,7 +2,7 @@ module Reel
   class Server
     class HTTP < Server
 
-      # Create a new Reel HTTPS server
+      # Create a new Reel HTTP server
       #
       # @param [String] host address to bind to
       # @param [Fixnum] port to bind to
