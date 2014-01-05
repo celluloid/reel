@@ -40,6 +40,7 @@ module Reel
         else
           raise TypeError, "don't know how to render a #{response.body.class}"
         end
+        response.body.close if response.body.respond_to?(:close)
       end
 
       # Convert headers into a string
