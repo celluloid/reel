@@ -33,8 +33,6 @@ module Reel
           Celluloid::IO.copy_stream(response.body, @socket)
         when Enumerable
           response.body.each { |chunk| write(chunk) }
-          # Webmachine-Ruby Encodes IO Objects as a Enumerable, so it needs to be closed here.
-          response.body.close if response.body.respond_to?(:close)
           finish_response
         when NilClass
           # Used for streaming Transfer-Encoding chunked responses
@@ -42,6 +40,7 @@ module Reel
         else
           raise TypeError, "don't know how to render a #{response.body.class}"
         end
+        response.body.close if response.body.respond_to?(:close)
       end
 
       # Convert headers into a string
