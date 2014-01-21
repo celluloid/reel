@@ -148,11 +148,11 @@ describe Reel::Connection do
       example_request = ExampleRequest.new(:get, "/", "1.1", {'Connection' => 'close'})
       client << example_request
 
-      connection.request.should_not be_false
+      connection.request.should_not be_nil
 
       connection.respond :ok, "Response sent"
 
-      connection.request.should be_false
+      connection.request.should be_nil
     end
   end
 
