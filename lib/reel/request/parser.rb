@@ -5,7 +5,7 @@ module Reel
       attr_reader :socket, :connection
 
       def initialize(connection)
-        @parser      = Http::Parser.new(self)
+        @parser      = HTTP::Parser.new(self)
         @connection  = connection
         @socket      = connection.socket
         @buffer_size = connection.buffer_size
