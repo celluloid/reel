@@ -100,7 +100,7 @@ module Reel
     def finish_response
       raise StateError, "not in body state" if @connection.response_state != :chunked_body
       @response_writer.finish_response
-      @connection.response_state = :header
+      @connection.response_state = :headers
     end
 
     # Can the current request be upgraded to a WebSocket?
