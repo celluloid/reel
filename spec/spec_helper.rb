@@ -60,7 +60,7 @@ class ExampleRequest
       'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'
     }.merge(headers)
 
-    @body = nil
+    @body = body
   end
 
   def to_s
