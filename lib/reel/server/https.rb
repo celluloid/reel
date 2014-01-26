@@ -1,14 +1,14 @@
 module Reel
   class Server
-    class SSL < Server
+    class HTTPS < Server
 
       # Create a new Reel HTTPS server
       #
       # @param [String] host address to bind to
       # @param [Fixnum] port to bind to
       # @option options [Fixnum] backlog of requests to accept
-      # @option options [String] :cert the server's SSL certificate
-      # @option options [String] :key  the server's SSL key
+      # @option options [String] :cert the server's TLS certificate
+      # @option options [String] :key  the server's TLS key
       #
       # @return [Reel::Server::SSL] Reel HTTPS server actor
       def initialize(host, port, options={}, &callback)

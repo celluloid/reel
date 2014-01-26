@@ -1,9 +1,9 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::Server::SSL do
-  let(:example_ssl_port) { example_port + 1 }
-  let(:example_url)      { "https://#{example_addr}:#{example_ssl_port}#{example_path}" }
+describe Reel::Server::HTTPS do
+  let(:example_https_port) { example_port + 1 }
+  let(:example_url)      { "https://#{example_addr}:#{example_https_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }
   let(:response_body)    { "ohai thar" }
 
@@ -30,7 +30,7 @@ describe Reel::Server::SSL do
       end
     end
 
-    with_reel_sslserver(handler) do
+    with_reel_https_server(handler) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -59,7 +59,7 @@ describe Reel::Server::SSL do
       end
     end
 
-    with_reel_sslserver(handler, :ca_file => self.ca_file) do
+    with_reel_https_server(handler, :ca_file => self.ca_file) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -90,7 +90,7 @@ describe Reel::Server::SSL do
       end
     end
 
-    with_reel_sslserver(handler, :ca_file => self.ca_file) do
+    with_reel_https_server(handler, :ca_file => self.ca_file) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -105,13 +105,13 @@ describe Reel::Server::SSL do
     raise ex if ex
   end
 
-  def with_reel_sslserver(handler, options = {})
+  def with_reel_https_server(handler, options = {})
     options = {
       :cert => server_cert,
       :key  => server_key
     }.merge(options)
 
-    server = Reel::Server::SSL.new(example_addr, example_ssl_port, options, &handler)
+    server = described_class.new(example_addr, example_https_port, options, &handler)
     yield server
   ensure
     server.terminate if server && server.alive?
