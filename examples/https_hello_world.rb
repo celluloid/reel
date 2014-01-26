@@ -12,7 +12,7 @@ options = {
 }
 
 puts "*** Starting server on #{addr}:#{port}"
-Reel::Server::SSL.supervise(addr, port, options) do |connection|
+Reel::Server::HTTPS.supervise(addr, port, options) do |connection|
   # For keep-alive support
   connection.each_request do |request|
     # Ordinarily we'd route the request here, e.g.
