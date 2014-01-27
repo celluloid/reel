@@ -23,9 +23,9 @@ module Reel
       @connection      = connection
       @finished        = false
       @buffer          = ""
-      @body            = Body.new(self)
       @finished_read   = false
       @websocket       = nil
+      @body            = Response::Body.new(self)
       @response_writer = Response::Writer.new(connection.socket)
     end
 
@@ -72,7 +72,7 @@ module Reel
         @buffer = ""
       else
         unless finished_reading? || (length && length <= @buffer.length)
-          @connection.readpartial(length ? length - @buffer.length : Connection::BUFFER_SIZE)
+          @connection.readpartial(length ? length - @buffer.length : @connection.buffer_size)
         end
 
         if length

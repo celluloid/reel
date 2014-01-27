@@ -30,7 +30,7 @@ module Reel
       end
 
       # Eagerly consume the entire body as a string
-      def to_s
+      def to_str
         return @contents if @contents
         raise StateError, "body is being streamed" unless @streaming.nil?
 
@@ -47,6 +47,7 @@ module Reel
 
         @contents
       end
+      alias_method :to_s, :to_str
 
       # Easier to interpret string inspect
       def inspect
