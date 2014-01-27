@@ -25,7 +25,7 @@ module Reel
       @buffer          = ""
       @finished_read   = false
       @websocket       = nil
-      @body            = Response::Body.new(self)
+      @body            = Request::Body.new(self)
       @response_writer = Response::Writer.new(connection.socket)
     end
 
