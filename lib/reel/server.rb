@@ -8,8 +8,8 @@ module Reel
   # For specific protocol support, use:
 
   # Reel::Server::HTTP
-  # Reel::Server::SSL
-  # Reel::Server::SSL::UNIX
+  # Reel::Server::HTTPS
+  # Coming soon: Reel::Server::HTTPS::UNIX
 
   class Server
     include Celluloid::IO

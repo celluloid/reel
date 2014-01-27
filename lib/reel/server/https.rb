@@ -10,7 +10,7 @@ module Reel
       # @option options [String] :cert the server's TLS certificate
       # @option options [String] :key  the server's TLS key
       #
-      # @return [Reel::Server::SSL] Reel HTTPS server actor
+      # @return [Reel::Server::HTTPS] Reel HTTPS server actor
       def initialize(host, port, options={}, &callback)
 
         # Ideally we can encapsulate this rather than making Ruby OpenSSL a
