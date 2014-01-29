@@ -23,6 +23,8 @@ module Reel
         ssl_context.ca_file = options[:ca_file]
         ssl_context.ca_path = options[:ca_path]
 
+        ssl_context.extra_chain_cert = options[:extra_chain_cert]
+
         # if verify_mode isn't explicitly set, verify peers if we've
         # been provided CA information that would enable us to do so
         ssl_context.verify_mode = case
