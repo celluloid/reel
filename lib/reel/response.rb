@@ -1,4 +1,3 @@
-require 'reel/response/writer'
 
 module Reel
   class Response

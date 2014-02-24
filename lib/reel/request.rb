@@ -5,6 +5,8 @@ require 'reel/request/info'
 require 'reel/request/parser'
 require 'reel/request/state_machine'
 
+require 'reel/response/writer'
+
 module Reel
   class Request
     extend Forwardable
