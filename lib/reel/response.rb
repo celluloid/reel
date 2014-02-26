@@ -1,9 +1,7 @@
-require 'reel/response/writer'
+require 'http/headers'
 
 module Reel
   class Response
-    include HTTP::Header
-
     CONTENT_LENGTH     = 'Content-Length'.freeze
     TRANSFER_ENCODING  = 'Transfer-Encoding'.freeze
     CHUNKED            = 'chunked'.freeze
@@ -38,12 +36,12 @@ module Reel
       else raise TypeError, "can't render #{@body.class} as a response body"
       end
 
-      @headers = canonicalize_headers(headers)
+      @headers = HTTP::Headers.new(headers)
       @version = http_version
     end
 
     def chunked?
-      headers[TRANSFER_ENCODING] == CHUNKED
+      headers[TRANSFER_ENCODING].to_s == CHUNKED
     end
 
     # Set the status
@@ -62,13 +60,6 @@ module Reel
         raise TypeError, "invalid status type: #{status.inspect}"
       end
     end
-
-    def canonicalize_headers(headers)
-      headers.inject({}) do |headers, (header, value)|
-        headers.merge canonicalize_header(header) => value.to_s
-      end.freeze
-    end
-    private :canonicalize_headers
 
     def http_version
       # FIXME: real HTTP versioning
