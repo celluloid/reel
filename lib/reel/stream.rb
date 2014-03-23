@@ -102,7 +102,7 @@ module Reel
         raise TypeError, "can't render #{@body.class} as a response body"
       end
 
-      @headers = HTTP::Headers.new(headers)
+      @headers = HTTP::Headers.from_hash(headers)
       @version = http_version
     end
 
