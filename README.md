@@ -174,7 +174,7 @@ class MyServer < Reel::Server::HTTP
   def on_connection(connection)
     connection.each_request do |request|
       if request.websocket?
-        handle_websocket(request)
+        handle_websocket(request.websocket)
       else
         handle_request(request)
       end
