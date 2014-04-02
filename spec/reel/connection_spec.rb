@@ -97,7 +97,7 @@ describe Reel::Connection do
       fixture = "5#{crlf}Hello#{crlf}5#{crlf}World#{crlf}0#{crlf*2}"
       response[(response.length - fixture.length)..-1].should eq fixture
     end
-    
+
     it "with keep-alive" do
       with_socket_pair do |client, peer|
         connection = Reel::Connection.new(peer)
@@ -141,7 +141,7 @@ describe Reel::Connection do
       end
     end
   end
-  
+
   it "reset the request after a response is sent" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
@@ -339,6 +339,16 @@ describe Reel::Connection do
         end
         request.should be_finished_reading
         rebuilt.should == ["I'm data", " you can", " stream!"]
+      end
+    end
+  end
+
+  context "#respond" do
+    it "accepts Fixnum as status" do
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
+
+        connection.respond 200, {}, []
       end
     end
   end
