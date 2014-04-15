@@ -1,3 +1,13 @@
+0.5.0 (2014-04-15)
+------------------
+* Reel::Server(::SSL) renamed to Reel::Server::HTTP and Reel::Server::HTTPS
+* New Reel::Spy API for observing requests and responses from the server
+* Fixes to chunked encoding handling
+* Update websocket_parser gem to 0.1.6
+* Update to "The HTTP Gem" 0.6.0 
+* Ensure response bodies are always closed
+* Support for passing a fixnum status to Connection#respond
+
 0.4.0
 -----
 * Rack adapter moved to the reel-rack project
