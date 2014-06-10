@@ -280,7 +280,7 @@ describe Reel::Connection do
       client << example_request.to_s
 
       request = connection.request
-      timers = Timers.new
+      timers = Timers::Group.new
       timers.after(0.2){
         client << content
       }
