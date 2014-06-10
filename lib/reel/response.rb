@@ -7,8 +7,8 @@ module Reel
     CHUNKED            = 'chunked'.freeze
 
     # Use status code tables from the HTTP gem
-    STATUS_CODES          = HTTP::Response::STATUS_CODES
-    SYMBOL_TO_STATUS_CODE = HTTP::Response::SYMBOL_TO_STATUS_CODE
+    STATUS_CODES          = HTTP::Response::Status::REASONS
+    SYMBOL_TO_STATUS_CODE = Hash[STATUS_CODES.map { |k, v| [v.downcase.gsub(/\s|-/, '_').to_sym, k] }].freeze
 
     attr_reader   :status # Status has a special setter to coerce symbol names
     attr_accessor :reason # Reason can be set explicitly if desired
