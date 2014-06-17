@@ -7,7 +7,7 @@ module Reel
         @http_method  = http_method
         @url          = url
         @http_version = http_version
-        @headers      = headers
+        @headers      = Hash.new {|h, k| h[h.keys.find {|_k| _k =~ /#{k.downcase}/i}] if k}.merge headers
       end
 
       UPGRADE   = 'Upgrade'.freeze
