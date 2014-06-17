@@ -94,6 +94,21 @@ describe Reel::WebSocket do
     end
   end
 
+  it "performs websocket handshakes with header key case-insensitivity" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << case_handshake.to_data
+
+      request = connection.request
+      request.should be_websocket
+
+      websocket = request.websocket
+      websocket.should be_a Reel::WebSocket
+
+      case_handshake.errors.should be_empty
+    end
+  end
+
   def with_websocket_pair
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)

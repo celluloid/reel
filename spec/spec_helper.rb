@@ -61,7 +61,22 @@ module WebSocketHelpers
         }
       end
 
+      let :case_handshake_headers do
+        {
+          "HoSt"                   => example_host,
+          "UpgRAde"                => "websocket",
+          "ConnECTion"             => "Upgrade",
+          "Sec-WebsOCket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
+          "Origin"                 => "http://example.com",
+          "Sec-WEBsOCKET-pROTOCol" => "chat, superchat",
+          "Sec-WEBsOCKET-vERsion"  => "13"
+        }
+      end
+
       let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) }
+      let(:case_handshake) do
+        WebSocket::ClientHandshake.new(:get, example_url, case_handshake_headers)
+      end
     end
   end
 end
