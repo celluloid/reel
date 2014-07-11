@@ -110,10 +110,10 @@ module Reel
 
     # Return a Reel::WebSocket for this request, hijacking the socket from
     # the underlying connection
-    def websocket
+    def websocket(&block)
       @websocket ||= begin
         raise StateError, "can't upgrade this request to a websocket" unless websocket?
-        WebSocket.new(@request_info, @connection.hijack_socket)
+        WebSocket.new(self, @connection, &block)
       end
     end
 
