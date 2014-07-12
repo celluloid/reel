@@ -49,9 +49,9 @@ describe Reel::WebSocket do
   end
 
   it 'performs the websocket handshake' do
-    @client.send(handshake_request, 0)
+    Thread.new { Reel::WebSocket.new(@connection) }
 
-    Thread.new { Reel::WebSocket.new(@connection.request, @connection) }
+    @client.send(handshake_request, 0)
     response = @client.read
 
     expect(response).to eq(handshake_response)
@@ -129,18 +129,15 @@ describe Reel::WebSocket do
   end
 
   it 'raises a RequestError when connection used after it was upgraded' do
-    @client.send(handshake_request, 0)
-
-    request = @connection.request
-
     Thread.new do
-      Reel::WebSocket.new(request, @connection) do |ws|
+      Reel::WebSocket.new(@connection) do |ws|
         ws.on :open do
           queue << :opened
         end
       end
     end
 
+    @client.send(handshake_request, 0)
     queue.pop
     expect { @connection.remote_host }.to raise_error(Reel::StateError)
   end
@@ -151,15 +148,12 @@ describe Reel::WebSocket do
   end
 
   def with_websocket(handlers = {})
-    @client.send(handshake_request, 0)
-    request = @connection.request
-
     message_handler = handlers[:message]
     open_handler = handlers[:open]
     close_handler = handlers[:close]
 
     Thread.new do
-      Reel::WebSocket.new(request, @connection) do |ws|
+      Reel::WebSocket.new(@connection) do |ws|
         ws.on :message do |event|
           message_handler.call(event.data, ws) if message_handler
         end
@@ -174,6 +168,7 @@ describe Reel::WebSocket do
       end
     end
 
+    @client.send(handshake_request, 0)
     responses = @client.read.split("\r\n\r\n")
 
     yield(responses)

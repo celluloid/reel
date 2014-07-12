@@ -1,6 +1,5 @@
 require 'forwardable'
 require 'websocket/driver'
-require 'rack'
 
 module Reel
   class WebSocket
@@ -12,27 +11,17 @@ module Reel
     def_delegators :driver, :text, :binary, :ping, :close
     def_delegators :socket, :write
 
-    def initialize(request, connection)
+    def initialize(connection)
       @connection = connection
       @socket = @connection.socket
-      @url = request.url
-
-      options = {
-        :method       => request.method,
-        :input        => request.body.to_s,
-        'REMOTE_ADDR' => request.remote_addr
-      }.merge(convert_headers(request.headers))
-
-      @env = ::Rack::MockRequest.env_for(url, options)
 
       @connection.detach
       @connection.hijack_socket
 
       driver.on(:close) { close }
+      driver.on(:connect) { driver.start }
 
       yield driver if block_given?
-
-      driver.start
 
       start_listening
     end
@@ -54,7 +43,7 @@ module Reel
     private
 
     def driver
-      @driver ||= ::WebSocket::Driver.rack(self)
+      @driver ||= ::WebSocket::Driver.server(self)
     end
 
     def convert_headers(headers)

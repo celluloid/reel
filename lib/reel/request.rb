@@ -113,7 +113,7 @@ module Reel
     def websocket(&block)
       @websocket ||= begin
         raise StateError, "can't upgrade this request to a websocket" unless websocket?
-        WebSocket.new(self, @connection, &block)
+        WebSocket.new(@connection, &block)
       end
     end
 
