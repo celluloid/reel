@@ -51,7 +51,7 @@ describe Reel::WebSocket do
   it 'performs the websocket handshake' do
     @client.send(handshake_request, 0)
 
-    Reel::WebSocket.new(@connection.request, @connection)
+    Thread.new { Reel::WebSocket.new(@connection.request, @connection) }
     response = @client.read
 
     expect(response).to eq(handshake_response)
@@ -132,8 +132,16 @@ describe Reel::WebSocket do
     @client.send(handshake_request, 0)
 
     request = @connection.request
-    Reel::WebSocket.new(request, @connection)
 
+    Thread.new do
+      Reel::WebSocket.new(request, @connection) do |ws|
+        ws.on :open do
+          queue << :opened
+        end
+      end
+    end
+
+    queue.pop
     expect { @connection.remote_host }.to raise_error(Reel::StateError)
   end
 
@@ -150,17 +158,19 @@ describe Reel::WebSocket do
     open_handler = handlers[:open]
     close_handler = handlers[:close]
 
-    Reel::WebSocket.new(request, @connection) do |ws|
-      ws.on :message do |event|
-        message_handler.call(event.data, ws) if message_handler
-      end
+    Thread.new do
+      Reel::WebSocket.new(request, @connection) do |ws|
+        ws.on :message do |event|
+          message_handler.call(event.data, ws) if message_handler
+        end
 
-      ws.on :open do
-        open_handler.call(ws) if open_handler
-      end
+        ws.on :open do
+          open_handler.call(ws) if open_handler
+        end
 
-      ws.on :close do
-        close_handler.call(ws) if close_handler
+        ws.on :close do
+          close_handler.call(ws) if close_handler
+        end
       end
     end
 

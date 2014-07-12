@@ -4,8 +4,6 @@ require 'rack'
 
 module Reel
   class WebSocket
-    include Celluloid
-    include Celluloid::Logger
     extend Forwardable
 
     NO_PREFIX_HEADERS = %w(CONTENT_TYPE CONTENT_LENGTH).freeze
@@ -36,7 +34,7 @@ module Reel
 
       driver.start
 
-      async.start_listening
+      start_listening
     end
 
     def close
