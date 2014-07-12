@@ -176,12 +176,12 @@ describe Reel::WebSocket do
 
   def extract_opcode(message)
     opcode_translation = 0b00001111
-    bytes = message.bytes
+    bytes = message.each_byte.to_a
     bytes[0] & opcode_translation
   end
 
   def decode_message(encoded_message)
-    encoded_bytes = encoded_message.bytes
+    encoded_bytes = encoded_message.each_byte.to_a
     mask = encoded_bytes[2..5]
     masked_message_bytes = encoded_bytes[6..-1]
     unmasked_bytes = WebSocket::Mask.mask(masked_message_bytes, mask)
