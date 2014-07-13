@@ -182,9 +182,7 @@ describe Reel::WebSocket do
 
   def decode_message(encoded_message)
     encoded_bytes = encoded_message.each_byte.to_a
-    mask = encoded_bytes[2..5]
-    masked_message_bytes = encoded_bytes[6..-1]
-    unmasked_bytes = WebSocket::Mask.mask(masked_message_bytes, mask)
-    WebSocket::Driver.encode(unmasked_bytes)
+    message_bytes = encoded_bytes[2..-1]
+    WebSocket::Driver.encode(message_bytes)
   end
 end
