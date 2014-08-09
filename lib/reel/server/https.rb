@@ -38,7 +38,7 @@ module Reel
           OpenSSL::SSL::VERIFY_NONE
         end
 
-        optimize @tcpserver = Celluloid::IO::TCPServer.new(host, port)
+        @tcpserver = Celluloid::IO::TCPServer.new(host, port)
 
         server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
         options.merge!(host: host, port: port)
