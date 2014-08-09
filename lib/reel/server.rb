@@ -38,12 +38,6 @@ module Reel
       loop { async.handle_connection @server.accept }
     end
 
-    def optimize(socket)
-      if socket.is_a? TCPSocket
-        socket.setsockopt(Socket::IPPROTO_TCP, :TCP_NODELAY, 1)
-      end
-    end
-
     def handle_connection(socket)
       if @spy
         require 'reel/spy'
