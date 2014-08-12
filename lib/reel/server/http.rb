@@ -10,7 +10,7 @@ module Reel
       #
       # @return [Reel::Server::HTTP] Reel HTTP server actor
       def initialize(host, port, options={}, &callback)
-        optimize server = Celluloid::IO::TCPServer.new(host, port)
+        server = Celluloid::IO::TCPServer.new(host, port)
         options.merge!(host: host, port: port)
         super(server, options, &callback)
       end
