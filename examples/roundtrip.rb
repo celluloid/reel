@@ -71,12 +71,22 @@ class WebServer < Reel::Server::HTTP
 
   def on_connection(connection)
     while request = connection.request
-      case request
-      when Reel::Request
-        route_request connection, request
-      when Reel::WebSocket
+      if request.websocket?
         info "Received a WebSocket connection"
-        route_websocket request
+
+        # We're going to hand off this connection to another actor (Writer/Reader)
+        # However, initially Reel::Connections are "attached" to the
+        # Reel::Server::HTTP actor, meaning that the server manages the connection
+        # lifecycle (e.g. error handling) for us.
+        #
+        # If we want to hand this connection off to another actor, we first
+        # need to detach it from the Reel::Server (in this case, Reel::Server::HTTP)
+        connection.detach
+
+        route_websocket request.websocket
+        return
+      else
+        route_request connection, request
       end
     end
   end
