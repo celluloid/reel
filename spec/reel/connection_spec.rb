@@ -156,6 +156,25 @@ describe Reel::Connection do
     end
   end
 
+  it "resets if client dropped connection" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      example_request = ExampleRequest.new
+      client << example_request
+
+      connection.request.should_not be_nil
+
+      client.close # client drops connection
+      # now send more than the send buffer can hold, triggering a
+      # error (ECONNRESET or EPIPE)
+      connection.respond :ok, ("Some Big Response sent"*100000)
+
+      # connection should be at end
+      connection.request.should be_nil
+    end
+  end
+
+
   it "raises an error trying to read two pipelines without responding first" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)

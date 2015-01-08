@@ -124,6 +124,8 @@ module Reel
       # The client disconnected early, or there is no request
       @keepalive = false
       @request_fsm.transition :closed
+      @parser.reset
+      @current_request = nil
     end
 
     # Close the connection
