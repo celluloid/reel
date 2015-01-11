@@ -162,7 +162,7 @@ RSpec.describe Reel::Connection do
       example_request = ExampleRequest.new
       client << example_request
 
-      connection.request.should_not be_nil
+      expect(connection.request).not_to be_nil
 
       client.close # client drops connection
       # now send more than the send buffer can hold, triggering a
@@ -170,7 +170,7 @@ RSpec.describe Reel::Connection do
       connection.respond :ok, ("Some Big Response sent"*100000)
 
       # connection should be at end
-      connection.request.should be_nil
+      expect(connection.request).to be_nil
     end
   end
 
