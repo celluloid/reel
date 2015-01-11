@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Reel::Connection do
+RSpec.describe Reel::Connection do
   let(:fixture_path) { File.expand_path("../../fixtures/example.txt", __FILE__) }
 
   it "reads requests without bodies" do

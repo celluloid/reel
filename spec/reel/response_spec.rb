@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Reel::Response do
+RSpec.describe Reel::Response do
   it "streams enumerables" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)

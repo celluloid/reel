@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::Server::HTTPS do
+RSpec.describe Reel::Server::HTTPS do
   let(:example_https_port) { example_port + 1 }
   let(:example_url)      { "https://#{example_addr}:#{example_https_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }

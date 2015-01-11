@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Reel::WebSocket do
+RSpec.describe Reel::WebSocket do
   include WebSocketHelpers
 
   let(:example_message) { "Hello, World!" }
