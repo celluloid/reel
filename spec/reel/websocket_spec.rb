@@ -12,12 +12,12 @@ describe Reel::WebSocket do
       client << handshake.to_data
 
       request = connection.request
-      request.should be_websocket
+      expect(request).to be_websocket
 
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
-      handshake.errors.should be_empty
+      expect(handshake.errors).to be_empty
     end
   end
 
@@ -27,20 +27,20 @@ describe Reel::WebSocket do
       client << handshake.to_data
 
       websocket = connection.request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
       expect { connection.close }.to raise_error(Reel::StateError)
     end
   end
 
   it "knows its URL" do
     with_websocket_pair do |_, websocket|
-      websocket.url.should == example_path
+      expect(websocket.url).to eq(example_path)
     end
   end
 
   it "knows its headers" do
     with_websocket_pair do |_, websocket|
-      websocket['Host'].should == example_host
+      expect(websocket['Host']).to eq(example_host)
     end
   end
 
@@ -49,8 +49,8 @@ describe Reel::WebSocket do
       client << WebSocket::Message.new(example_message).to_data
       client << WebSocket::Message.new(another_message).to_data
 
-      websocket.read.should == example_message
-      websocket.read.should == another_message
+      expect(websocket.read).to eq(example_message)
+      expect(websocket.read).to eq(another_message)
     end
   end
 
@@ -62,18 +62,18 @@ describe Reel::WebSocket do
       parser = WebSocket::Parser.new
 
       parser.append client.readpartial(4096) until first_message = parser.next_message
-      first_message.should == example_message
+      expect(first_message).to eq(example_message)
 
       parser.append client.readpartial(4096) until next_message = parser.next_message
-      next_message.should == another_message
+      expect(next_message).to eq(another_message)
     end
   end
 
   it "closes" do
     with_websocket_pair do |_, websocket|
-      websocket.should_not be_closed
+      expect(websocket).not_to be_closed
       websocket.close
-      websocket.should be_closed
+      expect(websocket).to be_closed
     end
   end
 
@@ -85,12 +85,12 @@ describe Reel::WebSocket do
       remote_host = connection.remote_host
 
       request = connection.request
-      request.should be_websocket
+      expect(request).to be_websocket
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
       expect { connection.remote_host }.to raise_error(Reel::StateError)
-      websocket.remote_host.should == remote_host
+      expect(websocket.remote_host).to eq(remote_host)
     end
   end
 
@@ -100,12 +100,12 @@ describe Reel::WebSocket do
       client << case_handshake.to_data
 
       request = connection.request
-      request.should be_websocket
+      expect(request).to be_websocket
 
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
-      case_handshake.errors.should be_empty
+      expect(case_handshake.errors).to be_empty
     end
   end
 
@@ -115,9 +115,9 @@ describe Reel::WebSocket do
       client << handshake.to_data
       request = connection.request
 
-      request.should be_websocket
+      expect(request).to be_websocket
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
       # Discard handshake
       client.readpartial(4096)

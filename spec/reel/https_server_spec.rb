@@ -21,9 +21,9 @@ describe Reel::Server::HTTPS do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq "1.1"
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq "1.1"
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
@@ -38,7 +38,7 @@ describe Reel::Server::HTTPS do
       request = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
 
-      response.body.should eq response_body
+      expect(response.body).to eq response_body
     end
 
     raise ex if ex
@@ -50,9 +50,9 @@ describe Reel::Server::HTTPS do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq '1.1'
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq '1.1'
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
@@ -69,7 +69,7 @@ describe Reel::Server::HTTPS do
       request  = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
 
-      response.body.should eq response_body
+      expect(response.body).to eq response_body
     end
 
     raise ex if ex
@@ -81,9 +81,9 @@ describe Reel::Server::HTTPS do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq '1.1'
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq '1.1'
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
@@ -99,7 +99,7 @@ describe Reel::Server::HTTPS do
 
       request  = Net::HTTP::Get.new(endpoint.path)
 
-      proc { http.request(request) }.should raise_error(OpenSSL::SSL::SSLError)
+      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
     end
 
     raise ex if ex
