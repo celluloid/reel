@@ -7,13 +7,13 @@ RSpec.describe Reel::Server::HTTPS do
   let(:endpoint)         { URI(example_url) }
   let(:response_body)    { "ohai thar" }
 
-  let(:ca_file) { fixture_dir.join('ca.crt').to_s }
+  let(:ca_file)              { certs_dir.join('ca.crt').to_s }
 
-  let(:server_cert)          { fixture_dir.join("server.crt")         .read }
-  let(:server_key)           { fixture_dir.join("server.key")         .read }
-  let(:client_cert)          { fixture_dir.join("client.crt")         .read }
-  let(:client_cert_unsigned) { fixture_dir.join("client.unsigned.crt").read }
-  let(:client_key)           { fixture_dir.join("client.key")         .read }
+  let(:server_cert)          { certs_dir.join("server.crt")         .read }
+  let(:server_key)           { certs_dir.join("server.key")         .read }
+  let(:client_cert)          { certs_dir.join("client.crt")         .read }
+  let(:client_cert_unsigned) { certs_dir.join("client.unsigned.crt").read }
+  let(:client_key)           { certs_dir.join("client.key")         .read }
 
   it "receives HTTP requests and sends responses" do
     ex = nil

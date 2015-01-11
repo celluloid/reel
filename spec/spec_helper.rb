@@ -5,16 +5,21 @@ require 'bundler/setup'
 require 'reel'
 require 'pry'
 
+def fixture_dir
+  Pathname.new File.expand_path("../fixtures", __FILE__)
+end
+
+def certs_dir
+  Pathname.new File.expand_path('../../tmp/certs', __FILE__)
+end
+
 require 'support/example_request'
+require 'support/create_certs'
 
 RSpec.configure(&:disable_monkey_patching!)
 
 logfile = File.open(File.expand_path("../../log/test.log", __FILE__), 'a')
 Celluloid.logger = Logger.new(logfile)
-
-def fixture_dir
-  Pathname.new File.expand_path("../fixtures", __FILE__)
-end
 
 def example_addr; '127.0.0.1'; end
 def example_port; 1234; end
