@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Reel::Connection do
+RSpec.describe Reel::Connection do
   let(:fixture_path) { File.expand_path("../../fixtures/example.txt", __FILE__) }
 
   it "reads requests without bodies" do
@@ -9,16 +9,16 @@ describe Reel::Connection do
       client << ExampleRequest.new.to_s
       request = connection.request
 
-      request.url.should     eq "/"
-      request.version.should eq "1.1"
+      expect(request.url).to     eq "/"
+      expect(request.version).to eq "1.1"
 
-      request['Host'].should eq "www.example.com"
-      request['Connection'].should eq "keep-alive"
-      request['User-Agent'].should eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
-      request['Accept'].should eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-      request['Accept-Encoding'].should eq "gzip,deflate,sdch"
-      request['Accept-Language'].should eq "en-US,en;q=0.8"
-      request['Accept-Charset'].should eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
+      expect(request['Host']).to eq "www.example.com"
+      expect(request['Connection']).to eq "keep-alive"
+      expect(request['User-Agent']).to eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
+      expect(request['Accept']).to eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      expect(request['Accept-Encoding']).to eq "gzip,deflate,sdch"
+      expect(request['Accept-Language']).to eq "en-US,en;q=0.8"
+      expect(request['Accept-Charset']).to eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
     end
   end
 
@@ -32,10 +32,10 @@ describe Reel::Connection do
       client << example_request.to_s
       request = connection.request
 
-      request.url.should     eq "/"
-      request.version.should eq "1.1"
-      request['Content-Length'].should eq body.length.to_s
-      request.body.to_s.should eq example_request.body
+      expect(request.url).to     eq "/"
+      expect(request.version).to eq "1.1"
+      expect(request['Content-Length']).to eq body.length.to_s
+      expect(request.body.to_s).to eq example_request.body
     end
   end
 
@@ -52,7 +52,7 @@ describe Reel::Connection do
       end
 
       response = client.read(4096)
-      response[(response.length - fixture_text.length)..-1].should eq fixture_text
+      expect(response[(response.length - fixture_text.length)..-1]).to eq fixture_text
     end
   end
 
@@ -64,12 +64,12 @@ describe Reel::Connection do
       request_count = 0
       connection.each_request do |request|
         request_count += 1
-        request.url.should eq "/"
+        expect(request.url).to eq "/"
         request.respond :ok
         client.close
       end
 
-      request_count.should eq 1
+      expect(request_count).to eq 1
     end
   end
 
@@ -95,7 +95,7 @@ describe Reel::Connection do
 
       crlf = "\r\n"
       fixture = "5#{crlf}Hello#{crlf}5#{crlf}World#{crlf}0#{crlf*2}"
-      response[(response.length - fixture.length)..-1].should eq fixture
+      expect(response[(response.length - fixture.length)..-1]).to eq fixture
     end
 
     it "with keep-alive" do
@@ -148,11 +148,11 @@ describe Reel::Connection do
       example_request = ExampleRequest.new(:get, "/", "1.1", {'Connection' => 'close'})
       client << example_request
 
-      connection.request.should_not be_nil
+      expect(connection.request).not_to be_nil
 
       connection.respond :ok, "Response sent"
 
-      connection.request.should be_nil
+      expect(connection.request).to be_nil
     end
   end
 
@@ -198,16 +198,16 @@ describe Reel::Connection do
       3.times do
         request = connection.request
 
-        request.url.should     eq "/"
-        request.version.should eq "1.1"
+        expect(request.url).to     eq "/"
+        expect(request.version).to eq "1.1"
 
-        request['Host'].should eq "www.example.com"
-        request['Connection'].should eq "keep-alive"
-        request['User-Agent'].should eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
-        request['Accept'].should eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-        request['Accept-Encoding'].should eq "gzip,deflate,sdch"
-        request['Accept-Language'].should eq "en-US,en;q=0.8"
-        request['Accept-Charset'].should eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
+        expect(request['Host']).to eq "www.example.com"
+        expect(request['Connection']).to eq "keep-alive"
+        expect(request['User-Agent']).to eq "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S"
+        expect(request['Accept']).to eq "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+        expect(request['Accept-Encoding']).to eq "gzip,deflate,sdch"
+        expect(request['Accept-Language']).to eq "en-US,en;q=0.8"
+        expect(request['Accept-Charset']).to eq "ISO-8859-1,utf-8;q=0.7,*;q=0.3"
         connection.respond :ok, {}, ""
       end
     end
@@ -229,10 +229,10 @@ describe Reel::Connection do
         request = connection.request
 
         expected_body = "Hello, world number #{i}!"
-        request.url.should     eq "/"
-        request.version.should eq "1.1"
-        request['Content-Length'].should eq expected_body.length.to_s
-        request.body.to_s.should eq expected_body
+        expect(request.url).to     eq "/"
+        expect(request.version).to eq "1.1"
+        expect(request['Content-Length']).to eq expected_body.length.to_s
+        expect(request.body.to_s).to eq expected_body
 
         connection.respond :ok, {}, ""
       end
@@ -255,16 +255,16 @@ describe Reel::Connection do
         request = connection.request
 
         expected_body = "Hello, world number #{i}!"
-        request.url.should     eq "/"
-        request.version.should eq "1.1"
-        request['Content-Length'].should eq expected_body.length.to_s
-        request.should_not be_finished_reading
+        expect(request.url).to     eq "/"
+        expect(request.version).to eq "1.1"
+        expect(request['Content-Length']).to eq expected_body.length.to_s
+        expect(request).not_to be_finished_reading
         new_content = ""
         while chunk = request.body.readpartial(1)
           new_content << chunk
         end
-        new_content.should == expected_body
-        request.should be_finished_reading
+        expect(new_content).to eq(expected_body)
+        expect(request).to be_finished_reading
 
         connection.respond :ok, {}, ""
       end
@@ -283,9 +283,9 @@ describe Reel::Connection do
       client << example_request.to_s
 
       request = connection.request
-      request.should be_a(Reel::Request)
+      expect(request).to be_a(Reel::Request)
       client << content
-      request.body.to_s.should == content
+      expect(request.body.to_s).to eq(content)
     end
   end
 
@@ -310,8 +310,8 @@ describe Reel::Connection do
       }
       timers.wait
 
-      request.should be_a(Reel::Request)
-      read_body.should == content[0..7]
+      expect(request).to be_a(Reel::Request)
+      expect(read_body).to eq(content[0..7])
     end
   end
 
@@ -325,16 +325,16 @@ describe Reel::Connection do
       client << example_request.to_s
 
       request = connection.request
-      request.should be_a(Reel::Request)
-      request.should_not be_finished_reading
+      expect(request).to be_a(Reel::Request)
+      expect(request).not_to be_finished_reading
       client << content
       rebuilt = []
       connection.readpartial(64) # Buffer some body
       while chunk = request.read(8)
         rebuilt << chunk
       end
-      request.should be_finished_reading
-      rebuilt.should == ["I'm data", " you can", " stream!"]
+      expect(request).to be_finished_reading
+      expect(rebuilt).to eq(["I'm data", " you can", " stream!"])
     end
   end
 
@@ -349,15 +349,15 @@ describe Reel::Connection do
         client << example_request.to_s
 
         request = connection.request
-        request.should be_a(Reel::Request)
-        request.should_not be_finished_reading
+        expect(request).to be_a(Reel::Request)
+        expect(request).not_to be_finished_reading
         client << content
         rebuilt = []
         while chunk = request.body.readpartial(8)
           rebuilt << chunk
         end
-        request.should be_finished_reading
-        rebuilt.should == ["I'm data", " you can", " stream!"]
+        expect(request).to be_finished_reading
+        expect(rebuilt).to eq(["I'm data", " you can", " stream!"])
       end
     end
   end
@@ -383,14 +383,14 @@ describe Reel::Connection do
         client << example_request.to_s
 
         request = connection.request
-        request.should be_a(Reel::Request)
-        request.should_not be_finished_reading
+        expect(request).to be_a(Reel::Request)
+        expect(request).not_to be_finished_reading
         client << content
 
         data = ""
         request.body.each { |chunk| data << chunk }
-        request.should be_finished_reading
-        data.should == "I'm data you can stream!"
+        expect(request).to be_finished_reading
+        expect(data).to eq("I'm data you can stream!")
       end
     end
   end
@@ -404,7 +404,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        lambda { request.read(-1) }.should raise_error(ArgumentError)
+        expect { request.read(-1) }.to raise_error(ArgumentError)
       end
     end
 
@@ -416,7 +416,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        request.read(0).should be_empty
+        expect(request.read(0)).to be_empty
       end
     end
 
@@ -425,12 +425,12 @@ describe Reel::Connection do
         connection = Reel::Connection.new(peer, 4)
         example_request = ExampleRequest.new
         example_request.body = "Hello, world!"
-        connection.buffer_size.should == 4
+        expect(connection.buffer_size).to eq(4)
 
         client << example_request.to_s
         request = connection.request
 
-        request.read.should eq "Hello, world!"
+        expect(request.read).to eq "Hello, world!"
       end
     end
 
@@ -444,7 +444,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        request.read.should eq "Hello, world!"
+        expect(request.read).to eq "Hello, world!"
       end
     end
 
@@ -458,8 +458,8 @@ describe Reel::Connection do
         request = connection.request
 
         buffer = ''
-        request.read(nil, buffer).should eq "Hello, world!"
-        buffer.should eq "Hello, world!"
+        expect(request.read(nil, buffer)).to eq "Hello, world!"
+        expect(buffer).to eq "Hello, world!"
       end
     end
 
@@ -472,7 +472,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        request.read(1024).should eq "Hello, world!"
+        expect(request.read(1024)).to eq "Hello, world!"
       end
     end
 
@@ -484,7 +484,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        request.read(1024).should be_nil
+        expect(request.read(1024)).to be_nil
       end
     end
 
@@ -496,7 +496,7 @@ describe Reel::Connection do
         client << example_request.to_s
         request = connection.request
 
-        request.read.should be_empty
+        expect(request.read).to be_empty
       end
     end
   end
