@@ -120,7 +120,7 @@ module Reel
         @parser.reset
         @request_fsm.transition :closed
       end
-    rescue IOError, Errno::ECONNRESET, Errno::EPIPE, RequestError
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE, Errno::EPROTOTYPE, RequestError
       # The client disconnected early, or there is no request
       @keepalive = false
       @request_fsm.transition :closed
