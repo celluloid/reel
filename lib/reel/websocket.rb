@@ -6,42 +6,26 @@ module Reel
     include Celluloid::Logger
     extend Forwardable
 
+    def_delegators :request, :url
+    def_delegators :socket, :write
+
     def initialize(request, connection)
       @request = request
       @connection = connection
-      @socket = nil
-    end
-    
-    def_delegators :driver, :on, :text, :binary, :ping, :close
+      @socket = @connection.hijack_socket
 
-    def run
-      # detach the connection and manage it ourselves
-      @connection.detach
+      @driver = ::WebSocket::Driver.rack(self)
+      @driver.on(:close) { @connection.close }
 
-      # grab socket
-      @socket = @connection.socket
+      @message_stream = MessageStream.new(@socket, @driver)
 
-      # start the driver
-      driver.start
-
-      # hook into close message from client
-      driver.on(:close) { @connection.close }
-
-      begin
-        loop do
-          break unless @connection.alive?
-          buffer = @socket.readpartial(@connection.buffer_size)
-          driver.parse(buffer)
-        end
-      ensure
-        @connection.close
-      end
+      @driver.start
     rescue EOFError
-      @connection.close
+      close
     end
 
-    def url
-      @request.url
+    def read
+      @message_stream.read
     end
 
     def env
@@ -55,21 +39,27 @@ module Reel
       end
     end
 
-    def write(buffer)
-      # should probably raise an error here if
-      # writing to socket that has not been started up yet
-      @socket.write(buffer)
-    end
-
     def close
+      @driver.close
       @connection.close if @connection.alive? && !@connection.attached?
     end
 
-    protected
+    private
+    class MessageStream
+      def initialize(socket, driver)
+        @socket = socket
+        @driver = driver
+        @message_buffer = message_buffer
 
-    def driver
-      @driver ||= ::WebSocket::Driver.rack(self)
+        @driver.on :message do |message|
+          @message_buffer.push(message)
+        end
+      end
+
+      def read
+        @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE) until @message_buffer.length > 0
+        @message_buffer.shift
+      end
     end
-
   end
 end

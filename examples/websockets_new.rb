@@ -1,6 +1,6 @@
 require 'reel'
 
-class Server < Reel::Server
+class Server < Reel::Server::HTTP
   include Celluloid::Logger
 
   def initialize(host = '0.0.0.0', port = (ENV['PORT'] || 5000).to_i)
@@ -40,3 +40,7 @@ class Server < Reel::Server
   end
 
 end
+
+Server.supervise_as :server
+
+sleep
