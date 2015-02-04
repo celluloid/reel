@@ -57,7 +57,9 @@ module Reel
       end
 
       def read
-        @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE) until @message_buffer.length > 0
+        while @message_buffer.empty?
+          @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE)
+        end
         @message_buffer.shift
       end
     end
