@@ -1,24 +1,25 @@
 require 'forwardable'
 require 'websocket/driver'
+require 'rack'
 
 module Reel
   class WebSocket
     include Celluloid::Logger
-    extend Forwardable
+    include ConnectionMixin
+    include RequestMixin
 
-    def_delegators :request, :url
-    def_delegators :socket, :write
+    attr_accessor :socket
+    
+    def initialize(info, connection)
+      driver_env = DriverEnvironment.new(info, connection.socket)      
+      
+      @socket = connection.hijack_socket
+      @request_info = info
 
-    def initialize(request, connection)
-      @request = request
-      @connection = connection
-      @socket = @connection.hijack_socket
-
-      @driver = ::WebSocket::Driver.rack(self)
-      @driver.on(:close) { @connection.close }
+      @driver = ::WebSocket::Driver.rack(driver_env)
+      @driver.on(:close) { @socket.close }
 
       @message_stream = MessageStream.new(@socket, @driver)
-
       @driver.start
     rescue EOFError
       close
@@ -28,28 +29,58 @@ module Reel
       @message_stream.read
     end
 
-    def env
-      @env ||= begin
-        e = {
-          :method       => @request.method,
-          :input        => @request.body.to_s,
-          'REMOTE_ADDR' => @request.remote_addr
-        }.merge(Hash[@request.headers.map { |key, value| ['HTTP_' + key.upcase.gsub('-','_'),value ] }])
-        ::Rack::MockRequest.env_for(url, e)
+    def write(msg)
+      if msg.is_a? String
+        @driver.text(msg)
+      elsif msg.is_a? Array
+        @driver.binary(msg)
+      else
+        raise "Can only send byte array or string over driver."
       end
+    rescue IOError, Errno::ECONNRESET, Errno::EPIPE
+      cancel_timer!
+      raise SocketError, "error writing to socket"
+    rescue
+      cancel_timer!
+      raise
     end
+    alias_method :<<, :write
 
     def close
       @driver.close
-      @connection.close if @connection.alive? && !@connection.attached?
     end
 
     private
+
+    class DriverEnvironment
+      extend Forwardable
+
+      attr_reader :env, :url, :socket
+
+      def_delegators :socket, :write
+
+      def initialize(info, socket)
+        @url = info.url
+
+        env_hash = Hash[info.headers.map { |key, value| ['HTTP_' + key.upcase.gsub('-','_'),value ] }]
+        
+        env_hash.merge!({
+          :method       => info.method,
+          :input        => info.body.to_s,
+          'REMOTE_ADDR' => info.remote_addr
+        })
+
+        @env = ::Rack::MockRequest.env_for(@url, env_hash)
+
+        @socket = socket
+      end
+    end
+
     class MessageStream
       def initialize(socket, driver)
         @socket = socket
         @driver = driver
-        @message_buffer = message_buffer
+        @message_buffer = []
 
         @driver.on :message do |message|
           @message_buffer.push(message)
@@ -58,7 +89,7 @@ module Reel
 
       def read
         while @message_buffer.empty?
-          @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE)
+          @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE))
         end
         @message_buffer.shift
       end
