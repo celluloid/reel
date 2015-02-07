@@ -17,7 +17,10 @@ module Reel
       @request_info = info
 
       @driver = ::WebSocket::Driver.rack(driver_env)
-      @driver.on(:close) { @socket.close }
+      @driver.on(:close) do |code, reason|
+        info "#{code} WebSocket closed, reason: #{reason}"
+        @socket.close
+      end
 
       @message_stream = MessageStream.new(@socket, @driver)
       @driver.start
@@ -27,6 +30,10 @@ module Reel
 
     def read
       @message_stream.read
+    end
+
+    def closed?
+      @socket.closed?
     end
 
     def write(msg)
@@ -48,6 +55,7 @@ module Reel
 
     def close
       @driver.close
+      @socket.close
     end
 
     private
@@ -83,13 +91,14 @@ module Reel
         @message_buffer = []
 
         @driver.on :message do |message|
-          @message_buffer.push(message)
+          @message_buffer.push(message.data)
         end
       end
 
       def read
         while @message_buffer.empty?
-          @driver.parse(@socket.readpartial(Connection::BUFFER_SIZE))
+          buffer = @socket.readpartial(Connection::BUFFER_SIZE)
+          result = @driver.parse(buffer)
         end
         @message_buffer.shift
       end

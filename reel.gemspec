@@ -25,4 +25,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec', '>= 2.11.0'
   gem.add_development_dependency 'certificate_authority'
+  gem.add_development_dependency 'websocket_parser', '>= 0.1.6'
 end

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'websocket_parser'
 
 RSpec.describe Reel::WebSocket do
   include WebSocketHelpers
@@ -46,8 +47,12 @@ RSpec.describe Reel::WebSocket do
 
   it "reads frames" do
     with_websocket_pair do |client, websocket|
-      client << WebSocket::Message.new(example_message).to_data
-      client << WebSocket::Message.new(another_message).to_data
+      message = WebSocket::Message.new(example_message)
+      message.mask!
+      next_message = WebSocket::Message.new(another_message)
+      next_message.mask!
+      client << message.to_data
+      client << next_message.to_data
 
       expect(websocket.read).to eq(example_message)
       expect(websocket.read).to eq(another_message)
