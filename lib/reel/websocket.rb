@@ -17,8 +17,7 @@ module Reel
       @request_info = info
 
       @driver = ::WebSocket::Driver.rack(driver_env)
-      @driver.on(:close) do |code, reason|
-        info "#{code} WebSocket closed, reason: #{reason}"
+      @driver.on(:close) do
         @socket.close
       end
 
@@ -28,9 +27,15 @@ module Reel
       close
     end
 
-    [:message, :error, :close, :ping, :pong].each do |meth|
+    def on_message(&block)
+      @driver.on :message do |message|
+        block.(message.data)
+      end
+    end
+
+    [:error, :close, :ping, :pong].each do |meth|
       define_method "on_#{meth}" do |&proc|
-        @driver.send :on, meth, &proc
+        @driver.send(:on, meth, &proc)
       end
     end
 
@@ -77,6 +82,10 @@ module Reel
     def close
       @driver.close
       @socket.close
+    end
+
+    def cancel_timer!
+      @timer && @timer.cancel
     end
 
     private

@@ -67,7 +67,9 @@ RSpec.describe Reel::WebSocket do
           f << Celluloid::SuccessResponse.new(:on_message, message)
         end
 
-        client << WebSocket::Message.new(example_message).to_data
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
         websocket.read
 
         message = f.value
@@ -92,7 +94,9 @@ RSpec.describe Reel::WebSocket do
           f << Celluloid::SuccessResponse.new(:on_message, message)
         end
 
-        client << WebSocket::Message.new(example_message).to_data
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
         MyActor.new(websocket)
 
         message = f.value
