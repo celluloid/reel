@@ -28,6 +28,27 @@ module Reel
       close
     end
 
+    [:message, :error, :close, :ping, :pong].each do |meth|
+      define_method "on_#{meth}" do |&proc|
+        @driver.send :on, meth, &proc
+      end
+    end
+
+    def read_every(n, unit = :s)
+      cancel_timer! # only one timer allowed per stream
+      seconds = case unit.to_s
+      when /\Am/
+        n * 60
+      when /\Ah/
+        n * 3600
+      else
+        n
+      end
+      @timer = Celluloid.every(seconds) { read }
+    end
+    alias read_interval  read_every
+    alias read_frequency read_every
+
     def read
       @message_stream.read
     end
@@ -98,7 +119,7 @@ module Reel
       def read
         while @message_buffer.empty?
           buffer = @socket.readpartial(Connection::BUFFER_SIZE)
-          result = @driver.parse(buffer)
+          @driver.parse(buffer)
         end
         @message_buffer.shift
       end
