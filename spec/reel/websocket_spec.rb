@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'websocket_parser'
 
 RSpec.describe Reel::WebSocket do
   include WebSocketHelpers
@@ -46,11 +47,61 @@ RSpec.describe Reel::WebSocket do
 
   it "reads frames" do
     with_websocket_pair do |client, websocket|
-      client << WebSocket::Message.new(example_message).to_data
-      client << WebSocket::Message.new(another_message).to_data
+      message = WebSocket::Message.new(example_message)
+      message.mask!
+      next_message = WebSocket::Message.new(another_message)
+      next_message.mask!
+      client << message.to_data
+      client << next_message.to_data
 
       expect(websocket.read).to eq(example_message)
       expect(websocket.read).to eq(another_message)
+    end
+  end
+
+  describe "WebSocket#next_message" do
+    it "triggers on the next sent message" do
+      with_websocket_pair do |client, websocket|
+        f = Celluloid::Future.new
+        websocket.on_message do |message|
+          f << Celluloid::SuccessResponse.new(:on_message, message)
+        end
+
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
+        websocket.read
+
+        message = f.value
+        expect(message).to eq(example_message)
+      end
+    end
+  end
+
+  describe "WebSocket#read_every" do
+    it "automatically executes read" do
+      with_websocket_pair do |client, websocket|
+        class MyActor
+          include Celluloid
+
+          def initialize(websocket)
+            websocket.read_every 0.1
+          end
+        end
+
+        f = Celluloid::Future.new
+        websocket.on_message do |message|
+          f << Celluloid::SuccessResponse.new(:on_message, message)
+        end
+
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
+        MyActor.new(websocket)
+
+        message = f.value
+        expect(message).to eq(example_message)
+      end
     end
   end
 
