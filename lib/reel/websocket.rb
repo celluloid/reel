@@ -4,12 +4,13 @@ require 'rack'
 
 module Reel
   class WebSocket
-    include Celluloid::Logger
+    extend Forwardable
     include ConnectionMixin
     include RequestMixin
 
-    attr_accessor :socket
-    
+    attr_reader :socket
+    def_delegators :@socket, :addr, :peeraddr
+
     def initialize(info, connection)
       driver_env = DriverEnvironment.new(info, connection.socket)      
       

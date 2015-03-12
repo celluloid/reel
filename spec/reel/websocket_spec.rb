@@ -128,6 +128,15 @@ RSpec.describe Reel::WebSocket do
     end
   end
 
+  it "exposes addr and peeraddr" do
+    with_websocket_pair do |client, websocket|
+      expect(websocket).to respond_to(:peeraddr)
+      expect(websocket.peeraddr.first).to eq "AF_INET"
+      expect(websocket).to respond_to(:addr)
+      expect(websocket.addr.first).to eq "AF_INET"
+    end
+  end
+
   it "raises a RequestError when connection used after it was upgraded" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
