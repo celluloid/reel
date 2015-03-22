@@ -50,9 +50,9 @@ module Reel
           begin
             socket = @server.accept
           rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE,
-                 Errno::ETIMEDOUT, Errno::EHOSTUNREACH => ex
+                 Errno::ETIMEDOUT, Errno::EHOSTUNREACH, IOError, EOFError => ex
             Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            retry
+            next
           end
 
           async.handle_connection socket
