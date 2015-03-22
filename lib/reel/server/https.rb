@@ -52,7 +52,7 @@ module Reel
           rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE,
                  Errno::ETIMEDOUT, Errno::EHOSTUNREACH, IOError, EOFError => ex
             Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            next
+            retry #de next
           end
 
           async.handle_connection socket
