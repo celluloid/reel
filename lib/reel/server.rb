@@ -2,8 +2,8 @@ module Reel
   # Base class for Reel servers.
   #
   # This class is a Celluloid::IO actor which provides a barebones server
-  # which does not open a socket itself, it just begin handling connections once
-  # initialized with a specific kind of protocol-based server.
+  # which does not open a socket itself, it just begin handling connections
+  # once initialized with a specific kind of protocol-based server.
 
   # For specific protocol support, use:
 
