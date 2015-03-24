@@ -19,6 +19,7 @@ module Reel
       # NOTE: Celluloid::IO does not yet support non-blocking reverse DNS
       socket.peeraddr(true)[2]
     end
+
   end
 
   module RequestMixin
@@ -31,7 +32,7 @@ module Reel
       @request_info.headers
     end
 
-    def [] header
+    def [](header)
       headers[header]
     end
 
@@ -60,4 +61,5 @@ module Reel
     end
 
   end
+
 end

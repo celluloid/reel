@@ -5,12 +5,21 @@ require 'bundler/setup'
 require 'reel'
 require 'pry'
 
-logfile = File.open(File.expand_path("../../log/test.log", __FILE__), 'a')
-Celluloid.logger = Logger.new(logfile)
-
 def fixture_dir
   Pathname.new File.expand_path("../fixtures", __FILE__)
 end
+
+def certs_dir
+  Pathname.new File.expand_path('../../tmp/certs', __FILE__)
+end
+
+require 'support/example_request'
+require 'support/create_certs'
+
+RSpec.configure(&:disable_monkey_patching!)
+
+logfile = File.open(File.expand_path("../../log/test.log", __FILE__), 'a')
+Celluloid.logger = Logger.new(logfile)
 
 def example_addr; '127.0.0.1'; end
 def example_port; 1234; end
@@ -18,7 +27,7 @@ def example_path; "/example"; end
 def example_url;  "http://#{example_addr}:#{example_port}#{example_path}"; end
 
 def with_reel(handler)
-  server = Reel::Server.new(example_addr, example_port, &handler)
+  server = Reel::Server::HTTP.new(example_addr, example_port, &handler)
   yield server
 ensure
   server.terminate if server && server.alive?
@@ -41,39 +50,6 @@ def with_socket_pair
   end
 end
 
-class ExampleRequest
-  extend Forwardable
-  def_delegators :@headers, :[], :[]=
-  attr_accessor  :method, :path, :version, :body
-
-  def initialize(method = :get, path = "/", version = "1.1", headers = {}, body = nil)
-    @method = method.to_s.upcase
-    @path = path
-    @version = "1.1"
-    @headers = {
-      'Host'       => 'www.example.com',
-      'Connection' => 'keep-alive',
-      'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S',
-      'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Encoding' => 'gzip,deflate,sdch',
-      'Accept-Language' => 'en-US,en;q=0.8',
-      'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.3'
-    }.merge(headers)
-
-    @body = nil
-  end
-
-  def to_s
-    if @body && !@headers['Content-Length']
-      @headers['Content-Length'] = @body.length
-    end
-
-    "#{@method} #{@path} HTTP/#{@version}\r\n" <<
-    @headers.map { |k, v| "#{k}: #{v}" }.join("\r\n") << "\r\n\r\n" <<
-    (@body ? @body : '')
-  end
-end
-
 module WebSocketHelpers
   def self.included(spec)
     spec.instance_eval do
@@ -92,7 +68,22 @@ module WebSocketHelpers
         }
       end
 
+      let :case_handshake_headers do
+        {
+          "HoSt"                   => example_host,
+          "UpgRAde"                => "websocket",
+          "ConnECTion"             => "Upgrade",
+          "Sec-WebsOCket-Key"      => "dGhlIHNhbXBsZSBub25jZQ==",
+          "Origin"                 => "http://example.com",
+          "Sec-WEBsOCKET-pROTOCol" => "chat, superchat",
+          "Sec-WEBsOCKET-vERsion"  => "13"
+        }
+      end
+
       let(:handshake) { WebSocket::ClientHandshake.new(:get, example_url, handshake_headers) }
+      let(:case_handshake) do
+        WebSocket::ClientHandshake.new(:get, example_url, case_handshake_headers)
+      end
     end
   end
 end

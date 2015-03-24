@@ -8,7 +8,7 @@ require 'time'
 require 'reel'
 
 
-class ServerSentEvents < Reel::Server
+class ServerSentEvents < Reel::Server::HTTP
   include Celluloid::Logger
   
   def initialize(ip = '127.0.0.1', port = 63310)

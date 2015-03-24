@@ -5,6 +5,8 @@ require 'reel/request/info'
 require 'reel/request/parser'
 require 'reel/request/state_machine'
 
+require 'reel/response/writer'
+
 module Reel
   class Request
     extend Forwardable
@@ -23,9 +25,9 @@ module Reel
       @connection      = connection
       @finished        = false
       @buffer          = ""
-      @body            = Body.new(self)
       @finished_read   = false
       @websocket       = nil
+      @body            = Request::Body.new(self)
       @response_writer = Response::Writer.new(connection.socket)
     end
 
@@ -72,7 +74,7 @@ module Reel
         @buffer = ""
       else
         unless finished_reading? || (length && length <= @buffer.length)
-          @connection.readpartial(length ? length - @buffer.length : Connection::BUFFER_SIZE)
+          @connection.readpartial(length ? length - @buffer.length : @connection.buffer_size)
         end
 
         if length
@@ -100,7 +102,7 @@ module Reel
     def finish_response
       raise StateError, "not in body state" if @connection.response_state != :chunked_body
       @response_writer.finish_response
-      @connection.response_state = :header
+      @connection.response_state = :headers
     end
 
     # Can the current request be upgraded to a WebSocket?
@@ -110,8 +112,8 @@ module Reel
     # the underlying connection
     def websocket
       @websocket ||= begin
-        raise StateError, "can't upgrade this request to a websocket" unless websocket?
-        WebSocket.new(@request_info, @connection.hijack_socket)
+        raise StateError, "can't upgrade this request to a websocket" unless websocket?  
+        WebSocket.new(self, @connection)
       end
     end
 

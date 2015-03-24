@@ -1,4 +1,4 @@
 module Reel
-  VERSION  = "0.5.0.pre"
-  CODENAME = "Bette"
+  VERSION  = "0.6.0"
+  CODENAME = "Garland"
 end

@@ -64,8 +64,8 @@ module Reel
   class ChunkStream < Stream
     def write(chunk)
       chunk_header = chunk.bytesize.to_s(16)
-      write chunk_header + Response::Writer::CRLF
-      write chunk + Response::Writer::CRLF
+      super chunk_header + Response::Writer::CRLF
+      super chunk + Response::Writer::CRLF
       self
     end
     alias :<< :write
@@ -102,7 +102,7 @@ module Reel
         raise TypeError, "can't render #{@body.class} as a response body"
       end
 
-      @headers = canonicalize_headers(headers)
+      @headers = HTTP::Headers.coerce(headers)
       @version = http_version
     end
 

@@ -1,19 +1,19 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::SSLServer do
-  let(:example_ssl_port) { example_port + 1 }
-  let(:example_url)      { "https://#{example_addr}:#{example_ssl_port}#{example_path}" }
+RSpec.describe Reel::Server::HTTPS do
+  let(:example_https_port) { example_port + 1 }
+  let(:example_url)      { "https://#{example_addr}:#{example_https_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }
   let(:response_body)    { "ohai thar" }
 
-  let(:ca_file) { fixture_dir.join('ca.crt').to_s }
+  let(:ca_file)              { certs_dir.join('ca.crt').to_s }
 
-  let(:server_cert)          { fixture_dir.join("server.crt")         .read }
-  let(:server_key)           { fixture_dir.join("server.key")         .read }
-  let(:client_cert)          { fixture_dir.join("client.crt")         .read }
-  let(:client_cert_unsigned) { fixture_dir.join("client.unsigned.crt").read }
-  let(:client_key)           { fixture_dir.join("client.key")         .read }
+  let(:server_cert)          { certs_dir.join("server.crt")         .read }
+  let(:server_key)           { certs_dir.join("server.key")         .read }
+  let(:client_cert)          { certs_dir.join("client.crt")         .read }
+  let(:client_cert_unsigned) { certs_dir.join("client.unsigned.crt").read }
+  let(:client_key)           { certs_dir.join("client.key")         .read }
 
   it "receives HTTP requests and sends responses" do
     ex = nil
@@ -21,16 +21,16 @@ describe Reel::SSLServer do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq "1.1"
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq "1.1"
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
       end
     end
 
-    with_reel_sslserver(handler) do
+    with_reel_https_server(handler) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -38,7 +38,7 @@ describe Reel::SSLServer do
       request = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
 
-      response.body.should eq response_body
+      expect(response.body).to eq response_body
     end
 
     raise ex if ex
@@ -50,16 +50,16 @@ describe Reel::SSLServer do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq '1.1'
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq '1.1'
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
       end
     end
 
-    with_reel_sslserver(handler, :ca_file => self.ca_file) do
+    with_reel_https_server(handler, :ca_file => self.ca_file) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -69,7 +69,7 @@ describe Reel::SSLServer do
       request  = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
 
-      response.body.should eq response_body
+      expect(response.body).to eq response_body
     end
 
     raise ex if ex
@@ -81,16 +81,16 @@ describe Reel::SSLServer do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
-        request.version.should eq '1.1'
-        request.url.should eq example_path
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq '1.1'
+        expect(request.url).to eq example_path
 
         connection.respond :ok, response_body
       rescue => ex
       end
     end
 
-    with_reel_sslserver(handler, :ca_file => self.ca_file) do
+    with_reel_https_server(handler, :ca_file => self.ca_file) do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
@@ -99,19 +99,19 @@ describe Reel::SSLServer do
 
       request  = Net::HTTP::Get.new(endpoint.path)
 
-      proc { http.request(request) }.should raise_error(OpenSSL::SSL::SSLError)
+      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
     end
 
     raise ex if ex
   end
 
-  def with_reel_sslserver(handler, options = {})
+  def with_reel_https_server(handler, options = {})
     options = {
       :cert => server_cert,
       :key  => server_key
     }.merge(options)
 
-    server = Reel::SSLServer.new(example_addr, example_ssl_port, options, &handler)
+    server = described_class.new(example_addr, example_https_port, options, &handler)
     yield server
   ensure
     server.terminate if server && server.alive?

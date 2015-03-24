@@ -27,7 +27,7 @@ module Reel
       @request_fsm = Request::StateMachine.new(@socket)
 
       reset_request
-      @response_state = :header
+      @response_state = :headers
     end
 
     # Is the connection still active?
@@ -82,7 +82,7 @@ module Reel
     # Send a response back to the client
     # Response can be a symbol indicating the status code or a Reel::Response
     def respond(response, headers_or_body = {}, body = nil)
-      raise StateError, "not in header state" if @response_state != :header
+      raise StateError, "not in header state" if @response_state != :headers
 
       if headers_or_body.is_a? Hash
         headers = headers_or_body
@@ -98,7 +98,7 @@ module Reel
       end
 
       case response
-      when Symbol
+      when Symbol, Fixnum, Integer
         response = Response.new(response, headers, body)
       when Response
       else raise TypeError, "invalid response: #{response.inspect}"
@@ -120,10 +120,12 @@ module Reel
         @parser.reset
         @request_fsm.transition :closed
       end
-    rescue IOError, Errno::ECONNRESET, Errno::EPIPE, RequestError
+    rescue IOError, SystemCallError, RequestError
       # The client disconnected early, or there is no request
       @keepalive = false
       @request_fsm.transition :closed
+      @parser.reset
+      @current_request = nil
     end
 
     # Close the connection
@@ -138,7 +140,7 @@ module Reel
     def hijack_socket
       # FIXME: this doesn't do a great job of ensuring we can hijack the socket
       # in its current state. Improve the state detection.
-      if @request_fsm != :ready && @response_state != :header
+      if @request_fsm != :ready && @response_state != :headers
         raise StateError, "connection is not in a hijackable state"
       end
 
@@ -165,7 +167,7 @@ module Reel
 
     # Set response state for the connection.
     def response_state=(state)
-      if state == :header
+      if state == :headers
         reset_request
       end
       @response_state = state

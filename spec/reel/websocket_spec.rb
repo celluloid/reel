@@ -1,6 +1,7 @@
 require 'spec_helper'
+require 'websocket_parser'
 
-describe Reel::WebSocket do
+RSpec.describe Reel::WebSocket do
   include WebSocketHelpers
 
   let(:example_message) { "Hello, World!" }
@@ -12,12 +13,12 @@ describe Reel::WebSocket do
       client << handshake.to_data
 
       request = connection.request
-      request.should be_websocket
+      expect(request).to be_websocket
 
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
-      handshake.errors.should be_empty
+      expect(handshake.errors).to be_empty
     end
   end
 
@@ -27,30 +28,80 @@ describe Reel::WebSocket do
       client << handshake.to_data
 
       websocket = connection.request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
       expect { connection.close }.to raise_error(Reel::StateError)
     end
   end
 
   it "knows its URL" do
     with_websocket_pair do |_, websocket|
-      websocket.url.should == example_path
+      expect(websocket.url).to eq(example_path)
     end
   end
 
   it "knows its headers" do
     with_websocket_pair do |_, websocket|
-      websocket['Host'].should == example_host
+      expect(websocket['Host']).to eq(example_host)
     end
   end
 
   it "reads frames" do
     with_websocket_pair do |client, websocket|
-      client << WebSocket::Message.new(example_message).to_data
-      client << WebSocket::Message.new(another_message).to_data
+      message = WebSocket::Message.new(example_message)
+      message.mask!
+      next_message = WebSocket::Message.new(another_message)
+      next_message.mask!
+      client << message.to_data
+      client << next_message.to_data
 
-      websocket.read.should == example_message
-      websocket.read.should == another_message
+      expect(websocket.read).to eq(example_message)
+      expect(websocket.read).to eq(another_message)
+    end
+  end
+
+  describe "WebSocket#next_message" do
+    it "triggers on the next sent message" do
+      with_websocket_pair do |client, websocket|
+        f = Celluloid::Future.new
+        websocket.on_message do |message|
+          f << Celluloid::SuccessResponse.new(:on_message, message)
+        end
+
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
+        websocket.read
+
+        message = f.value
+        expect(message).to eq(example_message)
+      end
+    end
+  end
+
+  describe "WebSocket#read_every" do
+    it "automatically executes read" do
+      with_websocket_pair do |client, websocket|
+        class MyActor
+          include Celluloid
+
+          def initialize(websocket)
+            websocket.read_every 0.1
+          end
+        end
+
+        f = Celluloid::Future.new
+        websocket.on_message do |message|
+          f << Celluloid::SuccessResponse.new(:on_message, message)
+        end
+
+        message = WebSocket::Message.new(example_message)
+        message.mask!
+        client << message.to_data
+        MyActor.new(websocket)
+
+        message = f.value
+        expect(message).to eq(example_message)
+      end
     end
   end
 
@@ -62,18 +113,27 @@ describe Reel::WebSocket do
       parser = WebSocket::Parser.new
 
       parser.append client.readpartial(4096) until first_message = parser.next_message
-      first_message.should == example_message
+      expect(first_message).to eq(example_message)
 
       parser.append client.readpartial(4096) until next_message = parser.next_message
-      next_message.should == another_message
+      expect(next_message).to eq(another_message)
     end
   end
 
   it "closes" do
     with_websocket_pair do |_, websocket|
-      websocket.should_not be_closed
+      expect(websocket).not_to be_closed
       websocket.close
-      websocket.should be_closed
+      expect(websocket).to be_closed
+    end
+  end
+
+  it "exposes addr and peeraddr" do
+    with_websocket_pair do |client, websocket|
+      expect(websocket).to respond_to(:peeraddr)
+      expect(websocket.peeraddr.first).to eq "AF_INET"
+      expect(websocket).to respond_to(:addr)
+      expect(websocket.addr.first).to eq "AF_INET"
     end
   end
 
@@ -85,12 +145,27 @@ describe Reel::WebSocket do
       remote_host = connection.remote_host
 
       request = connection.request
-      request.should be_websocket
+      expect(request).to be_websocket
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
       expect { connection.remote_host }.to raise_error(Reel::StateError)
-      websocket.remote_host.should == remote_host
+      expect(websocket.remote_host).to eq(remote_host)
+    end
+  end
+
+  it "performs websocket handshakes with header key case-insensitivity" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << case_handshake.to_data
+
+      request = connection.request
+      expect(request).to be_websocket
+
+      websocket = request.websocket
+      expect(websocket).to be_a Reel::WebSocket
+
+      expect(case_handshake.errors).to be_empty
     end
   end
 
@@ -100,9 +175,9 @@ describe Reel::WebSocket do
       client << handshake.to_data
       request = connection.request
 
-      request.should be_websocket
+      expect(request).to be_websocket
       websocket = request.websocket
-      websocket.should be_a Reel::WebSocket
+      expect(websocket).to be_a Reel::WebSocket
 
       # Discard handshake
       client.readpartial(4096)

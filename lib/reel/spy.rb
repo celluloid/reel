@@ -6,6 +6,7 @@ module Reel
     extend Forwardable
 
     def_delegators :@socket, :closed?
+    def_delegators :@socket, :addr, :peeraddr, :setsockopt, :getsockname
 
     def initialize(socket, logger = STDOUT)
       @socket, @logger = socket, logger

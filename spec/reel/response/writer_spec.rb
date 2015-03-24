@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Reel::Response::Writer do
+RSpec.describe Reel::Response::Writer do
   let(:fixture_path) { File.expand_path("../../../fixtures/example.txt", __FILE__) }
   let(:expected_response) { "HTTP/1.1 200 OK\r\nContent-Length: 56\r\n\r\n#{File.read(fixture_path)}" }
 
@@ -15,7 +15,7 @@ describe Reel::Response::Writer do
 
       buf = ""
       begin
-        buf << peer.readpartial(4096)
+        buf << peer.read(95)
       rescue IOError
         # End of body!
       end
