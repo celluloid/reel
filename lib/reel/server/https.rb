@@ -49,12 +49,9 @@ module Reel
         loop do
           begin
             socket = @server.accept
-          rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE,
+          rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE, Errno::EINPROGRESS,
                  Errno::ETIMEDOUT, Errno::EHOSTUNREACH, IOError, EOFError => ex
-            # Not ideal, but works for now:
-            unless defined? JRUBY_VERSION
-              Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            end
+            Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
             retry
           end
 
