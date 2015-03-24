@@ -14,9 +14,7 @@ RSpec.describe Reel::Server::HTTP do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq "1.1"
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -36,7 +34,6 @@ RSpec.describe Reel::Server::HTTP do
         request = connection.request
         expect(request.method).to eq 'POST'
         connection.respond :ok, request.body.to_s
-      rescue => ex
       end
     end
 

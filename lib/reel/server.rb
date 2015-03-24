@@ -9,7 +9,7 @@ module Reel
 
   # Reel::Server::HTTP
   # Reel::Server::HTTPS
-  # Coming soon: Reel::Server::UNIX
+  # Reel::Server::UNIX ( not on jRuby yet )
 
   class Server
     include Celluloid::IO
@@ -25,6 +25,15 @@ module Reel
       @callback = callback
       @server   = server
 
+      @options[:rescue] ||= []
+      @options[:rescue] += [
+        Errno::ECONNRESET,
+        Errno::EPIPE,
+        Errno::EINPROGRESS,
+        Errno::ETIMEDOUT,
+        Errno::EHOSTUNREACH
+      ]
+
       @server.listen(options.fetch(:backlog, DEFAULT_BACKLOG))
 
       async.run
@@ -35,7 +44,15 @@ module Reel
     end
 
     def run
-      loop { async.handle_connection @server.accept }
+      loop {
+        begin
+          socket = @server.accept
+        rescue *@options[:rescue] => ex
+          Logger.warn "Error accepting socket: #{ex.class}: #{ex.to_s}"
+          next
+        end
+        async.handle_connection socket
+      }
     end
 
     def handle_connection(socket)
