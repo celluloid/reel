@@ -45,7 +45,7 @@ module Reel
         bytes = @socket.readpartial(size)
         begin
           @parser << bytes
-        rescue ArgumentError => ex
+        rescue ArgumentError
           raise Errno::EPIPE
         end
       end
