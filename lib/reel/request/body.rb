@@ -29,6 +29,10 @@ module Reel
         end
       end
 
+      def empty?
+        to_str.empty?
+      end
+
       # Eagerly consume the entire body as a string
       def to_str
         return @contents if @contents
