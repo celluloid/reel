@@ -42,22 +42,9 @@ module Reel
         server = Celluloid::IO::SSLServer.new(@tcpserver, ssl_context)
         options.merge!(host: host, port: port)
 
+        options[:rescue] = [ OpenSSL::SSL::SSLError ]
+        
         super(server, options, &callback)
-      end
-
-      def run
-        loop do
-          begin
-            socket = @server.accept
-          rescue OpenSSL::SSL::SSLError, EOFError,
-                Errno::ECONNRESET, Errno::EPIPE, Errno::EINPROGRESS,
-                Errno::ETIMEDOUT, Errno::EHOSTUNREACH => ex
-            Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            next
-          end
-
-          async.handle_connection socket
-        end
       end
     end
   end

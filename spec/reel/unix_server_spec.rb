@@ -1,7 +1,9 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::Server::UNIX do
+return unless !defined? JRUBY_VERSION
+
+RSpec.describe Reel::Server::UNIX do
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
 
@@ -11,9 +13,8 @@ describe Reel::Server::UNIX do
     handler = proc do |connection|
       begin
         request = connection.request
-        request.method.should eq 'GET'
+        expect( request.method ).to eq 'GET'
         connection.respond :ok, self.response_body
-      rescue => ex
       end
     end
 
@@ -24,7 +25,6 @@ describe Reel::Server::UNIX do
         request = Net::HTTP::Get.new('/')
 
         request.exec(sock, '1.1', path)
-
         response = Net::HTTPResponse.read_new(sock)
         response.reading_body(sock, request.response_body_permitted?) { }
 
