@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'net/http'
 
 RSpec.describe Reel::Server::HTTPS do
+
   let(:example_https_port) { example_port + 1 }
   let(:example_url)      { "https://#{example_addr}:#{example_https_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }
@@ -44,7 +45,7 @@ RSpec.describe Reel::Server::HTTPS do
     raise ex if ex
   end
 
-  it 'verifies client SSL certs when provided with a CA' do
+  it "verifies client SSL certs when provided with a CA" do
     ex = nil
 
     handler = proc do |connection|
@@ -75,7 +76,7 @@ RSpec.describe Reel::Server::HTTPS do
     raise ex if ex
   end
 
-  it %{fails to verify client certificates that aren't signed} do
+  it "fails to verify client certificates that aren't signed" do
     ex = nil
 
     handler = proc do |connection|
