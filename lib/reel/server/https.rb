@@ -49,8 +49,9 @@ module Reel
         loop do
           begin
             socket = @server.accept
-          rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE, Errno::EINPROGRESS,
-                 Errno::ETIMEDOUT, Errno::EHOSTUNREACH, EOFError => ex
+          rescue OpenSSL::SSL::SSLError, EOFError,
+                Errno::ECONNRESET, Errno::EPIPE, Errno::EINPROGRESS,
+                Errno::ETIMEDOUT, Errno::EHOSTUNREACH => ex
             Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
             next
           end
