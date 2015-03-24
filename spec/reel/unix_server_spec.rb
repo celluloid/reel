@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-describe Reel::Server::UNIX do
+RSpec.describe Reel::Server::UNIX do
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
 
