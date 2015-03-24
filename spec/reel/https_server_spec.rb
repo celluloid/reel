@@ -25,9 +25,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq "1.1"
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -35,10 +33,8 @@ RSpec.describe Reel::Server::HTTPS do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
-
       request = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
-
       expect(response.body).to eq response_body
     end
 
@@ -54,9 +50,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq '1.1'
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -66,10 +60,8 @@ RSpec.describe Reel::Server::HTTPS do
       http.ca_file = self.ca_file
       http.cert    = OpenSSL::X509::Certificate.new self.client_cert
       http.key     = OpenSSL::PKey::RSA.new         self.client_key
-
       request  = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
-
       expect(response.body).to eq response_body
     end
 
@@ -85,9 +77,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq '1.1'
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -97,9 +87,7 @@ RSpec.describe Reel::Server::HTTPS do
       http.ca_file = self.ca_file
       http.cert    = OpenSSL::X509::Certificate.new self.client_cert_unsigned
       http.key     = OpenSSL::PKey::RSA.new         self.client_key
-
       request  = Net::HTTP::Get.new(endpoint.path)
-
       expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
     end
 
