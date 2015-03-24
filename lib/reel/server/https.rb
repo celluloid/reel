@@ -27,12 +27,11 @@ module Reel
 
         # if verify_mode isn't explicitly set, verify peers if we've
         # been provided CA information that would enable us to do so
-        ssl_context.verify_mode = case
-        when options.include?(:verify_mode)
+        ssl_context.verify_mode = if options.include?(:verify_mode)
           options[:verify_mode]
-        when options.include?(:ca_file)
+        elsif options.include?(:ca_file)
           OpenSSL::SSL::VERIFY_PEER
-        when options.include?(:ca_path)
+        elsif options.include?(:ca_path)
           OpenSSL::SSL::VERIFY_PEER
         else
           OpenSSL::SSL::VERIFY_NONE
@@ -50,10 +49,11 @@ module Reel
         loop do
           begin
             socket = @server.accept
-          rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE,
-                 Errno::ETIMEDOUT, Errno::EHOSTUNREACH => ex
+          rescue OpenSSL::SSL::SSLError, EOFError,
+                Errno::ECONNRESET, Errno::EPIPE, Errno::EINPROGRESS,
+                Errno::ETIMEDOUT, Errno::EHOSTUNREACH => ex
             Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            retry
+            next
           end
 
           async.handle_connection socket
