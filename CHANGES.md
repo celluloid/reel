@@ -1,5 +1,5 @@
 0.6.0
-----
+-----
 * Fix stack level too deep when writing to ChunkStream
 * Use HTTP::Resonse::Status::REASONS table ( HTTP::Response::* deprecated in the HTTP gem )
 * Use Timers 3.0.0 API
@@ -14,9 +14,12 @@
 * Refactored Server::HTTPS to be more idomatic
 * Fixed jRuby related test failures
 * Fixed "ArgumentError: Data object has already been freed" caused by underlying parser.
+* FINALLY! Support for UNIX Socket servers across all RVM's, as of jRuby 1.7.19
+* Unified Server#run removes need for duplication of #run across all Server implementations.
+* Standardized method of rescuing exceptions unique to each type of Server in unified #run method.
 
 0.5.0 (2014-04-15)
-----
+-----
 * Reel::Server(::SSL) renamed to Reel::Server::HTTP and Reel::Server::HTTPS
 * New Reel::Spy API for observing requests and responses from the server
 * Fixes to chunked encoding handling
