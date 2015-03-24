@@ -9,7 +9,7 @@ module Reel
 
   # Reel::Server::HTTP
   # Reel::Server::HTTPS
-  # Coming soon: Reel::Server::UNIX
+  # Reel::Server::UNIX ( not on jRuby yet )
 
   class Server
     include Celluloid::IO
@@ -48,7 +48,6 @@ module Reel
         begin
           socket = @server.accept
         rescue *@options[:rescue] => ex
-          puts "#{ex.class} // #{ex.message}"
           Logger.warn "Error accepting socket: #{ex.class}: #{ex.to_s}"
           next
         end
