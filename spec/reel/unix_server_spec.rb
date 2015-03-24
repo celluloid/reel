@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-unless defined?(JRUBY_VERSION)
+#de unless defined?(JRUBY_VERSION)
 
   RSpec.describe Reel::Server::UNIX do
     let(:endpoint) { URI(example_url) }
@@ -38,4 +38,4 @@ unless defined?(JRUBY_VERSION)
     end
   end
   
-end
+#de end
