@@ -51,8 +51,11 @@ module Reel
             socket = @server.accept
           rescue OpenSSL::SSL::SSLError, Errno::ECONNRESET, Errno::EPIPE,
                  Errno::ETIMEDOUT, Errno::EHOSTUNREACH, IOError, EOFError => ex
-            Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
-            retry #de next
+            # Not ideal, but works for now:
+            unless defined? JRUBY_VERSION
+              Logger.warn "Error accepting SSLSocket: #{ex.class}: #{ex.to_s}"
+            end
+            retry
           end
 
           async.handle_connection socket
