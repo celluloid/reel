@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'net/http'
 
-return unless !defined? JRUBY_VERSION
+return if defined? JRUBY_VERSION
 
 RSpec.describe Reel::Server::UNIX do
   let(:endpoint) { URI(example_url) }
