@@ -18,7 +18,9 @@ module Reel
         @hijacked = true
       end
 
-      state :closed do
+      # FSM fails open for valid transitions
+      # Set an empty array to disallow transitioning out of closed
+      state :closed, :to => [] do
         @socket.close unless @hijacked || @socket.closed?
       end
     end
