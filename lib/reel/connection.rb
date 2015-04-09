@@ -56,7 +56,7 @@ module Reel
 
       req = @parser.current_request
       @request_fsm.transition :headers
-      @keepalive = false if req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
+      @keepalive = false if req.nil? || req[CONNECTION] == CLOSE || req.version == HTTP_VERSION_1_0
       @current_request = req
 
       req

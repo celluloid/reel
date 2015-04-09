@@ -43,7 +43,11 @@ module Reel
 
       def readpartial(size = @buffer_size)
         bytes = @socket.readpartial(size)
-        @parser << bytes
+        begin
+          @parser << bytes
+        rescue ArgumentError
+          raise Errno::EPIPE
+        end
       end
 
       #

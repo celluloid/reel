@@ -14,6 +14,7 @@ require 'reel/response'
 require 'reel/server'
 require 'reel/server/http'
 require 'reel/server/https'
+require 'reel/server/unix' unless defined? JRUBY_VERSION
 
 require 'reel/websocket'
 require 'reel/stream'
