@@ -99,7 +99,10 @@ module Reel
       def_delegators :socket, :write
 
       RACK_HEADERS = {
+        'Origin'                   => 'HTTP_ORIGIN',
         'Sec-WebSocket-Key'        => 'HTTP_SEC_WEBSOCKET_KEY',
+        'Sec-WebSocket-Key1'       => 'HTTP_SEC_WEBSOCKET_KEY1',
+        'Sec-WebSocket-Key2'       => 'HTTP_SEC_WEBSOCKET_KEY2',
         'Sec-WebSocket-Extensions' => 'HTTP_SEC_WEBSOCKET_EXTENSIONS',
         'Sec-WebSocket-Protocol'   => 'HTTP_SEC_WEBSOCKET_PROTOCOL',
         'Sec-WebSocket-Version'    => 'HTTP_SEC_WEBSOCKET_VERSION'
