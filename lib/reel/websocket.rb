@@ -1,6 +1,5 @@
 require 'forwardable'
 require 'websocket/driver'
-require 'rack'
 
 module Reel
   class WebSocket
@@ -10,10 +9,11 @@ module Reel
 
     attr_reader :socket
     def_delegators :@socket, :addr, :peeraddr
+    def_delegators :@driver, :ping
 
     def initialize(info, connection)
-      driver_env = DriverEnvironment.new(info, connection.socket)      
-      
+      driver_env = DriverEnvironment.new(info, connection.socket)
+
       @socket = connection.hijack_socket
       @request_info = info
 
@@ -98,19 +98,19 @@ module Reel
 
       def_delegators :socket, :write
 
+      RACK_HEADERS = {
+        'Origin'                   => 'HTTP_ORIGIN',
+        'Sec-WebSocket-Key'        => 'HTTP_SEC_WEBSOCKET_KEY',
+        'Sec-WebSocket-Key1'       => 'HTTP_SEC_WEBSOCKET_KEY1',
+        'Sec-WebSocket-Key2'       => 'HTTP_SEC_WEBSOCKET_KEY2',
+        'Sec-WebSocket-Extensions' => 'HTTP_SEC_WEBSOCKET_EXTENSIONS',
+        'Sec-WebSocket-Protocol'   => 'HTTP_SEC_WEBSOCKET_PROTOCOL',
+        'Sec-WebSocket-Version'    => 'HTTP_SEC_WEBSOCKET_VERSION'
+      }
+
       def initialize(info, socket)
-        @url = info.url
-
-        env_hash = Hash[info.headers.map { |key, value| ['HTTP_' + key.upcase.gsub('-','_'),value ] }]
-        
-        env_hash.merge!({
-          :method       => info.method,
-          :input        => info.body.to_s,
-          'REMOTE_ADDR' => info.remote_addr
-        })
-
-        @env = ::Rack::MockRequest.env_for(@url, env_hash)
-
+        @env, @url = {}, info.url
+        RACK_HEADERS.each {|k,v| @env[v] = info.headers[k]}
         @socket = socket
       end
     end
