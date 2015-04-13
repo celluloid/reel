@@ -2,6 +2,8 @@ source 'https://rubygems.org'
 
 gem 'celluloid'
 gem 'celluloid-io'
+gem 'celluloid-fsm'
+gem 'celluloid-supervision'
 gem 'http'
 
 gem 'jruby-openssl' if defined? JRUBY_VERSION
