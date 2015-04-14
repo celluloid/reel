@@ -94,24 +94,24 @@ module Reel
     class DriverEnvironment
       extend Forwardable
 
-      attr_reader :env, :url, :socket
+      attr_reader :env, :socket
 
-      def_delegators :socket, :write
+      def_delegator :@info, :url
+      def_delegator :@socket, :write
 
       RACK_HEADERS = {
-        'Origin'                   => 'HTTP_ORIGIN',
-        'Sec-WebSocket-Key'        => 'HTTP_SEC_WEBSOCKET_KEY',
-        'Sec-WebSocket-Key1'       => 'HTTP_SEC_WEBSOCKET_KEY1',
-        'Sec-WebSocket-Key2'       => 'HTTP_SEC_WEBSOCKET_KEY2',
-        'Sec-WebSocket-Extensions' => 'HTTP_SEC_WEBSOCKET_EXTENSIONS',
-        'Sec-WebSocket-Protocol'   => 'HTTP_SEC_WEBSOCKET_PROTOCOL',
-        'Sec-WebSocket-Version'    => 'HTTP_SEC_WEBSOCKET_VERSION'
-      }
+        'HTTP_ORIGIN'                   => 'Origin',
+        'HTTP_SEC_WEBSOCKET_KEY'        => 'Sec-WebSocket-Key',
+        'HTTP_SEC_WEBSOCKET_KEY1'       => 'Sec-WebSocket-Key1',
+        'HTTP_SEC_WEBSOCKET_KEY2'       => 'Sec-WebSocket-Key2',
+        'HTTP_SEC_WEBSOCKET_EXTENSIONS' => 'Sec-WebSocket-Extensions',
+        'HTTP_SEC_WEBSOCKET_PROTOCOL'   => 'Sec-WebSocket-Protocol',
+        'HTTP_SEC_WEBSOCKET_VERSION'    => 'Sec-WebSocket-Version'
+      }.freeze
 
       def initialize(info, socket)
-        @env, @url = {}, info.url
-        RACK_HEADERS.each {|k,v| @env[v] = info.headers[k]}
-        @socket = socket
+        @info, @socket = info, socket
+        @env = Hash.new {|h,k| @info.headers[RACK_HEADERS[k]]}
       end
     end
 
