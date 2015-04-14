@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'celluloid'
+gem 'celluloid', github: "celluloid/celluloid", branch: "0.17.0-prerelease"
 gem 'celluloid-io'
 gem 'celluloid-fsm'
 gem 'celluloid-supervision'
