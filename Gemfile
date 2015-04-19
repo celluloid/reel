@@ -1,12 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'celluloid', github: "celluloid/celluloid", branch: "0.17.0-prerelease"
-gem 'celluloid-io'
-gem 'celluloid-fsm'
-gem 'celluloid-supervision'
-gem 'http'
-
-gem 'jruby-openssl' if defined? JRUBY_VERSION
+gem 'jruby-openssl' if RUBY_PLATFORM == 'java'
 gem 'coveralls', require: false
 
 # Specify your gem's dependencies in reel.gemspec
