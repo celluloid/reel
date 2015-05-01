@@ -1,7 +1,7 @@
+require File.expand_path("../culture/sync", __FILE__)
 source 'https://rubygems.org'
 
 gem 'jruby-openssl' if RUBY_PLATFORM == 'java'
-gem 'coveralls', require: false
 
 # Specify your gem's dependencies in reel.gemspec
 gemspec
@@ -16,3 +16,5 @@ platforms :rbx do
   gem 'rubinius-coverage'
   gem 'rubysl', '~> 2.0'
 end
+
+Celluloid::Sync.gems(self)
