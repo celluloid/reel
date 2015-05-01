@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/reel/version', __FILE__)
+require File.expand_path("../culture/sync", __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Tony Arcieri"]
@@ -15,13 +15,9 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
 
-  gem.add_runtime_dependency 'celluloid', '>= 0.17.0.pre0'
   gem.add_runtime_dependency 'celluloid-io', '>= 0.16.5'
 
-  gem.add_runtime_dependency 'celluloid-essentials', '>= 0.20.0.pre0'
-  gem.add_runtime_dependency 'celluloid-supervision', '>= 0.13.9.pre0'
-  gem.add_runtime_dependency 'celluloid-pool', '>= 0.9.0.pre0'
-  gem.add_runtime_dependency 'celluloid-fsm', '>= 0.8.7.pre0'
+  Celluloid::Sync.gems(gem)
 
   gem.add_runtime_dependency 'http', '>= 0.6.0.pre'
   gem.add_runtime_dependency 'http_parser.rb', '>= 0.6.0'
