@@ -1,5 +1,4 @@
 require File.expand_path("../culture/sync", __FILE__)
-
 Celluloid::Sync::Gemfile[self]
 
 gem 'jruby-openssl' if RUBY_PLATFORM == 'java'
