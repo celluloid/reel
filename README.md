@@ -133,6 +133,7 @@ applications.
 Reel lets you pass a block to initialize which receives connections:
 
 ```ruby
+require 'celluloid/autostart'
 require 'reel'
 
 Reel::Server::HTTP.supervise("0.0.0.0", 3000) do |connection|
@@ -164,6 +165,7 @@ Reel::WebSocket object for WebSockets connections.
 You can also subclass Reel, which allows additional customizations:
 
 ```ruby
+require 'celluloid/autostart'
 require 'reel'
 
 class MyServer < Reel::Server::HTTP
