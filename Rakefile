@@ -1,6 +1,9 @@
-#!/usr/bin/env rake
 require "bundler/gem_tasks"
 
-Dir[File.expand_path("../tasks/**/*.rake", __FILE__)].each { |task| load task }
+Dir["tasks/**/*.rake"].each { |task| load task }
 
-task :default => :spec
+default_tasks = ["spec"]
+default_tasks << "rubocop" unless ENV["CI"]
+task default: default_tasks
+
+task ci: %w(spec benchmark)
