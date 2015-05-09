@@ -15,7 +15,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Reel::VERSION
 
-  gem.add_runtime_dependency 'celluloid-io', '>= 0.16.5'
+  gem.add_runtime_dependency 'celluloid-io', '>= 0.16.5.pre0'
 
   Celluloid::Sync::Gemspec[gem]
 

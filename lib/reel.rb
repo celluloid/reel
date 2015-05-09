@@ -1,5 +1,6 @@
 require 'uri'
 
+require 'celluloid/autostart'
 require 'http/parser'
 require 'http'
 require 'celluloid/io'
