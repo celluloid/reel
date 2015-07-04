@@ -1,4 +1,4 @@
-0.6.0 (2015-03-24)
+0.6.0 (2015-07-04)
 -----
 * Fix stack level too deep when writing to ChunkStream
 * Use HTTP::Resonse::Status::REASONS table ( HTTP::Response::* deprecated in the HTTP gem )
@@ -17,6 +17,7 @@
 * FINALLY! Support for UNIX Socket servers across all RVM's, as of jRuby 1.7.19
 * Unified Server#run removes need for duplication of #run across all Server implementations.
 * Standardized method of rescuing exceptions unique to each type of Server in unified #run method.
+* Updated to Celluloid 0.17.0
 
 0.5.0 (2014-04-15)
 -----
