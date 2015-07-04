@@ -1,19 +1,9 @@
-source 'https://rubygems.org'
+require File.expand_path("../culture/sync", __FILE__)
+Celluloid::Sync::Gemfile[self]
 
-gem 'celluloid'
-gem 'celluloid-io'
-gem 'http'
-
-gem 'jruby-openssl' if defined? JRUBY_VERSION
-gem 'coveralls', require: false
-
-# Specify your gem's dependencies in reel.gemspec
-gemspec
-
-group :development do
-  gem 'guard-rspec'
-  gem 'pry'
-end
+gem 'certificate_authority'
+gem 'jruby-openssl' if RUBY_PLATFORM == 'java'
+gem 'celluloid-io', github: 'celluloid/celluloid-io', branch: '0.17.0-dependent', submodules: true
 
 platforms :rbx do
   gem 'racc'

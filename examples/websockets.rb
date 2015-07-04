@@ -22,7 +22,7 @@ end
 class TimeClient
   include Celluloid
   include Celluloid::Notifications
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(websocket)
     info "Streaming time changes to client"
@@ -39,7 +39,7 @@ class TimeClient
 end
 
 class WebServer < Reel::Server::HTTP
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(host = "127.0.0.1", port = 1234)
     info "Time server example starting on #{host}:#{port}"

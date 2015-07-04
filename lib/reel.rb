@@ -1,5 +1,6 @@
 require 'uri'
 
+require 'celluloid/autostart'
 require 'http/parser'
 require 'http'
 require 'celluloid/io'
@@ -14,7 +15,7 @@ require 'reel/response'
 require 'reel/server'
 require 'reel/server/http'
 require 'reel/server/https'
-require 'reel/server/unix' unless defined? JRUBY_VERSION
+require 'reel/server/unix' unless RUBY_PLATFORM == 'java'
 
 require 'reel/websocket'
 require 'reel/stream'

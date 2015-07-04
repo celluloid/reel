@@ -24,7 +24,7 @@ end
 class Writer
   include Celluloid
   include Celluloid::Notifications
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(websocket)
     info "Writing to socket"
@@ -44,7 +44,7 @@ end
 class Reader
   include Celluloid
   include Celluloid::Notifications
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(websocket)
     info "Reading socket"
@@ -62,7 +62,7 @@ class Reader
 end
 
 class WebServer < Reel::Server::HTTP
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
 
   def initialize(host = "0.0.0.0", port = 9000)
     info "Roundtrip example starting on #{host}:#{port}"
