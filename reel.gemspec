@@ -19,7 +19,7 @@ Gem::Specification.new do |gem|
 
   Celluloid::Sync::Gemspec[gem]
 
-  gem.add_runtime_dependency 'http', '>= 0.6.0.pre'
+  gem.add_runtime_dependency 'http', '>= 0.8.12'
   gem.add_runtime_dependency 'http_parser.rb', '>= 0.6.0'
   gem.add_runtime_dependency 'websocket-driver', '>= 0.5.1'
   gem.add_runtime_dependency 'websocket_parser', '>= 0.1.6'
