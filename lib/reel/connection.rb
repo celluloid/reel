@@ -1,4 +1,5 @@
 require 'reel/request'
+require 'reel/connection/http_2'
 
 module Reel
   # A connection to the HTTP server
@@ -18,7 +19,7 @@ module Reel
     BUFFER_SIZE = 16384
     attr_reader :buffer_size
 
-    def initialize(socket, buffer_size = nil)
+    def initialize(socket, buffer_size = nil, data = nil)
       @attached    = true
       @socket      = socket
       @keepalive   = true
@@ -28,6 +29,8 @@ module Reel
 
       reset_request
       @response_state = :headers
+
+      @parser << data if data
     end
 
     # Is the connection still active?

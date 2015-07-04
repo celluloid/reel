@@ -61,18 +61,36 @@ module Reel
         socket = Reel::Spy.new(socket, @spy)
       end
 
-      connection = Connection.new(socket)
-
       begin
-        @callback.call(connection)
-      ensure
-        if connection.attached?
-          connection.close rescue nil
+        connection = Connection::HTTP2.new(socket)
+        connection.readpartial
+      rescue HTTP2ParseError => hpe
+        connection = Connection.new(socket, nil, hpe.data)
+
+        begin
+          @callback.call(connection)
+        ensure
+          if connection.attached?
+            connection.close rescue nil
+          end
         end
       end
     rescue RequestError, EOFError
       # Client disconnected prematurely
       # TODO: log this?
     end
+
   end
+
+  # caused by ::HTTP2::Error::HandshakeError
+  # contains the data read from socket, so the HTTP 1.x parser doesn't miss out.
+  #
+  class HTTP2ParseError < StandardError
+    attr_reader :data
+    def initialize data
+      @data = data
+      super()
+    end
+  end
+
 end
