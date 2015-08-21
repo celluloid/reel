@@ -94,6 +94,39 @@ RSpec.describe Reel::Server::HTTPS do
     raise ex if ex
   end
 
+  it "allows setting the ssl_version used by the server" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        request = connection.request
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq "1.1"
+        expect(request.url).to eq example_path
+
+        connection.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel_https_server(handler, :ssl_params => {:ssl_version => :TLSv1}) do
+      http             = Net::HTTP.new(endpoint.host, endpoint.port)
+      http.use_ssl     = true
+      http.ca_file     = self.ca_file
+      http.ssl_version = :TLSv1_1
+
+      request = Net::HTTP::Get.new(endpoint.path)
+
+      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError, /wrong version number/)
+
+      http.ssl_version = :TLSv1
+      response = http.request(request)
+      expect(response.body).to eq response_body
+    end
+
+    raise ex if ex
+  end
+
   def with_reel_https_server(handler, options = {})
     options = {
       :cert => server_cert,
