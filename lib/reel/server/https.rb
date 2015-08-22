@@ -21,6 +21,8 @@ module Reel
         ssl_context.cert = OpenSSL::X509::Certificate.new options.fetch(:cert)
         ssl_context.key  = OpenSSL::PKey::RSA.new options.fetch(:key)
 
+        ssl_context.set_params(options[:ssl_params]) if options[:ssl_params]
+
         ssl_context.ca_file          = options[:ca_file]
         ssl_context.ca_path          = options[:ca_path]
         ssl_context.extra_chain_cert = options[:extra_chain_cert]
