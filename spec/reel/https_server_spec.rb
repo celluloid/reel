@@ -117,7 +117,7 @@ RSpec.describe Reel::Server::HTTPS do
 
       request = Net::HTTP::Get.new(endpoint.path)
 
-      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError, /wrong version number/)
+      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
 
       http.ssl_version = :TLSv1
       response = http.request(request)
