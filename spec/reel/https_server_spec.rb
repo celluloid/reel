@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'net/http'
 
 RSpec.describe Reel::Server::HTTPS do
+
   let(:example_https_port) { example_port + 1 }
   let(:example_url)      { "https://#{example_addr}:#{example_https_port}#{example_path}" }
   let(:endpoint)         { URI(example_url) }
@@ -24,9 +25,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq "1.1"
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -34,17 +33,15 @@ RSpec.describe Reel::Server::HTTPS do
       http         = Net::HTTP.new(endpoint.host, endpoint.port)
       http.use_ssl = true
       http.ca_file = self.ca_file
-
       request = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
-
       expect(response.body).to eq response_body
     end
 
     raise ex if ex
   end
 
-  it 'verifies client SSL certs when provided with a CA' do
+  it "verifies client SSL certs when provided with a CA" do
     ex = nil
 
     handler = proc do |connection|
@@ -53,9 +50,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq '1.1'
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -65,17 +60,15 @@ RSpec.describe Reel::Server::HTTPS do
       http.ca_file = self.ca_file
       http.cert    = OpenSSL::X509::Certificate.new self.client_cert
       http.key     = OpenSSL::PKey::RSA.new         self.client_key
-
       request  = Net::HTTP::Get.new(endpoint.path)
       response = http.request(request)
-
       expect(response.body).to eq response_body
     end
 
     raise ex if ex
   end
 
-  it %{fails to verify client certificates that aren't signed} do
+  it "fails to verify client certificates that aren't signed" do
     ex = nil
 
     handler = proc do |connection|
@@ -84,9 +77,7 @@ RSpec.describe Reel::Server::HTTPS do
         expect(request.method).to eq 'GET'
         expect(request.version).to eq '1.1'
         expect(request.url).to eq example_path
-
         connection.respond :ok, response_body
-      rescue => ex
       end
     end
 
@@ -96,10 +87,41 @@ RSpec.describe Reel::Server::HTTPS do
       http.ca_file = self.ca_file
       http.cert    = OpenSSL::X509::Certificate.new self.client_cert_unsigned
       http.key     = OpenSSL::PKey::RSA.new         self.client_key
-
       request  = Net::HTTP::Get.new(endpoint.path)
+      expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
+    end
+
+    raise ex if ex
+  end
+
+  it "allows setting the ssl_version used by the server" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        request = connection.request
+        expect(request.method).to eq 'GET'
+        expect(request.version).to eq "1.1"
+        expect(request.url).to eq example_path
+
+        connection.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel_https_server(handler, :ssl_params => {:ssl_version => :TLSv1}) do
+      http             = Net::HTTP.new(endpoint.host, endpoint.port)
+      http.use_ssl     = true
+      http.ca_file     = self.ca_file
+      http.ssl_version = :TLSv1_1
+
+      request = Net::HTTP::Get.new(endpoint.path)
 
       expect { http.request(request) }.to raise_error(OpenSSL::SSL::SSLError)
+
+      http.ssl_version = :TLSv1
+      response = http.request(request)
+      expect(response.body).to eq response_body
     end
 
     raise ex if ex

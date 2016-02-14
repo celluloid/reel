@@ -9,7 +9,7 @@ require 'reel'
 
 
 class ServerSentEvents < Reel::Server::HTTP
-  include Celluloid::Logger
+  include Celluloid::Internals::Logger
   
   def initialize(ip = '127.0.0.1', port = 63310)
     @connections = []
