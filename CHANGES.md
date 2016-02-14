@@ -1,5 +1,48 @@
-0.5.0 (2014-04-15)
-------------------
+## 0.6.0 (2016-02-13)
+
+* [#148](https://github.com/celluloid/reel/pull/148):
+  Fix stack level too deep when writing to ChunkStream.
+  (**@bastjan**)
+
+* [#151](https://github.com/celluloid/reel/pull/151):
+  Support for new http.rb gem API.
+  (**@ixti**)
+
+* [#152](https://github.com/celluloid/reel/pull/152):
+  Case insensitivity for header field names.
+  (**@kenichi**)
+
+* [#155](https://github.com/celluloid/reel/pull/155):
+  Handle Errno::ECONNRESET in SSL server.
+  (**@czaks**)
+
+* [#162](https://github.com/celluloid/reel/pull/162):
+  Fix for #150: Reel::StateError: already processing
+  a request when client is killed.
+  (**@artcom**)
+
+* [#166](https://github.com/celluloid/reel/pull/166):
+  Switch to websocket-driver gem.
+  (**@d-snp**)
+
+* [#167](https://github.com/celluloid/reel/pull/167):
+  Delegate #addr, #peeraddr, etc. methods in Spy.
+  (**@d-snp**)
+
+* [#168](https://github.com/celluloid/reel/pull/168):
+  Revert removal of addr and peeraddr delegates.
+  (**@d-snp**)
+
+* [#182](https://github.com/celluloid/reel/pull/182):
+  Do not allow transitioning out of closed.
+  (**@zanker**)
+
+* [#214](https://github.com/celluloid/reel/pull/214):
+  Fix ChunkStream termination.
+  (**@ogoid**)
+
+## 0.5.0 (2014-04-15)
+
 * Reel::Server(::SSL) renamed to Reel::Server::HTTP and Reel::Server::HTTPS
 * New Reel::Spy API for observing requests and responses from the server
 * Fixes to chunked encoding handling
@@ -8,8 +51,8 @@
 * Ensure response bodies are always closed
 * Support for passing a fixnum status to Connection#respond
 
-0.4.0
------
+## 0.4.0
+
 * Rack adapter moved to the reel-rack project
 * Pipelining support
 * Reel::Connection#each_request for iterating through keep-alive requests
@@ -23,8 +66,8 @@
 * Remove Reel::App (unmaintained, sorry)
 * Reel::CODENAME added (0.4.0 is "Garbo")
 
-0.3.0
------
+## 0.3.0
+
 * Reel::App: Sinatra-like DSL for defining Reel apps using Octarine
 * Chunked upload support
 * Lots of additional work on the Rack adapter
@@ -33,12 +76,12 @@
 * Bugfix: Send CRLF after chunks
 * Bugfix: Increase TCP connection backlog to 1024
 
-0.2.0
------
+## 0.2.0
+
 * Initial WebSockets support via Reel::WebSocket
 * Experimental Rack adapter by Alberto Fernández-Capel
 * Octarine (Sinatra-like DSL) support by Grant Rodgers
 
-0.1.0
------
+## 0.1.0
+
 * Initial release
