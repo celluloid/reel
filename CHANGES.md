@@ -1,4 +1,4 @@
-## 0.6.0 (2016-02-13)
+## 0.6.0 "Garland" (2016-02-13)
 
 * [#148](https://github.com/celluloid/reel/pull/148):
   Fix stack level too deep when writing to ChunkStream.
@@ -41,7 +41,7 @@
   Fix ChunkStream termination.
   (**@ogoid**)
 
-## 0.5.0 (2014-04-15)
+## 0.5.0 "Bette" (2014-04-15)
 
 * Reel::Server(::SSL) renamed to Reel::Server::HTTP and Reel::Server::HTTPS
 * New Reel::Spy API for observing requests and responses from the server
@@ -51,7 +51,7 @@
 * Ensure response bodies are always closed
 * Support for passing a fixnum status to Connection#respond
 
-## 0.4.0
+## 0.4.0 "Garbo"
 
 * Rack adapter moved to the reel-rack project
 * Pipelining support
