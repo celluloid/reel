@@ -1,9 +1,10 @@
 ![Reel](https://github.com/celluloid/reel/raw/master/logo.png)
 =======
-[![Gem Version](https://badge.fury.io/rb/reel.png)](http://rubygems.org/gems/reel)
-[![Build Status](https://secure.travis-ci.org/celluloid/reel.png?branch=master)](http://travis-ci.org/celluloid/reel)
-[![Code Climate](https://codeclimate.com/github/celluloid/reel.png)](https://codeclimate.com/github/celluloid/reel)
-[![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.png?branch=master)](https://coveralls.io/r/celluloid/reel)
+[![Gem Version](https://badge.fury.io/rb/reel.svg)](http://rubygems.org/gems/reel)
+[![Build Status](https://secure.travis-ci.org/celluloid/reel.svg?branch=master)](http://travis-ci.org/celluloid/reel)
+[![Code Climate](https://codeclimate.com/github/celluloid/reel.svg)](https://codeclimate.com/github/celluloid/reel)
+[![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.svg?branch=master)](https://coveralls.io/r/celluloid/reel)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/celluloid/reel/master/LICENSE.txt)
 
 > "A dizzying lifetime... reeling by on celluloid" _-- Rush / Between The Wheels_
 
@@ -33,34 +34,6 @@ primarily I/O bound, and threads for where you're compute bound.
 ### Is it any good?
 
 [Yes](http://news.ycombinator.com/item?id=3067434)
-
-Here's a "hello world" web server benchmark, run on a 2GHz i7 (OS X 10.7.3).
-All servers used in a single-threaded mode.
-
-Reel performance on various Ruby VMs:
-
-```
-# httperf --num-conns=50 --num-calls=1000
-
-Ruby Version        Throughput    Latency
-------------        ----------    -------
-JRuby 1.7.0         3978 req/s    (0.3 ms/req)
-rbx HEAD            2288 reqs/s   (0.4 ms/req)
-Ruby 1.9.3          2071 req/s    (0.5 ms/req)
-```
-
-Comparison with other web servers:
-
-```
-Web Server          Throughput    Latency
-----------          ----------    -------
-Goliath (0.9.4)     2058 reqs/s   (0.5 ms/req)
-Thin    (1.2.11)    7502 reqs/s   (0.1 ms/req)
-Node.js (0.6.5)     11735 reqs/s  (0.1 ms/req)
-```
-
-All Ruby benchmarks done on Ruby 1.9.3. Latencies given are average-per-request
-and are not amortized across all concurrent requests.
 
 Documentation
 -------------
@@ -196,16 +169,24 @@ end
 MyServer.run
 ```
 
+Supported Ruby Versions
+-----------------------
+
+This library supports and is tested against the following Ruby versions:
+
+* Ruby (MRI) 2.0, 2.1, 2.2, 2.3
+* JRuby 9000
+
 Contributing
 ------------
 
-* Fork this repository on github
-* Make your changes and send me a pull request
-* If I like them I'll merge them
-* If I've accepted a patch, feel free to ask for commit access
+* Fork this repository on GitHub
+* Make your changes and send us a pull request
+* If we like them we'll merge them
+* If we've accepted a patch, feel free to ask for commit access
 
 License
 -------
 
-Copyright (c) 2012 Tony Arcieri. Distributed under the MIT License. See
+Copyright (c) 2012-2016 Tony Arcieri. Distributed under the MIT License. See
 LICENSE.txt for further details.
