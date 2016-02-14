@@ -73,7 +73,7 @@ module Reel
     # finish does not actually close the socket,
     # it only inform the browser there are no more messages
     def finish
-      write "0#{Response::Writer::CRLF * 2}"
+      write ""
     end
 
     def close
