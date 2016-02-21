@@ -10,6 +10,7 @@ module Reel
 
     attr_reader :socket
     def_delegators :@socket, :addr, :peeraddr
+    def_delegators :@driver, :ping
 
     def initialize(info, connection)
       driver_env = DriverEnvironment.new(info, connection.socket)      
