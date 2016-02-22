@@ -173,6 +173,20 @@ RSpec.describe Reel::WebSocket do
     end
   end
 
+  it "pings clients" do
+    with_websocket_pair do |client, websocket|
+      websocket.ping "<3"
+
+      pinger = double "pinger"
+      expect(pinger).to receive(:ping) { |msg| expect(msg).to eq("<3") }
+
+      parser = WebSocket::Parser.new
+      parser.on_ping { |msg| pinger.ping msg }
+
+      parser << client.readpartial(4096)
+    end
+  end
+
   def with_websocket_pair
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)

@@ -1,6 +1,5 @@
 require 'forwardable'
 require 'websocket/driver'
-require 'rack'
 
 module Reel
   class WebSocket
@@ -10,10 +9,11 @@ module Reel
 
     attr_reader :socket
     def_delegators :@socket, :addr, :peeraddr
+    def_delegators :@driver, :ping
 
     def initialize(info, connection)
-      driver_env = DriverEnvironment.new(info, connection.socket)      
-      
+      driver_env = DriverEnvironment.new(info, connection.socket)
+
       @socket = connection.hijack_socket
       @request_info = info
 
@@ -94,24 +94,24 @@ module Reel
     class DriverEnvironment
       extend Forwardable
 
-      attr_reader :env, :url, :socket
+      attr_reader :env, :socket
 
-      def_delegators :socket, :write
+      def_delegator :@info, :url
+      def_delegator :@socket, :write
+
+      RACK_HEADERS = {
+        'HTTP_ORIGIN'                   => 'Origin',
+        'HTTP_SEC_WEBSOCKET_KEY'        => 'Sec-WebSocket-Key',
+        'HTTP_SEC_WEBSOCKET_KEY1'       => 'Sec-WebSocket-Key1',
+        'HTTP_SEC_WEBSOCKET_KEY2'       => 'Sec-WebSocket-Key2',
+        'HTTP_SEC_WEBSOCKET_EXTENSIONS' => 'Sec-WebSocket-Extensions',
+        'HTTP_SEC_WEBSOCKET_PROTOCOL'   => 'Sec-WebSocket-Protocol',
+        'HTTP_SEC_WEBSOCKET_VERSION'    => 'Sec-WebSocket-Version'
+      }.freeze
 
       def initialize(info, socket)
-        @url = info.url
-
-        env_hash = Hash[info.headers.map { |key, value| ['HTTP_' + key.upcase.gsub('-','_'),value ] }]
-        
-        env_hash.merge!({
-          :method       => info.method,
-          :input        => info.body.to_s,
-          'REMOTE_ADDR' => info.remote_addr
-        })
-
-        @env = ::Rack::MockRequest.env_for(@url, env_hash)
-
-        @socket = socket
+        @info, @socket = info, socket
+        @env = Hash.new {|h,k| @info.headers[RACK_HEADERS[k]]}
       end
     end
 
