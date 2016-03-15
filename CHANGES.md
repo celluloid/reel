@@ -1,45 +1,51 @@
-## 0.6.0 "Garland" (2016-02-13)
+## 0.6.1 (2016-03-14)
 
-* [#148](https://github.com/celluloid/reel/pull/148):
-  Fix stack level too deep when writing to ChunkStream.
-  (**@bastjan**)
-
-* [#151](https://github.com/celluloid/reel/pull/151):
-  Support for new http.rb gem API.
-  (**@ixti**)
-
-* [#152](https://github.com/celluloid/reel/pull/152):
-  Case insensitivity for header field names.
+* [#221](https://github.com/celluloid/reel/pull/221)
+  Remove rack dependency. Add WebSocket ping forward.
   (**@kenichi**)
 
-* [#155](https://github.com/celluloid/reel/pull/155):
-  Handle Errno::ECONNRESET in SSL server.
-  (**@czaks**)
+## 0.6.0 "Garland" (2016-02-13)
 
-* [#162](https://github.com/celluloid/reel/pull/162):
-  Fix for #150: Reel::StateError: already processing
-  a request when client is killed.
-  (**@artcom**)
+* [#214](https://github.com/celluloid/reel/pull/214):
+  Fix ChunkStream termination.
+  (**@ogoid**)
 
-* [#166](https://github.com/celluloid/reel/pull/166):
-  Switch to websocket-driver gem.
+* [#182](https://github.com/celluloid/reel/pull/182):
+  Do not allow transitioning out of closed.
+  (**@zanker**)
+
+* [#168](https://github.com/celluloid/reel/pull/168):
+  Revert removal of addr and peeraddr delegates.
   (**@d-snp**)
 
 * [#167](https://github.com/celluloid/reel/pull/167):
   Delegate #addr, #peeraddr, etc. methods in Spy.
   (**@d-snp**)
 
-* [#168](https://github.com/celluloid/reel/pull/168):
-  Revert removal of addr and peeraddr delegates.
+* [#166](https://github.com/celluloid/reel/pull/166):
+  Switch to websocket-driver gem.
   (**@d-snp**)
 
-* [#182](https://github.com/celluloid/reel/pull/182):
-  Do not allow transitioning out of closed.
-  (**@zanker**)
+* [#162](https://github.com/celluloid/reel/pull/162):
+  Fix for #150: Reel::StateError: already processing
+  a request when client is killed.
+  (**@artcom**)
 
-* [#214](https://github.com/celluloid/reel/pull/214):
-  Fix ChunkStream termination.
-  (**@ogoid**)
+* [#155](https://github.com/celluloid/reel/pull/155):
+  Handle Errno::ECONNRESET in SSL server.
+  (**@czaks**)
+
+* [#152](https://github.com/celluloid/reel/pull/152):
+  Case insensitivity for header field names.
+  (**@kenichi**)
+
+* [#151](https://github.com/celluloid/reel/pull/151):
+  Support for new http.rb gem API.
+  (**@ixti**)
+
+* [#148](https://github.com/celluloid/reel/pull/148):
+  Fix stack level too deep when writing to ChunkStream.
+  (**@bastjan**)
 
 ## 0.5.0 "Bette" (2014-04-15)
 
