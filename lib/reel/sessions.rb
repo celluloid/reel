@@ -13,8 +13,8 @@ module Reel
       # .....
     }
 
-
-    module SessionMethods
+    # This module will be mixed in into Reel::Request
+    module SessionsMixins
 
       # adding/changing confiuration
       def configuration options={}
@@ -31,9 +31,7 @@ module Reel
       end
 
       # to expose value hash
-      def session
-        @session
-      end
+      attr_reader :session
 
       # finalizing the session
       def finalize_session
