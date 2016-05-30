@@ -16,18 +16,14 @@ module Reel
     # This module will be mixed in into Reel::Request
     module SessionsMixins
 
-      # adding/changing confiuration
+      # changing/modifying configuration
       def configuration options={}
-        #TODO
+        options = DEFAULT_CONFIG.merge option
       end
 
       # initializing session
       def initialize_session req
-        # Extract out key from req cookie and search for uuid in our concurrent
-        # hash store if found associate value to @session
-        # else
-        # generate new key and associate empty hash to @session
-        # TODO
+        @session = find_session req
       end
 
       # to expose value hash
@@ -35,9 +31,8 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        # save the @session into concurrent hash and return its associated uuid
-        # set this uuid to response header
-        # TODO
+        uuid = @session.save
+        set_response uuid if uuid
       end
 
       # set cookie with uuid in response header
