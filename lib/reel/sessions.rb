@@ -1,3 +1,6 @@
+require 'reel/sessions/store'
+require 'celluloid/extras/hash'
+
 module Reel
   module Sessions
 
@@ -7,14 +10,33 @@ module Reel
 
     # default session configuration
     DEFAULT_CONFIG = {
-      # secret_key: '',
-      # session_length: 0, #TODO
-      # session_name: 'reel_sessions'
-      # .....
+       secret_key: 'reel_sessions_key',
+       session_length: 21600, # 6 hours
+       session_name: 'reel_sessions_default'
     }
 
     # This module will be mixed in into Reel::Request
     module SessionsMixins
+
+      def self.included klass
+
+        # initialize session
+        klass.before do
+          # check request parameter to be passed TODO
+          initialize_session request
+        end
+
+        # finalize session at the end
+        klass.after do
+          finalize_session
+        end
+
+      end
+
+      # initialize it only on first invocation
+      def self.store
+        @store ||= Celluloid::Extras::Hash.new 
+      end
 
       # changing/modifying configuration
       def configuration options={}
@@ -23,7 +45,8 @@ module Reel
 
       # initializing session
       def initialize_session req
-        @session = find_session req
+        # bag here is for default case is our concurrent hash object
+        @session = Store.new self.store,req
       end
 
       # to expose value hash
