@@ -1,4 +1,4 @@
-require 'celluloid-extras'
+require 'celluloid/extras/hash'
 
 module Reel
   module Sessions
