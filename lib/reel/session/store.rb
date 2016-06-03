@@ -2,7 +2,7 @@ require 'celluloid/extras/hash'
 require 'securerandom'
 
 module Reel
-  module Session
+  module Sessions
     class Store
 
       def initialize store,request,config

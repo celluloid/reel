@@ -1,12 +1,16 @@
-require 'reel/sessions/store'
+require 'reel/session/store'
 require 'celluloid/extras/hash'
+require 'time'
 
 module Reel
-  module Sessions
+  module Session
 
     # Basic structure to visualize working of session handlers
     # TODO
 
+    COOKIE_KEY = 'Cookie'
+    SET_COOKIE = 'Set-Cookie'
+    COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'
 
     # default session configuration
     DEFAULT_CONFIG = {
@@ -16,7 +20,7 @@ module Reel
     }
 
     # This module will be mixed in into Reel::Request
-    module SessionsMixins
+    module RequestMixin
 
       def self.included klass
 
@@ -35,18 +39,18 @@ module Reel
 
       # initialize it only on first invocation
       def self.store
-        @store ||= Celluloid::Extras::Hash.new 
+        @store ||= Celluloid::Extras::Hash.new
       end
 
       # changing/modifying configuration
       def configuration options={}
-        options = DEFAULT_CONFIG.merge option
+        options = DEFAULT_CONFIG.merge options
       end
 
       # initializing session
       def initialize_session req
         # bag here is for default case is our concurrent hash object
-        @session = Store.new self.store,req
+        @session = Store.new self.store,req,configuration
       end
 
       # to expose value hash
@@ -58,13 +62,19 @@ module Reel
         set_response uuid if uuid
       end
 
-      # set cookie with uuid in response header
-      def set_response uuid
-        # encrypt uuid (data) and add Set_cookie into header with proper expiration
-        # TODO
+      # calculate expiry based on session length
+      def session_expiry
+        (Time.now + options[:session_length]).rfc2822
       end
 
-    end
+      # set cookie with uuid in response header
+      def set_response uuid
+        header = Hash[SET_COOKIE => COOKIE % [
+          options[:session_name],uuid,session_expiry
+          ] ]
 
+          # Merge this header hash into response and encryption TODO
+      end
+    end
   end
 end
