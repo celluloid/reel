@@ -1,5 +1,4 @@
 require 'celluloid/extras/hash'
-require 'securerandom'
 
 module Reel
   module Sessions
@@ -26,9 +25,9 @@ module Reel
         @val ||= Hash.new
       end
 
-      # ge
+
       def generate_id
-        SecureRandom.uuid
+        Celluloid::Internals::UUID.generate
       end
 
       def save
