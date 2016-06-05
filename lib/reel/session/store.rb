@@ -1,7 +1,7 @@
 require 'celluloid/extras/hash'
 
 module Reel
-  module Sessions
+  module Session
     class Store
 
       def initialize store,request,config
