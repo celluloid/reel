@@ -1,4 +1,5 @@
 require 'reel/session/store'
+require 'reel/session/crypto'
 require 'celluloid/extras/hash'
 require 'time'
 
@@ -21,6 +22,8 @@ module Reel
 
     # This module will be mixed in into Reel::Request
     module RequestMixin
+      include Celluloid::Internals::Logger
+      include Reel::Session::Crypto
 
       def self.included klass
 
@@ -70,7 +73,7 @@ module Reel
       # set cookie with uuid in response header
       def set_response uuid
         header = Hash[SET_COOKIE => COOKIE % [
-          options[:session_name],uuid,session_expiry
+          encrypt(options[:session_name]),encrypt(uuid),session_expiry
           ] ]
 
           # Merge this header hash into response and encryption TODO
