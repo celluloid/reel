@@ -20,25 +20,31 @@ module Reel
        session_name: 'reel_sessions_default'
     }
 
+    # Current plan is to include RequestMixin methods into Reel::Request class if Reel/Session
+    # is included
+    def self.included klass
+      klass.include RequestMixin
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
       include Reel::Session::Crypto
 
-      def self.included klass
-
-        # initialize session
-        klass.before do
-          # check request parameter to be passed TODO
-          initialize_session request
-        end
-
-        # finalize session at the end
-        klass.after do
-          finalize_session
-        end
-
-      end
+      # def self.included klass
+      #
+      #   # initialize session
+      #   klass.before do
+      #     # check request parameter to be passed TODO
+      #     initialize_session request
+      #   end
+      #
+      #   # finalize session at the end
+      #   klass.after do
+      #     finalize_session
+      #   end
+      #
+      # end
 
       # initialize it only on first invocation
       def self.store

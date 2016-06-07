@@ -53,6 +53,9 @@ module Reel
         info = Info.new(http_method, url, http_version, headers)
         req  = Request.new(info, connection)
 
+        # initialize session if method is included
+        req.initialize_session req if defined? req.initialize_session
+
         if @currently_reading
           @pending_reads << req
         else
