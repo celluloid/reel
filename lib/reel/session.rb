@@ -20,30 +20,15 @@ module Reel
        session_name: 'reel_sessions_default'
     }
 
+    # initialize it only on first invocation
+    def self.store
+      @store ||= Celluloid::Extras::Hash.new
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
       include Reel::Session::Crypto
-
-      # def self.included klass
-      #
-      #   # initialize session
-      #   klass.before do
-      #     # check request parameter to be passed TODO
-      #     initialize_session request
-      #   end
-      #
-      #   # finalize session at the end
-      #   klass.after do
-      #     finalize_session
-      #   end
-      #
-      # end
-
-      # initialize it only on first invocation
-      def self.store
-        @store ||= Celluloid::Extras::Hash.new
-      end
 
       # changing/modifying configuration
       def configuration options={}
@@ -51,9 +36,9 @@ module Reel
       end
 
       # initializing session
-      def initialize_session req
+      def initialize_session
         # bag here is for default case is our concurrent hash object
-        @session = Store.new self.store,req,configuration
+        @session = Store.new self
       end
 
       # to expose value hash
@@ -79,6 +64,7 @@ module Reel
           # Merge this header hash into response and encryption TODO
       end
     end
+
   end
 end
 
@@ -87,5 +73,13 @@ end
 module Reel
   class Request
     include ::Reel::Session::RequestMixin
+
+    class Parser
+      alias_method :base_on_headers_complete, :on_headers_complete
+      def on_headers_complete headers
+        base_on_headers_complete headers
+        current_request.initialize_session
+      end
+    end
   end
 end
