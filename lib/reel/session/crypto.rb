@@ -23,10 +23,9 @@ module Reel
           cipher.iv = "1234567890123456"
           cipher.update(val) + cipher.final
           rescue => e
-            puts e.message # should be warning
+            warn e.message
             nil
         end
-
       end
 
     end

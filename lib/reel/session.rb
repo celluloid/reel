@@ -1,4 +1,5 @@
 require 'reel/session/store'
+require 'reel/session/crypto'
 require 'celluloid/extras/hash'
 require 'time'
 
@@ -19,28 +20,15 @@ module Reel
        session_name: 'reel_sessions_default'
     }
 
+    # initialize it only on first invocation
+    def self.store
+      @store ||= Celluloid::Extras::Hash.new
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
-
-      def self.included klass
-
-        # initialize session
-        klass.before do
-          # check request parameter to be passed TODO
-          initialize_session request
-        end
-
-        # finalize session at the end
-        klass.after do
-          finalize_session
-        end
-
-      end
-
-      # initialize it only on first invocation
-      def self.store
-        @store ||= Celluloid::Extras::Hash.new
-      end
+      include Celluloid::Internals::Logger
+      include Reel::Session::Crypto
 
       # changing/modifying configuration
       def configuration options={}
@@ -48,9 +36,9 @@ module Reel
       end
 
       # initializing session
-      def initialize_session req
+      def initialize_session
         # bag here is for default case is our concurrent hash object
-        @session = Store.new self.store,req,configuration
+        @session = Store.new self
       end
 
       # to expose value hash
@@ -70,10 +58,33 @@ module Reel
       # set cookie with uuid in response header
       def set_response uuid
         header = Hash[SET_COOKIE => COOKIE % [
-          options[:session_name],uuid,session_expiry
+          encrypt(options[:session_name]),encrypt(uuid),session_expiry
           ] ]
 
           # Merge this header hash into response and encryption TODO
+      end
+    end
+
+  end
+end
+
+# Current plan is to include RequestMixin methods into Reel::Request class if Reel/Session
+# is required
+module Reel
+  class Request
+    include ::Reel::Session::RequestMixin
+
+    alias_method :base_respond, :respond
+    def respond *args
+      finalize_session
+      base_respond *args
+    end
+
+    class Parser
+      alias_method :base_on_headers_complete, :on_headers_complete
+      def on_headers_complete headers
+        base_on_headers_complete headers
+        current_request.initialize_session
       end
     end
   end

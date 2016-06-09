@@ -1,22 +1,24 @@
 require 'celluloid/extras/hash'
+require 'reel/session/crypto'
 
 module Reel
   module Session
     class Store
+      include Crypto
 
-      def initialize store,request,config
+      def initialize request
         # encryption/decryption TODO
 
-        @store = store
+        @store = Reel::Session.store
         @request = request
-        @config = config
+        @config = request.configuration
 
         # extracting key from cookie
         if cookie = @request.headers[COOKIE_KEY]
           cookie = cookie.first if cookie.kind_of? Array
           cookie.split(';').each do |all_cookie|
             array_val = all_cookie.split('=').map &:strip
-            @key = array_val[1] if array_val[0] ==  @config[:session_name]
+            @key = decrypt(array_val[1]) if decrypt(array_val[0]) ==  @config[:session_name]
           end
         end
         # check if key exist in our concurrent hash
