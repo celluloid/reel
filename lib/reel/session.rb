@@ -74,6 +74,12 @@ module Reel
   class Request
     include ::Reel::Session::RequestMixin
 
+    alias_method :base_respond, :respond
+    def respond *args
+      finalize_session
+      base_respond *args
+    end
+
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
       def on_headers_complete headers
