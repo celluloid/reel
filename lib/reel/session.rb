@@ -37,7 +37,8 @@ module Reel
 
       # initializing session
       def initialize_session
-        @session = Store.new self
+        @bag = Store.new self
+        @session = @bag.val
       end
 
       # to expose value hash
@@ -45,7 +46,7 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        uuid = @session.save
+        uuid = @bag.save
         set_response uuid if uuid
       end
 

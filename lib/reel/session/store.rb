@@ -27,6 +27,7 @@ module Reel
         @val ||= Hash.new
       end
 
+      attr_reader :val
 
       def generate_id
         Celluloid::Internals::UUID.generate
