@@ -59,8 +59,6 @@ module Reel
         header = Hash[SET_COOKIE => COOKIE % [
           encrypt(options[:session_name]),encrypt(uuid),session_expiry
           ] ]
-
-          # Merge this header hash into response and encryption TODO
       end
     end
 
@@ -75,8 +73,14 @@ module Reel
 
     alias_method :base_respond, :respond
     def respond *args
-      cookie_header = finalize_session
-      # TODO : merge this header properly into args
+      @cookie_header = finalize_session
+      # merge this header properly into args
+      @header_or_body = args[1]
+      unless @header_or_body.is_a? Hash
+        args[2],args[1] = @header_or_body,@cookie_header
+      else
+        args[1].merge! @header
+      end
       base_respond *args
     end
 
