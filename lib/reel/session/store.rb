@@ -35,9 +35,9 @@ module Reel
 
       def save
           # merge key,value
-          # @key ||= generate_id
-          # @store.merge!(Hash(@key,@val))
-          # @key
+          @key ||= generate_id
+          @store.merge!(Hash[@key,@val])
+          @key
       end
 
     end
