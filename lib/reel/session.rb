@@ -37,7 +37,6 @@ module Reel
 
       # initializing session
       def initialize_session
-        # bag here is for default case is our concurrent hash object
         @session = Store.new self
       end
 
@@ -76,7 +75,8 @@ module Reel
 
     alias_method :base_respond, :respond
     def respond *args
-      finalize_session
+      cookie_header = finalize_session
+      # TODO : merge this header properly into args
       base_respond *args
     end
 
