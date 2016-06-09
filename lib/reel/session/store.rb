@@ -6,12 +6,12 @@ module Reel
     class Store
       include Crypto
 
-      def initialize store,request,config
+      def initialize request
         # encryption/decryption TODO
 
-        @store = store
+        @store = Reel::Session.store
         @request = request
-        @config = config
+        @config = request.configuration
 
         # extracting key from cookie
         if cookie = @request.headers[COOKIE_KEY]
