@@ -7,7 +7,6 @@ module Reel
       include Crypto
 
       def initialize request
-        # encryption/decryption TODO
 
         @store = Reel::Session.store
         @request = request
@@ -18,6 +17,7 @@ module Reel
           cookie = cookie.first if cookie.kind_of? Array
           cookie.split(';').each do |all_cookie|
             array_val = all_cookie.split('=').map &:strip
+            # Should we check whether array_val.length > 1 before doing this? TODO
             @key = decrypt(array_val[1]) if decrypt(array_val[0]) ==  @config[:session_name]
           end
         end

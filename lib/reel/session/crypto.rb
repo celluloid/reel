@@ -9,6 +9,10 @@ module Reel
       KEY = 'reel::session::secret_key::%s'
       IV = 'reel::session::base_iv::%s'
 
+      # Encryption => although working well but creating bugs due special character like '/n' , '='
+      # creating problem while setting key in headeers as well as while retrieving key from headers
+      # TODO
+
       def encrypt val
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
@@ -19,6 +23,7 @@ module Reel
         Base64.encode64(cipher.update(val) + cipher.final)
       end
 
+      # Same as above encryption TODO need proper encoding/decoding
       def decrypt val
         return val unless val
         begin
