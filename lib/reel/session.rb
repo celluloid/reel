@@ -1,4 +1,5 @@
 require 'reel/session/store'
+require 'reel/session/crypto'
 require 'celluloid/extras/hash'
 require 'time'
 
@@ -19,38 +20,30 @@ module Reel
        session_name: 'reel_sessions_default'
     }
 
+    # initialize it only on first invocation
+    def self.store
+      @store ||= Celluloid::Extras::Hash.new
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
-
-      def self.included klass
-
-        # initialize session
-        klass.before do
-          # check request parameter to be passed TODO
-          initialize_session request
-        end
-
-        # finalize session at the end
-        klass.after do
-          finalize_session
-        end
-
-      end
-
-      # initialize it only on first invocation
-      def self.store
-        @store ||= Celluloid::Extras::Hash.new
-      end
+      include Celluloid::Internals::Logger
+      include Reel::Session::Crypto
 
       # changing/modifying configuration
       def configuration options={}
-        options = DEFAULT_CONFIG.merge options
+        if @options
+         @options.merge! options
+       else
+         @options = DEFAULT_CONFIG.merge options
+       end
+       @options
       end
 
       # initializing session
-      def initialize_session req
-        # bag here is for default case is our concurrent hash object
-        @session = Store.new self.store,req,configuration
+      def initialize_session
+        @bag = Store.new self
+        @session = @bag.val
       end
 
       # to expose value hash
@@ -58,22 +51,50 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        uuid = @session.save
+        uuid = @bag.save
         set_response uuid if uuid
       end
 
       # calculate expiry based on session length
       def session_expiry
-        (Time.now + options[:session_length]).rfc2822
+        (Time.now + @options[:session_length]).rfc2822
       end
 
       # set cookie with uuid in response header
       def set_response uuid
         header = Hash[SET_COOKIE => COOKIE % [
-          options[:session_name],uuid,session_expiry
+          encrypt(@options[:session_name]),encrypt(uuid),session_expiry
           ] ]
+      end
+    end
 
-          # Merge this header hash into response and encryption TODO
+  end
+end
+
+# Current plan is to include RequestMixin methods into Reel::Request class if Reel/Session
+# is required
+module Reel
+  class Request
+    include Reel::Session::RequestMixin
+
+    alias_method :base_respond, :respond
+    def respond *args
+      @cookie_header = finalize_session
+      # merge this header properly into args
+      @header_or_body = args[1]
+      unless @header_or_body.is_a? Hash
+        args[2],args[1] = @header_or_body,@cookie_header
+      else
+        args[1].merge! @header
+      end
+      base_respond *args
+    end
+
+    class Parser
+      alias_method :base_on_headers_complete, :on_headers_complete
+      def on_headers_complete headers
+        base_on_headers_complete headers
+        current_request.initialize_session
       end
     end
   end
