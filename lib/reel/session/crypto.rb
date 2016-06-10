@@ -20,6 +20,7 @@ module Reel
       end
 
       def decrypt val
+        return val unless val
         begin
           val = Base64.decode64(val)
           cipher = OpenSSL::Cipher::AES128.new :CBC

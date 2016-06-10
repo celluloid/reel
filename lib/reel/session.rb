@@ -32,7 +32,12 @@ module Reel
 
       # changing/modifying configuration
       def configuration options={}
-        options = DEFAULT_CONFIG.merge options
+        if @options
+         @options.merge! options
+       else
+         @options = DEFAULT_CONFIG.merge options
+       end
+       @options
       end
 
       # initializing session
@@ -52,13 +57,13 @@ module Reel
 
       # calculate expiry based on session length
       def session_expiry
-        (Time.now + options[:session_length]).rfc2822
+        (Time.now + @options[:session_length]).rfc2822
       end
 
       # set cookie with uuid in response header
       def set_response uuid
         header = Hash[SET_COOKIE => COOKIE % [
-          encrypt(options[:session_name]),encrypt(uuid),session_expiry
+          encrypt(@options[:session_name]),encrypt(uuid),session_expiry
           ] ]
       end
     end
@@ -70,7 +75,7 @@ end
 # is required
 module Reel
   class Request
-    include ::Reel::Session::RequestMixin
+    include Reel::Session::RequestMixin
 
     alias_method :base_respond, :respond
     def respond *args
