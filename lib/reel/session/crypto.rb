@@ -14,6 +14,7 @@ module Reel
       # TODO
 
       def encrypt val
+        return val # TODO temporarily removng encrypt .. correct it
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
         # getting config depending on call from session/store
@@ -25,7 +26,8 @@ module Reel
 
       # Same as above encryption TODO need proper encoding/decoding
       def decrypt val
-        return val unless val
+        #return val unless val
+        return val # TODO temporarily removng decrypt .. correct it
         begin
           val = Base64.decode64(val)
           cipher = OpenSSL::Cipher::AES128.new :CBC
