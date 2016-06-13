@@ -51,7 +51,7 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        uuid = @bag.save
+        uuid = @bag.save if @bag
         set_response uuid if uuid
       end
 
@@ -85,7 +85,7 @@ module Reel
       unless @header_or_body.is_a? Hash
         args[2],args[1] = @header_or_body,@cookie_header
       else
-        args[1].merge! @header
+        args[1].merge! @header if @header
       end
       base_respond *args
     end

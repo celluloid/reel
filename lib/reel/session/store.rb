@@ -34,6 +34,7 @@ module Reel
       end
 
       def save
+        return nil if @val.empty?
           # merge key,value
           @key ||= generate_id
           @store.merge!(Hash[@key,@val])
