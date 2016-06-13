@@ -52,7 +52,7 @@ module Reel
       # finalizing the session
       def finalize_session
         uuid = @bag.save if @bag
-        set_response uuid if uuid
+        @cookie_header = set_response uuid
       end
 
       # calculate expiry based on session length
@@ -61,7 +61,8 @@ module Reel
       end
 
       # set cookie with uuid in response header
-      def set_response uuid
+      def set_response uuid=nil
+        return nil unless uuid
         header = Hash[SET_COOKIE => COOKIE % [
           encrypt(@options[:session_name]),encrypt(uuid),session_expiry
           ] ]
@@ -80,12 +81,14 @@ module Reel
     alias_method :base_respond, :respond
     def respond *args
       @cookie_header = finalize_session
-      # merge this header properly into args
-      @header_or_body = args[1]
-      unless @header_or_body.is_a? Hash
-        args[2],args[1] = @header_or_body,@cookie_header
-      else
-        args[1].merge! @header if @header
+      if @cookie_header
+        # merge this header properly into args
+        @header_or_body = args[1]
+        unless @header_or_body.is_a? Hash
+          args[2],args[1] = @header_or_body,@cookie_header
+        else
+          args[1].merge! @cookie_header
+        end
       end
       base_respond *args
     end
