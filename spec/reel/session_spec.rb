@@ -4,18 +4,6 @@ require 'net/http'
 
 RSpec.describe Reel::Session do
 
-  it "include module properly" do
-    with_socket_pair do |client,peer|
-      connection = Reel::Connection.new(peer)
-      client << ExampleRequest.new.to_s
-      request = connection.request
-      expect(request).to respond_to :session
-      expect(request).to respond_to :configuration
-      expect(request).to respond_to :initialize_session
-      expect(request).to respond_to :finalize_session
-    end
-  end
-
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
 
