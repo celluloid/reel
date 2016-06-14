@@ -1,5 +1,6 @@
 require 'openssl'
 require 'base64'
+require 'uri'
 
 module Reel
   module Session
@@ -11,25 +12,23 @@ module Reel
 
       # Encryption => although working well but creating bugs due special character like '/n' , '='
       # creating problem while setting key in headeers as well as while retrieving key from headers
-      # TODO
+      # TODO verify this : although worked
 
       def encrypt val
-        return val # TODO temporarily removng encrypt .. correct it
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
         # getting config depending on call from session/store
         config = @config || configuration
         cipher.key = KEY % config[:secret_key]
         cipher.iv = IV % config[:session_name]
-        Base64.encode64(cipher.update(val) + cipher.final)
+        URI.encode_www_form_component Base64.encode64(cipher.update(val) + cipher.final)
       end
 
-      # Same as above encryption TODO need proper encoding/decoding
+      # Same as above encryption TODO verify this encoding : although worked
       def decrypt val
-        #return val unless val
-        return val # TODO temporarily removng decrypt .. correct it
+        return val unless val
         begin
-          val = Base64.decode64(val)
+          val = Base64.decode64 URI.decode_www_form_component(val)
           cipher = OpenSSL::Cipher::AES128.new :CBC
           cipher.decrypt
           # getting config depending on call from session/store
