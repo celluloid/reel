@@ -19,7 +19,7 @@ RSpec.describe Reel::Session do
         expect(request.session).to be_a_kind_of Hash
         request.session[:test] = "ok"
         expect(request.session).to eq Hash[:test,"ok"]
-        connection.respond :ok, response_body
+        request.respond :ok, response_body
       rescue => ex
       end
     end
@@ -37,21 +37,30 @@ RSpec.describe Reel::Session do
     handler = proc do |connection|
       begin
         req = connection.request
-        if req.session[:foo] == 'bar'
-          req.session.clear
+        if req.session.empty?
           expect(req.session).to eq Hash.new
-        else
           req.session[:foo] = 'bar'
           expect(req.session).to eq Hash[:foo,'bar']
+        else
+          expect(req.session).to eq Hash[:foo,'bar']
+          req.session.clear
+          expect(req.session).to eq Hash.new
         end
 
-        connection.respond :ok, response_body
-      rescue => ex
+        req.respond :ok, response_body
+        rescue => ex
       end
     end
 
     with_reel(handler) do
-      Net::HTTP.get endpoint
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to_not eq nil
+      temp = resp['set-cookie'].split(';').first
+      headers = {
+          'Cookie' => temp
+      }
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get(endpoint.path,headers)
+      expect(resp['set-cookie']).to eq nil
     end
 
     raise ex if ex
