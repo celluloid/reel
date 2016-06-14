@@ -65,4 +65,57 @@ RSpec.describe Reel::Session do
 
     raise ex if ex
   end
+
+  it "Donot generate uuid/store in outer hash for empty session value" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        req = connection.request
+        if req.session
+          req.session.clear
+        end
+
+        req.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel(handler) do
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to eq nil
+    end
+
+    raise ex if ex
+  end
+
+  it "generate uuid and set it properly in header/store it in hash if has some session value" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        req = connection.request
+        if req.session.empty?
+          req.session[:foo] = 'bar'
+        end
+        expect(req.session).to_not eq nil
+
+        req.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel(handler) do
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to_not eq nil
+      temp = resp['set-cookie'].split(';').first
+      headers = {
+          'Cookie' => temp
+      }
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get(endpoint.path,headers)
+      expect(resp['set-cookie']).to_not eq nil
+    end
+
+    raise ex if ex
+  end
 end
