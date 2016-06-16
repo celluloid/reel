@@ -14,7 +14,6 @@ module Reel
 
         # extracting key from cookie
         if cookie = @request.headers[COOKIE_KEY]
-          cookie = cookie.first if cookie.kind_of? Array
           cookie.split(';').each do |all_cookie|
             array_val = all_cookie.split('=').map &:strip
             # Should we check whether array_val.length > 1 before doing this? TODO
@@ -37,7 +36,7 @@ module Reel
         return nil if @val.empty?
           # merge key,value
           @key ||= generate_id
-          @store.merge!(Hash[@key,@val])
+          @store.merge!({@key=>@val})
           @key
       end
 

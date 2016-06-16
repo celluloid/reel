@@ -26,7 +26,7 @@ module Reel
 
       # Same as above encryption TODO verify this encoding : although worked
       def decrypt val
-        return val unless val
+        return unless val
         begin
           val = Base64.decode64 URI.decode_www_form_component(val)
           cipher = OpenSSL::Cipher::AES128.new :CBC

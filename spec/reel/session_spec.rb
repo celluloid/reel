@@ -40,9 +40,9 @@ RSpec.describe Reel::Session do
         if req.session.empty?
           expect(req.session).to eq Hash.new
           req.session[:foo] = 'bar'
-          expect(req.session).to eq Hash[:foo,'bar']
+          expect(req.session).to eq({:foo=>'bar'})
         else
-          expect(req.session).to eq Hash[:foo,'bar']
+          expect(req.session).to eq({:foo=>'bar'})
           req.session.clear
           expect(req.session).to eq Hash.new
         end
