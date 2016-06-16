@@ -57,7 +57,9 @@ module Reel
 
       # calculate expiry based on session length
       def session_expiry
-        (Time.now + @options[:session_length]).rfc2822
+        # changing it to .utc, as was giving problem with Chrome when setting in local time
+        # with utc,can't see parsed `Expires` in Cookie tab of firefox (problem seems to be in firefox only)
+        (Time.now + @options[:session_length]).utc.rfc2822
       end
 
       # set cookie with uuid in response header
