@@ -24,7 +24,7 @@ RSpec.describe Reel::Session do
         expect(request.url).to eq example_path
         expect(request.session).to be_a_kind_of Hash
         request.session[:test] = "ok"
-        expect(request.session).to eq Hash[:test,"ok"]
+        expect(request.session).to eq({:test=>"ok"})
         request.respond :ok, response_body
       rescue => ex
       end
@@ -44,13 +44,11 @@ RSpec.describe Reel::Session do
       begin
         req = connection.request
         if req.session.empty?
-          expect(req.session).to eq Hash.new
           req.session[:foo] = 'bar'
           expect(req.session).to eq({:foo=>'bar'})
         else
-          expect(req.session).to eq({:foo=>'bar'})
           req.session.clear
-          expect(req.session).to eq Hash.new
+          expect(req.session.empty?).to eq true
         end
 
         req.respond :ok, response_body
@@ -78,10 +76,10 @@ RSpec.describe Reel::Session do
     handler = proc do |connection|
       begin
         req = connection.request
-        if req.session
+        unless req.session.empty?
           req.session.clear
         end
-
+        expect(req.session.empty?).to eq true
         req.respond :ok, response_body
       rescue => ex
       end
@@ -104,7 +102,7 @@ RSpec.describe Reel::Session do
         if req.session.empty?
           req.session[:foo] = 'bar'
         end
-        expect(req.session).to_not eq nil
+        expect(req.session.empty?).to eq false
 
         req.respond :ok, response_body
       rescue => ex
@@ -133,7 +131,7 @@ RSpec.describe Reel::Session do
     cipher.iv = iv
     encrypt = Base64.encode64(cipher.update(value) + cipher.final)
     expect(encrypt).to match unsafe
-    expect((URI.encode_www_form_component encrypt) =~ unsafe).to eq nil
+    expect(URI.encode_www_form_component encrypt).to_not match unsafe
   end
 
   it "encryption/decryption are performing well" do

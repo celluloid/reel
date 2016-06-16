@@ -6,9 +6,6 @@ require 'time'
 module Reel
   module Session
 
-    # Basic structure to visualize working of session handlers
-    # TODO
-
     COOKIE_KEY = 'Cookie'
     SET_COOKIE = 'Set-Cookie'
     COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'
@@ -62,7 +59,7 @@ module Reel
         (Time.now + @options[:session_length]).utc.rfc2822
       end
 
-      # set cookie with uuid in response header
+      # make header to set cookie with uuid
       def make_header uuid=nil
         return nil unless uuid
         header = {SET_COOKIE => COOKIE % [
@@ -74,8 +71,7 @@ module Reel
   end
 end
 
-# Current plan is to include RequestMixin methods into Reel::Request class if Reel/Session
-# is required
+# Include RequestMixin methods into Reel::Request class if Reel/Session is required
 module Reel
   class Request
     include Reel::Session::RequestMixin

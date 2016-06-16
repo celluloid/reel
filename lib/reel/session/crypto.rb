@@ -10,10 +10,6 @@ module Reel
       KEY = 'reel::session::secret_key::%s'
       IV = 'reel::session::base_iv::%s'
 
-      # Encryption => although working well but creating bugs due special character like '/n' , '='
-      # creating problem while setting key in headeers as well as while retrieving key from headers
-      # TODO verify this : although worked
-
       def encrypt val
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
@@ -21,10 +17,11 @@ module Reel
         config = @config || configuration
         cipher.key = KEY % config[:secret_key]
         cipher.iv = IV % config[:session_name]
+        # encoding it as encryption is poping out unsafe character
         URI.encode_www_form_component Base64.encode64(cipher.update(val) + cipher.final)
       end
 
-      # Same as above encryption TODO verify this encoding : although worked
+
       def decrypt val
         return unless val
         begin
