@@ -52,7 +52,7 @@ module Reel
       # finalizing the session
       def finalize_session
         uuid = @bag.save if @bag
-        @cookie_header = make_header uuid
+        header = make_header uuid
       end
 
       # calculate expiry based on session length
