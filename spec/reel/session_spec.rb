@@ -1,11 +1,17 @@
 require 'spec_helper'
 require 'reel/session'
 require 'net/http'
+require 'openssl'
+require 'base64'
+require 'uri'
 
 RSpec.describe Reel::Session do
 
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
+  let(:key){"12345678901234567"}
+  let(:iv){"1234567890123456"}
+  let(:unsafe){/[^\-_.!~*'()a-zA-Z\d\/?:@&+$%,\[\]]/}
 
   it "receives HTTP requests and sends responses with sessions activated" do
     ex = nil
@@ -117,5 +123,31 @@ RSpec.describe Reel::Session do
     end
 
     raise ex if ex
+  end
+
+  it "ensure escaping the unsafe character while using AES128" do
+    value = "Original"
+    cipher = OpenSSL::Cipher::AES128.new :CBC
+    cipher.encrypt
+    cipher.key = key
+    cipher.iv = iv
+    encrypt = Base64.encode64(cipher.update(value) + cipher.final)
+    expect(encrypt).to match unsafe
+    expect((URI.encode_www_form_component encrypt) =~ unsafe).to eq nil
+  end
+
+  it "encryption/decryption are performing well" do
+    orig_value = "Original"
+    cipher = OpenSSL::Cipher::AES128.new :CBC
+    cipher.encrypt
+    cipher.key = key
+    cipher.iv = iv
+    encrypt = URI.encode_www_form_component Base64.encode64 (cipher.update(orig_value) + cipher.final)
+    cipher.decrypt
+    cipher.key = key
+    cipher.iv = iv
+    encrypt = Base64.decode64 URI.decode_www_form_component encrypt
+    decrypt = cipher.update(encrypt) + cipher.final
+    expect(decrypt).to eq orig_value
   end
 end
