@@ -338,6 +338,17 @@ RSpec.describe Reel::Connection do
     end
   end
 
+  it "detaches a connection properly" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << ExampleRequest.new.to_s
+      c = connection.detach
+
+      expect(c).to be_a Reel::Connection
+      expect(connection.attached?).to eq(false)
+    end
+  end
+
   it "returns friendlier inspect output" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
