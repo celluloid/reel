@@ -12,6 +12,17 @@ RSpec.describe Reel::Session do
   let(:key){"12345678901234567"}
   let(:iv){"1234567890123456"}
   let(:unsafe){/[^\-_.!~*'()a-zA-Z\d\/?:@&+$%,\[\]]/}
+  let(:crypto){Class.new {
+    include Reel::Session::Crypto
+    def initialize
+      @config = {
+        :secret_key => 'temp1',
+        :session_name => 'temp2'
+      }
+    end
+    attr_accessor :config
+    }
+  }
 
   it "receives HTTP requests and sends responses with sessions activated" do
     ex = nil
@@ -135,17 +146,11 @@ RSpec.describe Reel::Session do
   end
 
   it "encryption/decryption are performing well" do
-    orig_value = "Original"
-    cipher = OpenSSL::Cipher::AES128.new :CBC
-    cipher.encrypt
-    cipher.key = key
-    cipher.iv = iv
-    encrypt = URI.encode_www_form_component Base64.encode64 (cipher.update(orig_value) + cipher.final)
-    cipher.decrypt
-    cipher.key = key
-    cipher.iv = iv
-    encrypt = Base64.decode64 URI.decode_www_form_component encrypt
-    decrypt = cipher.update(encrypt) + cipher.final
-    expect(decrypt).to eq orig_value
+    original_value = "test"
+    c = crypto.new
+    expect(c.decrypt c.encrypt original_value).to eq original_value
+    encrypt_val = c.encrypt original_value
+    c.config[:secret_key] = "change"
+    expect(c.decrypt encrypt_val).to_not eq original_value
   end
 end
