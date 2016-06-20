@@ -6,15 +6,14 @@ require 'time'
 module Reel
   module Session
 
-    COOKIE_KEY = 'Cookie'
-    SET_COOKIE = 'Set-Cookie'
-    COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'
+    COOKIE_KEY = 'Cookie'.freeze
+    COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'.freeze
 
     # default session configuration
     DEFAULT_CONFIG = {
-       secret_key: 'reel_sessions_key',
-       session_length: 21600, # 6 hours
-       session_name: 'reel_sessions_default'
+       :secret_key=> 'reel_sessions_key',
+       :session_length=> 21600, # 6 hours
+       :session_name=> 'reel_sessions_default'
     }
 
     # initialize it only on first invocation
@@ -30,9 +29,9 @@ module Reel
       # changing/modifying configuration
       def configuration options={}
         if @options
-         @options.merge! options
+         @options.merge! options if options.is_a? Hash
        else
-         @options = DEFAULT_CONFIG.merge options
+         @options = DEFAULT_CONFIG.merge options if options.is_a? Hash
        end
        @options
       end
@@ -48,8 +47,7 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        uuid = @bag.save if @bag
-        header = make_header uuid
+        make_header @bag.save
       end
 
       # calculate expiry based on session length
@@ -61,10 +59,8 @@ module Reel
 
       # make header to set cookie with uuid
       def make_header uuid=nil
-        return nil unless uuid
-        header = {SET_COOKIE => COOKIE % [
-          encrypt(@options[:session_name]),encrypt(uuid),session_expiry
-          ] }
+        return unless uuid
+        COOKIE % [encrypt(@options[:session_name]),encrypt(uuid),session_expiry]
       end
     end
 
@@ -75,21 +71,21 @@ end
 module Reel
   class Request
     include Reel::Session::RequestMixin
+    SET_COOKIE = 'Set-Cookie'.freeze
 
     alias_method :base_respond, :respond
-    def respond *args
-      @cookie_header = finalize_session
-      if @cookie_header
-        # merge this header properly into args
-        @header_or_body = args[1]
-        unless @header_or_body.is_a? Hash
-          args[2],args[1] = @header_or_body,@cookie_header
-        else
-          args[1].merge! @cookie_header
+    def respond(response, headers_or_body = {}, body = nil)
+        cookie_val = finalize_session
+        cookie_header = {SET_COOKIE=>cookie_val} if cookie_val
+        if cookie_header
+          if Hash === headers_or_body
+            headers_or_body.merge! cookie_header
+          else
+            body, headers_or_body = headers_or_body, cookie_header
+          end
         end
+        base_respond response, headers_or_body, body
       end
-      base_respond *args
-    end
 
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
