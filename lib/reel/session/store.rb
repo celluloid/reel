@@ -10,7 +10,7 @@ module Reel
 
         @store = Reel::Session.store
         @request = request
-        @config = request.configuration
+        @config = Reel::Session.configuration
 
         # extracting key from cookie
         if cookie = @request.headers[COOKIE_KEY]
