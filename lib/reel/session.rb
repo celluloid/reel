@@ -37,20 +37,20 @@ module Reel
       end
     end
 
+    # changing/modifying configuration
+    def self.configuration options={}
+      if @options
+        @options.merge! options if options.is_a? Hash
+      else
+        @options = DEFAULT_CONFIG.merge options if options.is_a? Hash
+      end
+      @options
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
       include Reel::Session::Crypto
-
-      # changing/modifying configuration
-      def configuration options={}
-        if @options
-         @options.merge! options if options.is_a? Hash
-       else
-         @options = DEFAULT_CONFIG.merge options if options.is_a? Hash
-       end
-       @options
-      end
 
       # initializing session
       def initialize_session
@@ -70,13 +70,13 @@ module Reel
       def session_expiry
         # changing it to .utc, as was giving problem with Chrome when setting in local time
         # with utc,can't see parsed `Expires` in Cookie tab of firefox (problem seems to be in firefox only)
-        (Time.now + @options[:session_length]).utc.rfc2822
+        (Time.now + Reel::Session.configuration[:session_length]).utc.rfc2822
       end
 
       # make header to set cookie with uuid
       def make_header uuid=nil
         return unless uuid
-        COOKIE % [encrypt(@options[:session_name]),encrypt(uuid),session_expiry]
+        COOKIE % [encrypt(Reel::Session.configuration[:session_name]),encrypt(uuid),session_expiry]
       end
     end
 
