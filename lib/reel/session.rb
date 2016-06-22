@@ -5,6 +5,7 @@ require 'time'
 
 module Reel
   module Session
+    extend Celluloid
 
     COOKIE_KEY = 'Cookie'
     SET_COOKIE = 'Set-Cookie'
@@ -20,6 +21,21 @@ module Reel
     # initialize it only on first invocation
     def self.store
       @store ||= Celluloid::Extras::Hash.new
+    end
+
+    # start Celluloid timer to delete value from concurrent hash/timer hash after expiry
+    def self.start_timer uuid,time
+      @timer_hash ||= {}
+      return unless uuid
+      if @timer_hash.key? uuid
+        @timer_hash[uuid].reset
+      else
+        delete_time = after(time){
+          store.delete uuid
+          @timer_hash.delete uuid
+        }
+        @timer_hash[uuid] = delete_time
+      end
     end
 
     # This module will be mixed in into Reel::Request

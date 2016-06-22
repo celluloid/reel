@@ -5,7 +5,6 @@ module Reel
   module Session
     class Store
       include Crypto
-      include Celluloid
 
       def initialize request
 
@@ -33,20 +32,12 @@ module Reel
         Celluloid::Internals::UUID.generate
       end
 
-      # start Celluloid timer to delete value from concurrent hash after expiry
-      def start_timer
-        return unless @key
-        @delete_time = after(@config[:session_length]){
-          @store.delete @key if @store
-        }
-      end
-
       def save
         return if @val.empty?
           # merge key,value
-          @key = generate_id
+          @key ||= generate_id
           @store.merge!({@key=>@val})
-          start_timer
+          Reel::Session.start_timer @key,@config[:session_length]
           @key
       end
 
