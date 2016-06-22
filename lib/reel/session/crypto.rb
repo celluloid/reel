@@ -7,8 +7,8 @@ module Reel
     module Crypto
 
       # key and iv (should be atleast 16 char long)
-      KEY = '%sreel::session::secret_key'
-      IV =  '%sreel::session::base_iv'
+      KEY = '%sreel::session::secret_key'.freeze
+      IV =  '%sreel::session::base_iv'.freeze
 
       def encrypt val
         cipher = OpenSSL::Cipher::AES128.new :CBC

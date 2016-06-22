@@ -61,12 +61,11 @@ RSpec.describe Reel::WebSocket do
 
   describe "WebSocket#next_message" do
     it "triggers on the next sent message" do
-      skip "update to new Celluloid internal APIs"
 
       with_websocket_pair do |client, websocket|
         f = Celluloid::Future.new
         websocket.on_message do |message|
-          f << Celluloid::SuccessResponse.new(:on_message, message)
+          f << Celluloid::Internals::Response::Success.new(:on_message, message)
         end
 
         message = WebSocket::Message.new(example_message)
@@ -82,7 +81,6 @@ RSpec.describe Reel::WebSocket do
 
   describe "WebSocket#read_every" do
     it "automatically executes read" do
-      skip "update to new Celluloid internal APIs"
 
       with_websocket_pair do |client, websocket|
         class MyActor
@@ -95,7 +93,7 @@ RSpec.describe Reel::WebSocket do
 
         f = Celluloid::Future.new
         websocket.on_message do |message|
-          f << Celluloid::SuccessResponse.new(:on_message, message)
+          f << Celluloid::Internals::Response::Success.new(:on_message, message)
         end
 
         message = WebSocket::Message.new(example_message)
