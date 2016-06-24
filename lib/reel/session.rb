@@ -106,8 +106,8 @@ module Reel
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
       def on_headers_complete headers
-        base_on_headers_complete headers
-        current_request.initialize_session
+        req = base_on_headers_complete headers
+        req.initialize_session
       end
     end
   end
