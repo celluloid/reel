@@ -16,13 +16,14 @@ module Reel
 
     # Attempt to read this much data
     BUFFER_SIZE = 16384
-    attr_reader :buffer_size
+    attr_reader :buffer_size, :server
 
-    def initialize(socket, buffer_size = nil)
+    def initialize(socket, buffer_size = nil, server = nil)
       @attached    = true
       @socket      = socket
       @keepalive   = true
       @buffer_size = buffer_size || BUFFER_SIZE
+      @server      = server
       @parser      = Request::Parser.new(self)
       @request_fsm = Request::StateMachine.new(@socket)
 
