@@ -14,7 +14,7 @@ module Reel
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
         # getting config depending on call from session/store
-        config = @config || Reel::Session.configuration
+        config = Reel::Session.configuration
         cipher.key = KEY % config[:secret_key]
         cipher.iv = IV % config[:session_name]
         # encoding it as encryption is poping out unsafe character
@@ -29,7 +29,7 @@ module Reel
           cipher = OpenSSL::Cipher::AES128.new :CBC
           cipher.decrypt
           # getting config depending on call from session/store
-          config = @config || Reel::Session.configuration
+          config = Reel::Session.configuration
           cipher.key = KEY % config[:secret_key]
           cipher.iv = IV % config[:session_name]
           cipher.update(val) + cipher.final

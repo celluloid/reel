@@ -338,6 +338,19 @@ RSpec.describe Reel::Connection do
     end
   end
 
+  it "allows access to server instance" do
+    with_socket_pair do |client, peer|
+      server = Object.new
+      connection = Reel::Connection.new(peer, nil, server)
+      example_request = ExampleRequest.new
+
+      client << example_request.to_s
+      request = connection.request
+
+      expect(request.connection.server).to eq server
+    end
+  end
+
   context "#readpartial" do
     it "streams request bodies" do
       with_socket_pair do |client, peer|

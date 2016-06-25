@@ -21,6 +21,11 @@ module Reel
       @store ||= Celluloid::Extras::Hash.new
     end
 
+    # will be storing all timers for deleting Session values
+    def self.timers_hash
+      @timers ||= {}
+    end
+
     # changing/modifying configuration
     def self.configuration options={}
       if @options
@@ -90,8 +95,8 @@ module Reel
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
       def on_headers_complete headers
-        base_on_headers_complete headers
-        current_request.initialize_session
+        req = base_on_headers_complete headers
+        req.initialize_session
       end
     end
   end
