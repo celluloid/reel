@@ -39,7 +39,7 @@ module Reel
         if timer_hash.key? @key
           timer_hash[@key].reset
         else
-          delete_time = after(Reel::Session.configuration[:session_length]){
+          delete_time = @request.connection.server.after(Reel::Session.configuration[:session_length]){
             @store.delete @key
             timer_hash.delete @key
           }
