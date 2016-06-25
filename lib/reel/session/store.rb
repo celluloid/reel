@@ -11,14 +11,13 @@ module Reel
 
         @store = Reel::Session.store
         @request = request
-        @config = request.configuration
 
         # extracting key from cookie
         if cookie = @request.headers[COOKIE_KEY]
           cookie.split(';').each do |all_cookie|
             array_val = all_cookie.split('=').map &:strip
             # Should we check whether array_val.length > 1 before doing this? TODO
-            @key = decrypt(array_val[1]) if decrypt(array_val[0]) ==  @config[:session_name]
+            @key = decrypt(array_val[1]) if decrypt(array_val[0]) ==  Reel::Session.configuration[:session_name]
           end
         end
         # check if key exist in our concurrent hash
