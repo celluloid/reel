@@ -44,7 +44,7 @@ module Reel
         socket = Reel::Spy.new(socket, @spy)
       end
 
-      connection = Connection.new(socket)
+      connection = Connection.new(socket, nil, self)
 
       begin
         @callback.call(connection)
