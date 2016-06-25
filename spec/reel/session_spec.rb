@@ -19,10 +19,6 @@ RSpec.describe Reel::Session do
         :secret_key => 'temp1',
         :session_name => 'temp2'
       }
-      change_config
-    end
-    def change_config
-      Reel::Session.configuration @config
     end
     attr_accessor :config
     }
@@ -155,7 +151,6 @@ RSpec.describe Reel::Session do
     expect(c.decrypt c.encrypt original_value).to eq original_value
     encrypt_val = c.encrypt original_value
     c.config[:secret_key] = "change"
-    c.change_config
     expect(c.decrypt encrypt_val).to_not eq original_value
   end
 end

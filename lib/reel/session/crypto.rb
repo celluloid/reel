@@ -14,10 +14,10 @@ module Reel
         cipher = OpenSSL::Cipher::AES128.new :CBC
         cipher.encrypt
         # getting config depending on call from session/store
-        config = Reel::Session.configuration
+        config = @config || self.session_config
         cipher.key = KEY % config[:secret_key]
         cipher.iv = IV % config[:session_name]
-        # encoding it as encryption is poping out unsafe character
+        # encoding it as encryption is popping out unsafe character
         URI.encode_www_form_component Base64.encode64(cipher.update(val) + cipher.final)
       end
 
@@ -29,7 +29,7 @@ module Reel
           cipher = OpenSSL::Cipher::AES128.new :CBC
           cipher.decrypt
           # getting config depending on call from session/store
-          config = Reel::Session.configuration
+          config = @config || self.session_config
           cipher.key = KEY % config[:secret_key]
           cipher.iv = IV % config[:session_name]
           cipher.update(val) + cipher.final

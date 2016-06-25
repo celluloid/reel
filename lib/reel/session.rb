@@ -27,13 +27,14 @@ module Reel
     end
 
     # changing/modifying configuration
-    def self.configuration options={}
-      if @options
-        @options.merge! options if options.is_a? Hash
+    def self.configuration server, options={}
+      @options ||= {}
+      if @options[server]
+        @options[server].merge! options if Hash === options
       else
-        @options = DEFAULT_CONFIG.merge options if options.is_a? Hash
+        @options[server] = DEFAULT_CONFIG.merge options if Hash === options
       end
-      @options
+      @options[server]
     end
 
     # This module will be mixed in into Reel::Request
@@ -55,17 +56,21 @@ module Reel
         make_header @bag.save
       end
 
+      def session_config options={}
+        Reel::Session.configuration(self.connection.server,options)
+      end
+
       # calculate expiry based on session length
       def session_expiry
         # changing it to .utc, as was giving problem with Chrome when setting in local time
         # with utc,can't see parsed `Expires` in Cookie tab of firefox (problem seems to be in firefox only)
-        (Time.now + Reel::Session.configuration[:session_length]).utc.rfc2822
+        (Time.now + session_config[:session_length]).utc.rfc2822
       end
 
       # make header to set cookie with uuid
       def make_header uuid=nil
         return unless uuid
-        COOKIE % [encrypt(Reel::Session.configuration[:session_name]),encrypt(uuid),session_expiry]
+        COOKIE % [encrypt(session_config[:session_name]),encrypt(uuid),session_expiry]
       end
     end
 
