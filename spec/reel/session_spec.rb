@@ -20,8 +20,8 @@ RSpec.describe Reel::Session do
     include Reel::Session::Crypto
     def initialize
       @config ={
-        :secret_key => '%sreel::session::secret_key'.freeze % 'reel_sessions_key',
-        :session_name => '%sreel::session::base_iv'.freeze % 'reel_sessions_default'
+        :secret_key => Reel::Session.configuration[:secret_key],
+        :session_name => Reel::Session.configuration[:session_name]
       }
       change_config
     end
@@ -183,9 +183,13 @@ RSpec.describe Reel::Session do
     c = crypto.new
     expect(c.decrypt c.encrypt original_value).to eq original_value
     encrypt_val = c.encrypt original_value
+    orig_key = c.config[:secret_key]
     c.config[:secret_key] = "change"
     c.change_config
     expect(c.decrypt encrypt_val).to_not eq original_value
+    # correcting config for other test
+    c.config[:secret_key] = orig_key
+    c.change_config
   end
 
 end
