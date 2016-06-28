@@ -7,6 +7,10 @@ require 'uri'
 
 RSpec.describe Reel::Session do
 
+  before(:all) do
+    Reel::Session.configuration({:session_length=>1})
+  end
+
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
   let(:key){"12345678901234567"}
@@ -16,8 +20,8 @@ RSpec.describe Reel::Session do
     include Reel::Session::Crypto
     def initialize
       @config ={
-        :secret_key => 'temp1',
-        :session_name => 'temp2'
+        :secret_key => '%sreel::session::secret_key'.freeze % 'reel_sessions_key',
+        :session_name => '%sreel::session::base_iv'.freeze % 'reel_sessions_default'
       }
       change_config
     end
@@ -138,6 +142,34 @@ RSpec.describe Reel::Session do
     raise ex if ex
   end
 
+  it "Deleting timers are deleting session value after expiry" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        req = connection.request
+        if req.session.empty?
+          req.session[:foo] = 'bar'
+        end
+        req.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel(handler) do
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to_not eq nil
+      c = crypto.new
+      key = c.decrypt ((resp['set-cookie'].split(';').first.split('='))[1])
+      expect(key).to_not eq nil
+      expect(Reel::Session.store.key? key).to eq true
+      sleep 1
+      expect(Reel::Session.store.key? key).to eq false
+    end
+
+    raise ex if ex
+  end
+
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
     c = crypto.new
@@ -155,4 +187,5 @@ RSpec.describe Reel::Session do
     c.change_config
     expect(c.decrypt encrypt_val).to_not eq original_value
   end
+
 end
