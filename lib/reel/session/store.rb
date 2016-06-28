@@ -20,8 +20,8 @@ module Reel
             @key = decrypt(array_val[1]) if decrypt(array_val[0]) ==  Reel::Session.configuration[:session_name]
           end
         end
-        # check if key exist in our concurrent hash
-        @val = @store[@key] if @store.key? @key
+        # getting value if key exist in our concurrent hash
+        @val = @store[@key]
         # initialize new hash if key is not present in hash,cookie etc
         @val ||= Hash.new
       end
@@ -37,7 +37,7 @@ module Reel
         return unless @key
         timer_hash = Reel::Session.timers_hash
         if timer_hash.key? @key
-          timer_hash[@key].reset
+          timer_hash[@key].reset if timer_hash[@key] && timer_hash[@key].respond_to?(:reset)
         else
           delete_time = after(Reel::Session.configuration[:session_length]){
             @store.delete @key
