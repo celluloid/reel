@@ -140,13 +140,10 @@ RSpec.describe Reel::Session do
 
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
-    cipher = OpenSSL::Cipher::AES128.new :CBC
-    cipher.encrypt
-    cipher.key = key
-    cipher.iv = iv
-    encrypt = Base64.encode64(cipher.update(value) + cipher.final)
-    expect(encrypt).to match unsafe
-    expect(URI.encode_www_form_component encrypt).to_not match unsafe
+    c = crypto.new
+    encrypted = c.encrypt(value)
+    expect(encrypted).to_not match unsafe
+    expect(URI.decode_www_form_component encrypted).to match unsafe
   end
 
   it "encryption/decryption are performing well" do
