@@ -7,10 +7,6 @@ require 'uri'
 
 RSpec.describe Reel::Session do
 
-  before(:all) do
-    Reel::Session.configuration({:session_length=>1})
-  end
-
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
   let(:key){"12345678901234567"}
@@ -20,8 +16,8 @@ RSpec.describe Reel::Session do
     include Reel::Session::Crypto
     def initialize
       @config ={
-        :secret_key => Reel::Session.configuration[:secret_key],
-        :session_name => Reel::Session.configuration[:session_name]
+        :secret_key => Reel::Session.configuration('test')[:secret_key],
+        :session_name => Reel::Session.configuration('test')[:session_name]
       }
     end
     attr_accessor :config
@@ -32,6 +28,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         request = connection.request
         expect(request.method).to eq 'GET'
@@ -56,6 +53,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         req = connection.request
         if req.session.empty?
@@ -85,33 +83,11 @@ RSpec.describe Reel::Session do
     raise ex if ex
   end
 
-  it "Donot generate uuid/store in outer hash for empty session value" do
-    ex = nil
-
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        unless req.session.empty?
-          req.session.clear
-        end
-        expect(req.session.empty?).to eq true
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
-      expect(resp['set-cookie']).to eq nil
-    end
-
-    raise ex if ex
-  end
-
   it "generate uuid and set it properly in header/store it in hash if has some session value" do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         req = connection.request
         if req.session.empty?
@@ -142,6 +118,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         req = connection.request
         if req.session.empty?
@@ -184,7 +161,6 @@ RSpec.describe Reel::Session do
     expect(c.decrypt encrypt_val).to_not eq original_value
     # correcting config for other test
     c.config[:secret_key] = orig_key
-    c.change_config
   end
 
 end
