@@ -8,6 +8,7 @@ module Reel
 
     COOKIE_KEY = 'Cookie'.freeze
     COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'.freeze
+    NOT_SETTING_HEADER_MSG = "Not setting Session uuid in Cookie header as session doesn't have any value".freeze
 
     # default session configuration
     DEFAULT_CONFIG = {
@@ -69,6 +70,7 @@ module Reel
 
       # make header to set cookie with uuid
       def make_header uuid=nil
+        info NOT_SETTING_HEADER_MSG unless uuid
         return unless uuid
         COOKIE % [encrypt(session_config[:session_name]),encrypt(uuid),session_expiry]
       end

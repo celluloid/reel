@@ -7,6 +7,10 @@ require 'uri'
 
 RSpec.describe Reel::Session do
 
+  before(:all) do
+    Reel::Session.configuration({:session_length=>1})
+  end
+
   let(:endpoint) { URI(example_url) }
   let(:response_body) { "ohai thar" }
   let(:key){"12345678901234567"}
@@ -16,8 +20,8 @@ RSpec.describe Reel::Session do
     include Reel::Session::Crypto
     def initialize
       @config ={
-        :secret_key => 'temp1',
-        :session_name => 'temp2'
+        :secret_key => Reel::Session.configuration[:secret_key],
+        :session_name => Reel::Session.configuration[:session_name]
       }
     end
     attr_accessor :config
@@ -134,15 +138,40 @@ RSpec.describe Reel::Session do
     raise ex if ex
   end
 
+  it "Deleting timers are deleting session value after expiry" do
+    ex = nil
+
+    handler = proc do |connection|
+      begin
+        req = connection.request
+        if req.session.empty?
+          req.session[:foo] = 'bar'
+        end
+        req.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel(handler) do
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to_not eq nil
+      c = crypto.new
+      key = c.decrypt ((resp['set-cookie'].split(';').first.split('='))[1])
+      expect(key).to_not eq nil
+      expect(Reel::Session.store.key? key).to eq true
+      sleep 1
+      expect(Reel::Session.store.key? key).to eq false
+    end
+
+    raise ex if ex
+  end
+
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
-    cipher = OpenSSL::Cipher::AES128.new :CBC
-    cipher.encrypt
-    cipher.key = key
-    cipher.iv = iv
-    encrypt = Base64.encode64(cipher.update(value) + cipher.final)
-    expect(encrypt).to match unsafe
-    expect(URI.encode_www_form_component encrypt).to_not match unsafe
+    c = crypto.new
+    encrypted = c.encrypt(value)
+    expect(encrypted).to_not match unsafe
+    expect(URI.decode_www_form_component encrypted).to match unsafe
   end
 
   it "encryption/decryption are performing well" do
@@ -150,7 +179,12 @@ RSpec.describe Reel::Session do
     c = crypto.new
     expect(c.decrypt c.encrypt original_value).to eq original_value
     encrypt_val = c.encrypt original_value
+    orig_key = c.config[:secret_key]
     c.config[:secret_key] = "change"
     expect(c.decrypt encrypt_val).to_not eq original_value
+    # correcting config for other test
+    c.config[:secret_key] = orig_key
+    c.change_config
   end
+
 end
