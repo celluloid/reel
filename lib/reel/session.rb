@@ -69,7 +69,6 @@ module Reel
 
       # make header to set cookie with uuid
       def make_header uuid=nil
-        raise HeaderError,HEADER_ERROR_MSG if uuid == nil
         crypto = Reel::Session::Crypto
         COOKIE % [crypto.encrypt(session_config[:session_name],session_config),
                   crypto.encrypt(uuid,session_config),

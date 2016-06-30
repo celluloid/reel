@@ -42,7 +42,4 @@ module Reel
   # wrong state for a given operation
   class StateError < RuntimeError; end
 
-  # uuid is nil in reel session while making header
-  class HeaderError < RuntimeError; end
-
 end
