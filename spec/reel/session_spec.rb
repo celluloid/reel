@@ -113,7 +113,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
-      Reel::Session.configuration(connection.server,{:session_length=>1})
+      Reel::Session.configuration(connection.server,{:session_length=>0.01})
       begin
         req = connection.request
         if req.session.empty?
@@ -131,7 +131,7 @@ RSpec.describe Reel::Session do
       key = c.decrypt((resp['set-cookie'].split(';').first.split('='))[1],crypto_config)
       expect(key).to_not eq nil
       expect(Reel::Session.store.key? key).to eq true
-      sleep 1
+      sleep 0.01
       expect(Reel::Session.store.key? key).to eq false
     end
 
