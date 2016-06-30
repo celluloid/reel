@@ -41,4 +41,5 @@ module Reel
 
   # wrong state for a given operation
   class StateError < RuntimeError; end
+
 end

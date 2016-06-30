@@ -12,19 +12,10 @@ RSpec.describe Reel::Session do
   let(:key){"12345678901234567"}
   let(:iv){"1234567890123456"}
   let(:unsafe){/[^\-_.!~*'()a-zA-Z\d\/?:@&+$%,\[\]]/}
-  let(:crypto){Class.new {
-    include Reel::Session::Crypto
-    def initialize
-      @config ={
-        :secret_key => 'temp1',
-        :session_name => 'temp2'
-      }
-      change_config
-    end
-    def change_config
-      Reel::Session.configuration @config
-    end
-    attr_accessor :config
+  let(:crypto_config){
+    {
+        :secret_key => Reel::Session.configuration('test')[:secret_key],
+        :session_name => Reel::Session.configuration('test')[:session_name]
     }
   }
 
@@ -32,6 +23,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         request = connection.request
         expect(request.method).to eq 'GET'
@@ -56,6 +48,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         req = connection.request
         if req.session.empty?
@@ -79,30 +72,7 @@ RSpec.describe Reel::Session do
           'Cookie' => temp
       }
       resp = Net::HTTP.new(endpoint.host,endpoint.port).get(endpoint.path,headers)
-      expect(resp['set-cookie']).to eq nil
-    end
-
-    raise ex if ex
-  end
-
-  it "Donot generate uuid/store in outer hash for empty session value" do
-    ex = nil
-
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        unless req.session.empty?
-          req.session.clear
-        end
-        expect(req.session.empty?).to eq true
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
-      expect(resp['set-cookie']).to eq nil
+      expect(resp['set-cookie']).to_not eq nil
     end
 
     raise ex if ex
@@ -112,6 +82,7 @@ RSpec.describe Reel::Session do
     ex = nil
 
     handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>1})
       begin
         req = connection.request
         if req.session.empty?
@@ -138,24 +109,65 @@ RSpec.describe Reel::Session do
     raise ex if ex
   end
 
+  it "Deleting timers are deleting session value after expiry" do
+    ex = nil
+
+    handler = proc do |connection|
+      Reel::Session.configuration(connection.server,{:session_length=>0.01})
+      begin
+        req = connection.request
+        if req.session.empty?
+          req.session[:foo] = 'bar'
+        end
+        req.respond :ok, response_body
+      rescue => ex
+      end
+    end
+
+    with_reel(handler) do
+      resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
+      expect(resp['set-cookie']).to_not eq nil
+      c = Reel::Session::Crypto
+      key = c.decrypt((resp['set-cookie'].split(';').first.split('='))[1],crypto_config)
+      expect(key).to_not eq nil
+      expect(Reel::Session.store.key? key).to eq true
+      sleep 0.01
+      expect(Reel::Session.store.key? key).to eq false
+    end
+
+    raise ex if ex
+  end
+
+  it "For different mock servers, making sure that different configuration hashes are kept" do
+       with_socket_pair do |client, peer|
+         server1 = Object.new
+         server2 = Object.new
+
+         Reel::Session.configuration(server2,{:session_name=>"change"})
+
+         config1 = Reel::Session::DEFAULT_CONFIG
+         config2 = Reel::Session::DEFAULT_CONFIG.merge({:session_name=>"change"})
+
+         expect(Reel::Session.configuration(server1)).to eq config1
+         expect(Reel::Session.configuration(server2)).to eq config2
+       end
+  end
+
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
-    cipher = OpenSSL::Cipher::AES128.new :CBC
-    cipher.encrypt
-    cipher.key = key
-    cipher.iv = iv
-    encrypt = Base64.encode64(cipher.update(value) + cipher.final)
-    expect(encrypt).to match unsafe
-    expect(URI.encode_www_form_component encrypt).to_not match unsafe
+    c = Reel::Session::Crypto
+    encrypted = c.encrypt(value,crypto_config)
+    expect(encrypted).to_not match unsafe
+    expect(URI.decode_www_form_component encrypted).to match unsafe
   end
 
   it "encryption/decryption are performing well" do
     original_value = "test"
-    c = crypto.new
-    expect(c.decrypt c.encrypt original_value).to eq original_value
-    encrypt_val = c.encrypt original_value
-    c.config[:secret_key] = "change"
-    c.change_config
-    expect(c.decrypt encrypt_val).to_not eq original_value
+    c = Reel::Session::Crypto
+    expect(c.decrypt(c.encrypt(original_value,crypto_config),crypto_config)).to eq original_value
+    encrypt_val = c.encrypt(original_value,crypto_config)
+    changed_config = crypto_config.merge({:secret_key=>"change"})
+    expect(c.decrypt(encrypt_val,changed_config)).to_not eq original_value
   end
+
 end
