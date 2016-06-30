@@ -138,6 +138,21 @@ RSpec.describe Reel::Session do
     raise ex if ex
   end
 
+  it "For different mock servers, making sure that different configuration hashes are kept" do
+       with_socket_pair do |client, peer|
+         server1 = Object.new
+         server2 = Object.new
+
+         Reel::Session.configuration(server2,{:session_name=>"change"})
+
+         config1 = Reel::Session::DEFAULT_CONFIG
+         config2 = Reel::Session::DEFAULT_CONFIG.merge({:session_name=>"change"})
+
+         expect(Reel::Session.configuration(server1)).to eq config1
+         expect(Reel::Session.configuration(server2)).to eq config2
+       end
+  end
+
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
     c = Reel::Session::Crypto
