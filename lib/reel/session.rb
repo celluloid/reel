@@ -40,7 +40,6 @@ module Reel
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
-      include Reel::Session::Crypto
 
       # initializing session
       def initialize_session
@@ -70,7 +69,10 @@ module Reel
       # make header to set cookie with uuid
       def make_header uuid=nil
         return unless uuid
-        COOKIE % [encrypt(session_config[:session_name]),encrypt(uuid),session_expiry]
+        crypto = Reel::Session::Crypto
+        COOKIE % [crypto.encrypt(session_config[:session_name],session_config),
+                  crypto.encrypt(uuid,session_config),
+                  session_expiry]
       end
     end
 

@@ -12,15 +12,10 @@ RSpec.describe Reel::Session do
   let(:key){"12345678901234567"}
   let(:iv){"1234567890123456"}
   let(:unsafe){/[^\-_.!~*'()a-zA-Z\d\/?:@&+$%,\[\]]/}
-  let(:crypto){Class.new {
-    include Reel::Session::Crypto
-    def initialize
-      @config ={
+  let(:crypto_config){
+    {
         :secret_key => Reel::Session.configuration('test')[:secret_key],
         :session_name => Reel::Session.configuration('test')[:session_name]
-      }
-    end
-    attr_accessor :config
     }
   }
 
@@ -132,8 +127,8 @@ RSpec.describe Reel::Session do
     with_reel(handler) do
       resp = Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
       expect(resp['set-cookie']).to_not eq nil
-      c = crypto.new
-      key = c.decrypt ((resp['set-cookie'].split(';').first.split('='))[1])
+      c = Reel::Session::Crypto
+      key = c.decrypt((resp['set-cookie'].split(';').first.split('='))[1],crypto_config)
       expect(key).to_not eq nil
       expect(Reel::Session.store.key? key).to eq true
       sleep 1
@@ -145,22 +140,19 @@ RSpec.describe Reel::Session do
 
   it "ensure escaping the unsafe character while using AES128" do
     value = "Original"
-    c = crypto.new
-    encrypted = c.encrypt(value)
+    c = Reel::Session::Crypto
+    encrypted = c.encrypt(value,crypto_config)
     expect(encrypted).to_not match unsafe
     expect(URI.decode_www_form_component encrypted).to match unsafe
   end
 
   it "encryption/decryption are performing well" do
     original_value = "test"
-    c = crypto.new
-    expect(c.decrypt c.encrypt original_value).to eq original_value
-    encrypt_val = c.encrypt original_value
-    orig_key = c.config[:secret_key]
-    c.config[:secret_key] = "change"
-    expect(c.decrypt encrypt_val).to_not eq original_value
-    # correcting config for other test
-    c.config[:secret_key] = orig_key
+    c = Reel::Session::Crypto
+    expect(c.decrypt(c.encrypt(original_value,crypto_config),crypto_config)).to eq original_value
+    encrypt_val = c.encrypt(original_value,crypto_config)
+    changed_config = crypto_config.merge({:secret_key=>"change"})
+    expect(c.decrypt(encrypt_val,changed_config)).to_not eq original_value
   end
 
 end
