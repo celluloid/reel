@@ -8,7 +8,6 @@ module Reel
 
     COOKIE_KEY = 'Cookie'.freeze
     COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'.freeze
-    HEADER_ERROR_MSG = "cannot set header as uuid is nil in Reel::Session".freeze
 
     # default session configuration
     DEFAULT_CONFIG = {
