@@ -34,7 +34,6 @@ module Reel
 
       # timer to delete value from concurrent hash/timer hash after expiry
       def start_timer
-        return unless @key
         timer_hash = Reel::Session.timers_hash
         if timer_hash.key? @key
           timer_hash[@key].reset if timer_hash[@key] && timer_hash[@key].respond_to?(:reset)
@@ -49,7 +48,6 @@ module Reel
 
 
       def save
-        return if @val.empty?
           # merge key,value
           @key ||= generate_id
           @store.merge!({@key=>@val})

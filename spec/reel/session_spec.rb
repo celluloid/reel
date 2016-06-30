@@ -72,7 +72,7 @@ RSpec.describe Reel::Session do
           'Cookie' => temp
       }
       resp = Net::HTTP.new(endpoint.host,endpoint.port).get(endpoint.path,headers)
-      expect(resp['set-cookie']).to eq nil
+      expect(resp['set-cookie']).to_not eq nil
     end
 
     raise ex if ex

@@ -8,6 +8,7 @@ module Reel
 
     COOKIE_KEY = 'Cookie'.freeze
     COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'.freeze
+    HEADER_ERROR_MSG = "cannot set header as uuid is nil in Reel::Session".freeze
 
     # default session configuration
     DEFAULT_CONFIG = {
@@ -68,7 +69,7 @@ module Reel
 
       # make header to set cookie with uuid
       def make_header uuid=nil
-        return unless uuid
+        raise HeaderError,HEADER_ERROR_MSG if uuid == nil
         crypto = Reel::Session::Crypto
         COOKIE % [crypto.encrypt(session_config[:session_name],session_config),
                   crypto.encrypt(uuid,session_config),
