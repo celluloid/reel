@@ -80,6 +80,15 @@ end
 
 # Include RequestMixin methods into Reel::Request class if Reel/Session is required
 module Reel
+
+  class Server
+    alias_method :base_initialize, :initialize
+    def initialize(server, options={}, &callback)
+      Session.configuration self, options.delete(:session)
+      base_initialize server, options, &callback
+    end
+  end
+
   class Request
     include Reel::Session::RequestMixin
     SET_COOKIE = 'Set-Cookie'.freeze
