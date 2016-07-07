@@ -14,7 +14,7 @@ module Reel
 
     def_delegators :@connection, :remote_addr, :respond
     def_delegator  :@response_writer, :handle_response
-    attr_reader :body
+    attr_reader :body, :connection
 
     # request_info is a RequestInfo object including the headers and
     # the url, method and http version.
@@ -112,7 +112,7 @@ module Reel
     # the underlying connection
     def websocket
       @websocket ||= begin
-        raise StateError, "can't upgrade this request to a websocket" unless websocket?  
+        raise StateError, "can't upgrade this request to a websocket" unless websocket?
         WebSocket.new(self, @connection)
       end
     end

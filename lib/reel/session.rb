@@ -1,5 +1,4 @@
 require 'reel/session/store'
-require 'reel/session/crypto'
 require 'celluloid/extras/hash'
 require 'time'
 
@@ -21,20 +20,25 @@ module Reel
       @store ||= Celluloid::Extras::Hash.new
     end
 
+    # will be storing all timers for deleting Session values
+    def self.timers_hash
+      @timers ||= {}
+    end
+
+    # changing/modifying configuration
+    def self.configuration server, options={}
+      @options ||= {}
+      if @options[server]
+        @options[server].merge! options if Hash === options
+      else
+        @options[server] = DEFAULT_CONFIG.merge options if Hash === options
+      end
+      @options[server]
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
-      include Reel::Session::Crypto
-
-      # changing/modifying configuration
-      def configuration options={}
-        if @options
-         @options.merge! options if options.is_a? Hash
-       else
-         @options = DEFAULT_CONFIG.merge options if options.is_a? Hash
-       end
-       @options
-      end
 
       # initializing session
       def initialize_session
@@ -50,17 +54,22 @@ module Reel
         make_header @bag.save
       end
 
+      def session_config options={}
+        @config ||= Reel::Session.configuration(self.connection.server,options)
+      end
+
       # calculate expiry based on session length
       def session_expiry
         # changing it to .utc, as was giving problem with Chrome when setting in local time
         # with utc,can't see parsed `Expires` in Cookie tab of firefox (problem seems to be in firefox only)
-        (Time.now + @options[:session_length]).utc.rfc2822
+        (Time.now + session_config[:session_length]).utc.rfc2822
       end
 
       # make header to set cookie with uuid
       def make_header uuid=nil
-        return unless uuid
-        COOKIE % [encrypt(@options[:session_name]),encrypt(uuid),session_expiry]
+        COOKIE % [session_config[:session_name],
+                  uuid,
+                  session_expiry]
       end
     end
 
@@ -69,6 +78,15 @@ end
 
 # Include RequestMixin methods into Reel::Request class if Reel/Session is required
 module Reel
+
+  class Server
+    alias_method :base_initialize, :initialize
+    def initialize(server, options={}, &callback)
+      Session.configuration self, options.delete(:session)
+      base_initialize server, options, &callback
+    end
+  end
+
   class Request
     include Reel::Session::RequestMixin
     SET_COOKIE = 'Set-Cookie'.freeze
@@ -90,8 +108,8 @@ module Reel
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
       def on_headers_complete headers
-        base_on_headers_complete headers
-        current_request.initialize_session
+        req = base_on_headers_complete headers
+        req.initialize_session
       end
     end
   end
