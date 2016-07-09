@@ -1,23 +1,18 @@
 require 'reel/session/store'
-require 'reel/session/crypto'
 require 'celluloid/extras/hash'
 require 'time'
 
 module Reel
   module Session
 
-    # Basic structure to visualize working of session handlers
-    # TODO
-
-    COOKIE_KEY = 'Cookie'
-    SET_COOKIE = 'Set-Cookie'
-    COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'
+    COOKIE_KEY = 'Cookie'.freeze
+    COOKIE = '%s=%s; Expires=%s; Path=/; HttpOnly'.freeze
 
     # default session configuration
     DEFAULT_CONFIG = {
-       secret_key: 'reel_sessions_key',
-       session_length: 21600, # 6 hours
-       session_name: 'reel_sessions_default'
+       :secret_key=> 'reel_sessions_key',
+       :session_length=> 21600, # 6 hours
+       :session_name=> 'reel_sessions_default'
     }
 
     # initialize it only on first invocation
@@ -25,20 +20,25 @@ module Reel
       @store ||= Celluloid::Extras::Hash.new
     end
 
+    # will be storing all timers for deleting Session values
+    def self.timers_hash
+      @timers ||= {}
+    end
+
+    # changing/modifying configuration
+    def self.configuration server, options={}
+      @options ||= {}
+      if @options[server]
+        @options[server].merge! options if Hash === options
+      else
+        @options[server] = DEFAULT_CONFIG.merge options if Hash === options
+      end
+      @options[server]
+    end
+
     # This module will be mixed in into Reel::Request
     module RequestMixin
       include Celluloid::Internals::Logger
-      include Reel::Session::Crypto
-
-      # changing/modifying configuration
-      def configuration options={}
-        if @options
-         @options.merge! options
-       else
-         @options = DEFAULT_CONFIG.merge options
-       end
-       @options
-      end
 
       # initializing session
       def initialize_session
@@ -51,50 +51,65 @@ module Reel
 
       # finalizing the session
       def finalize_session
-        uuid = @bag.save
-        set_response uuid if uuid
+        make_header @bag.save
+      end
+
+      def session_config options={}
+        @config ||= Reel::Session.configuration(self.connection.server,options)
       end
 
       # calculate expiry based on session length
       def session_expiry
-        (Time.now + @options[:session_length]).rfc2822
+        # changing it to .utc, as was giving problem with Chrome when setting in local time
+        # with utc,can't see parsed `Expires` in Cookie tab of firefox (problem seems to be in firefox only)
+        (Time.now + session_config[:session_length]).utc.rfc2822
       end
 
-      # set cookie with uuid in response header
-      def set_response uuid
-        header = Hash[SET_COOKIE => COOKIE % [
-          encrypt(@options[:session_name]),encrypt(uuid),session_expiry
-          ] ]
+      # make header to set cookie with uuid
+      def make_header uuid=nil
+        COOKIE % [session_config[:session_name],
+                  uuid,
+                  session_expiry]
       end
     end
 
   end
 end
 
-# Current plan is to include RequestMixin methods into Reel::Request class if Reel/Session
-# is required
+# Include RequestMixin methods into Reel::Request class if Reel/Session is required
 module Reel
+
+  class Server
+    alias_method :base_initialize, :initialize
+    def initialize(server, options={}, &callback)
+      Session.configuration self, options.delete(:session)
+      base_initialize server, options, &callback
+    end
+  end
+
   class Request
     include Reel::Session::RequestMixin
+    SET_COOKIE = 'Set-Cookie'.freeze
 
     alias_method :base_respond, :respond
-    def respond *args
-      @cookie_header = finalize_session
-      # merge this header properly into args
-      @header_or_body = args[1]
-      unless @header_or_body.is_a? Hash
-        args[2],args[1] = @header_or_body,@cookie_header
-      else
-        args[1].merge! @header
+    def respond(response, headers_or_body = {}, body = nil)
+        cookie_val = finalize_session
+        cookie_header = {SET_COOKIE=>cookie_val} if cookie_val
+        if cookie_header
+          if Hash === headers_or_body
+            headers_or_body.merge! cookie_header
+          else
+            body, headers_or_body = headers_or_body, cookie_header
+          end
+        end
+        base_respond response, headers_or_body, body
       end
-      base_respond *args
-    end
 
     class Parser
       alias_method :base_on_headers_complete, :on_headers_complete
       def on_headers_complete headers
-        base_on_headers_complete headers
-        current_request.initialize_session
+        req = base_on_headers_complete headers
+        req.initialize_session
       end
     end
   end

@@ -55,6 +55,7 @@ module Reel
 
         if @currently_reading
           @pending_reads << req
+          req
         else
           @currently_reading = req
         end
