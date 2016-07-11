@@ -3,10 +3,12 @@ require 'multipart_parser/reader'
 
 module Reel
   class Request
+    include Celluloid::Internals::Logger
+
     CONTENT_TYPE = 'Content-Type'.freeze
 
     def multipart
-      @multipart.decode
+      @multipart.decode if multipart? @body
     end
 
     def multipart? body=nil
@@ -15,6 +17,9 @@ module Reel
       # initializing Multipart
       @multipart = Reel::Request::Multipart.new body,boundary if boundary
       @multipart.is_a? Reel::Request::Multipart
+    rescue => e
+      info e.to_s
+      @multipart = false
     end
 
     def extract_boundary content
@@ -22,15 +27,31 @@ module Reel
     end
 
     class Multipart
+      extend Forwardable
 
       def initialize(body,boundary)
-        # TODO
+        @files = {}
+        @body = body
+        @boundary = boundary
+        @reader = MultipartParser::Reader.new(@boundary)
+        # TODO configure MultipartParser::Reader callbacks
       end
 
+      # delegating MultipartParser::Reader to write and parse chunks
+      def_delegators :@reader, :write
+
       def decode
-        #TODO
+        return @files if @files.any?
+        begin
+          @body.each { |chunks| write chunks }
+        rescue => e
+          info e.to_s
+          @files = {}
+        end
+        @files
       end
 
     end
+
   end
 end
