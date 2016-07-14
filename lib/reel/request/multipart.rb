@@ -18,7 +18,7 @@ module Reel
       @multipart = Reel::Request::Multipart.new body, boundary if boundary
       @multipart.is_a? Reel::Request::Multipart
     rescue => e
-      info e.to_s
+      warn e
       @multipart = false
     end
 
@@ -45,7 +45,7 @@ module Reel
         begin
           @body.each { |chunks| write chunks }
         rescue => e
-          info e.to_s
+          warn e
           @files = {}
         end
         @files
