@@ -34,7 +34,22 @@ module Reel
         @body = body
         @boundary = boundary
         @reader = MultipartParser::Reader.new(@boundary)
-        # TODO configure MultipartParser::Reader callbacks
+
+        # configuring MultipartParser::Reader callbacks
+        @reader.on_part do |part|
+          # Streaming API So each file blob will contain information regarding data, ended?
+          blob = {:data => "", :ended=> false }
+
+          # adding file blob associating it with part.name
+          @files[part.name] = blob
+
+          # registering callback
+          part.on_data { |data_chunk| blob[:data] << data_chunk }
+          part.on_end { blob[:ended] = true }
+        end
+
+        @reader.on_error{|msg| warn msg }
+
       end
 
       # delegating MultipartParser::Reader to write and parse chunks
