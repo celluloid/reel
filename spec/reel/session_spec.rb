@@ -1,9 +1,6 @@
 require 'spec_helper'
 require 'reel/session'
 require 'net/http'
-require 'openssl'
-require 'base64'
-require 'uri'
 
 RSpec.describe Reel::Session do
 
