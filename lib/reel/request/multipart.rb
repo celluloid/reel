@@ -38,7 +38,7 @@ module Reel
         # configuring MultipartParser::Reader callbacks
         @reader.on_part do |part|
           # Streaming API So each file blob will contain information regarding data, ended?
-          blob = {:data => "", :ended=> false }
+          blob = {:data => "", :ended => false, :part => part }
 
           # adding file blob associating it with part.name
           @files[part.name] = blob
