@@ -8,8 +8,10 @@ RSpec.describe Reel::Request::Multipart do
   let(:response_body) { "ohai thar" }
   let(:txt_filepath){ 'spec/support/multipart_test_example.txt' }
   let(:img_path){'logo.png'}
-  let(:part_name){ 'datafile' }
-  let(:boundary){"Myboundary"}
+
+  EOL = "\r\n".freeze
+  MULTIPART_BOUNDARY = "Myboundary".freeze
+  PART_NAME = "datafile".freeze
 
   it "check if request is a multipart or not" do
     ex = nil
@@ -39,8 +41,8 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart? req.body).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[part_name][:ended]).to eq true
-        expect(req.multipart[part_name][:data]).to eq File.read(txt_filepath)
+        expect(req.multipart[PART_NAME][:ended]).to eq true
+        expect(req.multipart[PART_NAME][:data]).to eq File.read(txt_filepath)
 
         req.respond :ok, response_body
       rescue => ex
@@ -50,17 +52,17 @@ RSpec.describe Reel::Request::Multipart do
     with_reel(handler) do
 
       post_body = []
-      post_body << "--#{boundary}\r\n"
-      post_body << "Content-Disposition: form-data; name=\"#{part_name}\"; filename=\"#{File.basename(txt_filepath)}\"\r\n"
-      post_body << "Content-Type: text/plain\r\n"
-      post_body << "\r\n"
+      post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
+      post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
+      post_body << "Content-Type: text/plain#{EOL}"
+      post_body << EOL
       post_body << File.read(txt_filepath)
-      post_body << "\r\n--#{boundary}--\r\n"
+      post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
 
       http = Net::HTTP.new(endpoint.host, endpoint.port)
       request = Net::HTTP::Post.new(endpoint.request_uri)
       request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{boundary}"
+      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
 
       http.request(request)
     end
@@ -76,8 +78,8 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart? req.body).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[part_name][:ended]).to eq true
-        expect(req.multipart[part_name][:data]).to eq IO.binread(img_path)
+        expect(req.multipart[PART_NAME][:ended]).to eq true
+        expect(req.multipart[PART_NAME][:data]).to eq IO.binread(img_path)
 
         req.respond :ok, response_body
       rescue => ex
@@ -87,17 +89,17 @@ RSpec.describe Reel::Request::Multipart do
     with_reel(handler) do
 
       post_body = []
-      post_body << "--#{boundary}\r\n"
-      post_body << "Content-Disposition: form-data; name=\"#{part_name}\"; filename=\"#{File.basename(img_path)}\"\r\n"
-      post_body << "Content-Type: application/octet-stream\r\n"
-      post_body << "\r\n"
+      post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
+      post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(img_path)}\"#{EOL}"
+      post_body << "Content-Type: application/octet-stream#{EOL}"
+      post_body << EOL
       post_body << IO.binread(img_path)
-      post_body << "\r\n--#{boundary}--\r\n"
+      post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
 
       http = Net::HTTP.new(endpoint.host, endpoint.port)
       request = Net::HTTP::Post.new(endpoint.request_uri)
       request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{boundary}"
+      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
 
       http.request(request)
 
