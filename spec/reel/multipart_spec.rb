@@ -108,4 +108,38 @@ RSpec.describe Reel::Request::Multipart do
     raise ex if ex
   end
 
+  it "Parsing error for wrong boundary value" do
+      ex = nil
+
+      handler = proc do |connection|
+        begin
+          req = connection.request
+          expect(req.multipart? req.body).to eq true
+          expect(req.multipart.empty?).to eq true
+
+          req.respond :ok, response_body
+        rescue => ex
+        end
+      end
+
+      with_reel(handler) do
+
+        post_body = []
+        post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
+        post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
+        post_body << "Content-Type: text/plain#{EOL}"
+        post_body << EOL
+        post_body << File.read(txt_filepath)
+        post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+
+        http = Net::HTTP.new(endpoint.host, endpoint.port)
+        request = Net::HTTP::Post.new(endpoint.request_uri)
+        request.body = post_body.join
+        request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}change"
+
+        http.request(request)
+      end
+
+      raise ex if ex
+    end
 end
