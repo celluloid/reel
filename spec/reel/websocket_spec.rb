@@ -6,6 +6,7 @@ RSpec.describe Reel::WebSocket do
 
   let(:example_message) { "Hello, World!" }
   let(:another_message) { "What's going on?" }
+  let(:example_array_message) { Array.new(2) { |e| e = e * 2} }
 
   it "performs websocket handshakes" do
     with_socket_pair do |client, peer|
@@ -119,6 +120,18 @@ RSpec.describe Reel::WebSocket do
 
       parser.append client.readpartial(4096) until next_message = parser.next_message
       expect(next_message).to eq(another_message)
+    end
+  end
+
+  it "writes array messages" do
+    with_websocket_pair do |client, websocket|
+      websocket.write example_array_message
+      websocket.write another_message
+
+      parser = WebSocket::Parser.new
+
+      parser.append client.readpartial(4096) until first_message = parser.next_message
+      expect(first_message).to eq(example_array_message.to)
     end
   end
 
