@@ -55,7 +55,7 @@ module Reel
           }
         end
 
-        @reader.on_error{|msg| error msg }
+        @reader.on_error{|msg| warn msg }
 
       end
 
