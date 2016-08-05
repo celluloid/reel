@@ -49,7 +49,7 @@ module Reel
           part.on_data { |data_chunk| blob[:data] << data_chunk }
           part.on_end {
             blob[:on_complete] = true
-            blob[:data].close
+            blob[:data].rewind
 
             #TODO : expose part information if needed
           }
