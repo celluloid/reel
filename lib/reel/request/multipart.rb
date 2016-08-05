@@ -9,14 +9,14 @@ module Reel
     CONTENT_TYPE = 'Content-Type'.freeze
 
     def multipart
-      @multipart.decode if multipart? @body
+      @multipart.decode if multipart?
     end
 
-    def multipart?(body = nil)
-      return @multipart.is_a? Reel::Request::Multipart if @multipart || body.nil?
+    def multipart?
+      return @multipart.is_a? Reel::Request::Multipart if @multipart
       boundary = extract_boundary self.headers[CONTENT_TYPE]
       # initializing Multipart
-      @multipart = Reel::Request::Multipart.new body, boundary if boundary
+      @multipart = Reel::Request::Multipart.new @body, boundary if boundary
       @multipart.is_a? Reel::Request::Multipart
     rescue => e
       warn e

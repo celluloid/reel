@@ -21,7 +21,7 @@ RSpec.describe Reel::Request::Multipart do
       begin
         req = connection.request
         expect(req.multipart).to eq nil
-        expect(req.multipart? req.body).to eq false
+        expect(req.multipart?).to eq false
         req.respond :ok, response_body
       rescue => ex
       end
@@ -40,7 +40,7 @@ RSpec.describe Reel::Request::Multipart do
     handler = proc do |connection|
       begin
         req = connection.request
-        expect(req.multipart? req.body).to eq true
+        expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:on_complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
@@ -77,7 +77,7 @@ RSpec.describe Reel::Request::Multipart do
     handler = proc do |connection|
       begin
         req = connection.request
-        expect(req.multipart? req.body).to eq true
+        expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:on_complete]).to eq true
         expect(open(req.multipart[PART_NAME][:data],"rb") {|io| io.read }) .to eq open(img_path, "rb") {|io| io.read }
@@ -115,7 +115,7 @@ RSpec.describe Reel::Request::Multipart do
     handler = proc do |connection|
       begin
         req = connection.request
-        expect(req.multipart? req.body).to eq true
+        expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:on_complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
@@ -152,7 +152,7 @@ RSpec.describe Reel::Request::Multipart do
       handler = proc do |connection|
         begin
           req = connection.request
-          expect(req.multipart? req.body).to eq true
+          expect(req.multipart?).to eq true
           expect(req.multipart.empty?).to eq true
 
           req.respond :ok, response_body
@@ -187,7 +187,7 @@ RSpec.describe Reel::Request::Multipart do
     handler = proc do |connection|
       begin
         req = connection.request
-        expect(req.multipart? req.body).to eq true
+        expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:on_complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq "temp"
@@ -225,7 +225,7 @@ RSpec.describe Reel::Request::Multipart do
     handler = proc do |connection|
       begin
         req = connection.request
-        expect(req.multipart? req.body).to eq true
+        expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:on_complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
