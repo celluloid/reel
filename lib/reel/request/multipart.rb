@@ -40,7 +40,7 @@ module Reel
         @reader.on_part do |part|
           # Streaming API So each file blob will contain information
           # regarding: data,part (for header and other information) and ended?
-          blob = {:data => Tempfile.new(part.name), :on_complete => false, :part => part }
+          blob = {:data => Tempfile.new(part.name), :complete => false, :part => part }
 
           # adding file blob associating it with part.name
           @files[part.name] = blob
@@ -48,7 +48,7 @@ module Reel
           # registering callback
           part.on_data { |data_chunk| blob[:data] << data_chunk }
           part.on_end {
-            blob[:on_complete] = true
+            blob[:complete] = true
             blob[:data].rewind
 
             #TODO : expose part information if needed

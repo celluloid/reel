@@ -42,7 +42,7 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:on_complete]).to eq true
+        expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
 
         req.respond :ok, response_body
@@ -79,7 +79,7 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:on_complete]).to eq true
+        expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(open(req.multipart[PART_NAME][:data],"rb") {|io| io.read }) .to eq open(img_path, "rb") {|io| io.read }
 
         req.respond :ok, response_body
@@ -117,7 +117,7 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:on_complete]).to eq true
+        expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
 
         req.respond :ok, response_body
@@ -189,7 +189,7 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:on_complete]).to eq true
+        expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq "temp"
 
         req.respond :ok, response_body
@@ -227,7 +227,7 @@ RSpec.describe Reel::Request::Multipart do
         req = connection.request
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:on_complete]).to eq true
+        expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
 
         req.respond :ok, response_body
