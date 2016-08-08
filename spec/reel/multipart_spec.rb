@@ -15,245 +15,166 @@ RSpec.describe Reel::Request::Multipart do
   PART_NAME = "datafile".freeze
 
   it "return nil if content type is not multipart" do
-    ex = nil
+    with_socket_pair do |client, peer|
 
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        expect(req.multipart).to eq nil
-        expect(req.multipart?).to eq false
-        req.respond :ok, response_body
-      rescue => ex
-      end
+      connection = Reel::Connection.new(peer)
+
+      example_request = ExampleRequest.new
+
+      client << example_request.to_s
+      req = connection.request
+
+      expect(req.multipart).to eq nil
+      expect(req.multipart?).to eq false
+
     end
-
-    with_reel(handler) do
-      Net::HTTP.new(endpoint.host,endpoint.port).get endpoint
-    end
-
-    raise ex if ex
   end
 
   it "Parses data if content is multipart type" do
-    ex = nil
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
 
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        expect(req.multipart?).to eq true
-        expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
-
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-
-      post_body = []
+      post_body = ""
       post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
       post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
       post_body << "Content-Type: text/plain#{EOL}"
       post_body << EOL
       post_body << File.read(txt_filepath)
       post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+      example_request = ExampleRequest.new
+      example_request.body = post_body
+      example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
 
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
-      request = Net::HTTP::Post.new(endpoint.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
+      client << example_request.to_s
+      req = connection.request
 
-      http.request(request)
+      expect(req.multipart?).to eq true
+      expect(req.multipart.empty?).to eq false
+      expect(req.multipart[PART_NAME][:complete]).to eq true
+      expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
     end
-
-    raise ex if ex
   end
 
   it "Parses data from image uploaded" do
-    ex = nil
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
 
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        expect(req.multipart?).to eq true
-        expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(open(req.multipart[PART_NAME][:data],"rb") {|io| io.read }) .to eq open(img_path, "rb") {|io| io.read }
-
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-
-      post_body = []
+      post_body = ""
       post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
       post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(img_path)}\"#{EOL}"
       post_body << "Content-Type: application/octet-stream#{EOL}"
       post_body << EOL
-      post_body << File.read(img_path)
+      post_body << IO.binread(img_path)
       post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+      example_request = ExampleRequest.new
+      example_request.body = post_body
+      example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
 
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
-      request = Net::HTTP::Post.new(endpoint.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
+      client << example_request.to_s
+      req = connection.request
 
-      http.request(request)
-
+      expect(req.multipart?).to eq true
+      expect(req.multipart.empty?).to eq false
+      expect(req.multipart[PART_NAME][:complete]).to eq true
+      expect(IO.binread(req.multipart[PART_NAME][:data])).to eq IO.binread(img_path)
     end
-
-    raise ex if ex
   end
 
   it "Parses text file data if content is multipart type (missing file name)" do
-    ex = nil
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
 
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        expect(req.multipart?).to eq true
-        expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
-
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-
-      post_body = []
+      post_body = ""
       post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
       post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; \"#{EOL}"
       post_body << "Content-Type: text/plain#{EOL}"
       post_body << EOL
       post_body << File.read(txt_filepath)
       post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+      example_request = ExampleRequest.new
+      example_request.body = post_body
+      example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
 
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
-      request = Net::HTTP::Post.new(endpoint.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
+      client << example_request.to_s
+      req = connection.request
 
-      http.request(request)
+      expect(req.multipart?).to eq true
+      expect(req.multipart.empty?).to eq false
+      expect(req.multipart[PART_NAME][:complete]).to eq true
+      expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
     end
-
-    raise ex if ex
   end
 
   it "Parsing error for wrong boundary value" do
-      ex = nil
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
 
-      handler = proc do |connection|
-        begin
-          req = connection.request
-          expect(req.multipart?).to eq true
-          expect(req.multipart.empty?).to eq true
+      post_body = ""
+      post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
+      post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
+      post_body << "Content-Type: text/plain#{EOL}"
+      post_body << EOL
+      post_body << File.read(txt_filepath)
+      post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+      example_request = ExampleRequest.new
+      example_request.body = post_body
+      example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}change"
 
-          req.respond :ok, response_body
-        rescue => ex
-        end
-      end
+      client << example_request.to_s
+      req = connection.request
 
-      with_reel(handler) do
-
-        post_body = []
-        post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
-        post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
-        post_body << "Content-Type: text/plain#{EOL}"
-        post_body << EOL
-        post_body << File.read(txt_filepath)
-        post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
-
-        http = Net::HTTP.new(endpoint.host, endpoint.port)
-        request = Net::HTTP::Post.new(endpoint.request_uri)
-        request.body = post_body.join
-        request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}change"
-
-        http.request(request)
-      end
-
-      raise ex if ex
+      expect(req.multipart?).to eq true
+      expect(req.multipart.empty?).to eq true
+    end
   end
 
-    it "Parses data if content is multipart type (filename with semicolons)" do
-    ex = nil
+  it "Parses data if content is multipart type (filename with semicolons)" do
+      with_socket_pair do |client, peer|
+        connection = Reel::Connection.new(peer)
 
-    handler = proc do |connection|
-      begin
+        post_body = ""
+        post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
+        post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"temp;.txt\"#{EOL}"
+        post_body << "Content-Type: text/plain#{EOL}"
+        post_body << EOL
+        post_body << "temp"
+        post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
+        example_request = ExampleRequest.new
+        example_request.body = post_body
+        example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
+
+        client << example_request.to_s
         req = connection.request
+
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:complete]).to eq true
         expect(File.read(req.multipart[PART_NAME][:data])).to eq "temp"
-
-        req.respond :ok, response_body
-      rescue => ex
       end
-    end
-
-    with_reel(handler) do
-
-      post_body = []
-      post_body << "--#{MULTIPART_BOUNDARY}#{EOL}"
-      post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"temp;.txt\"#{EOL}"
-      post_body << "Content-Type: text/plain#{EOL}"
-      post_body << EOL
-      post_body << "temp"
-      post_body << "#{EOL}--#{MULTIPART_BOUNDARY}--#{EOL}"
-
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
-      request = Net::HTTP::Post.new(endpoint.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY}"
-
-      http.request(request)
-
-    end
-
-    raise ex if ex
   end
 
   it "Parses data if content is multipart type (Boundary with quotes)" do
-    ex = nil
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
 
-    handler = proc do |connection|
-      begin
-        req = connection.request
-        expect(req.multipart?).to eq true
-        expect(req.multipart.empty?).to eq false
-        expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
-
-        req.respond :ok, response_body
-      rescue => ex
-      end
-    end
-
-    with_reel(handler) do
-
-      post_body = []
+      post_body = ""
       post_body << "--#{MULTIPART_BOUNDARY_WITH_QUOTES}#{EOL}"
       post_body << "Content-Disposition: form-data; name=\"#{PART_NAME}\"; filename=\"#{File.basename(txt_filepath)}\"#{EOL}"
       post_body << "Content-Type: text/plain#{EOL}"
       post_body << EOL
       post_body << File.read(txt_filepath)
       post_body << "#{EOL}--#{MULTIPART_BOUNDARY_WITH_QUOTES}--#{EOL}"
+      example_request = ExampleRequest.new
+      example_request.body = post_body
+      example_request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY_WITH_QUOTES}"
 
-      http = Net::HTTP.new(endpoint.host, endpoint.port)
-      request = Net::HTTP::Post.new(endpoint.request_uri)
-      request.body = post_body.join
-      request["Content-Type"] = "multipart/form-data, boundary=#{MULTIPART_BOUNDARY_WITH_QUOTES}"
+      client << example_request.to_s
+      req = connection.request
 
-      http.request(request)
-
+      expect(req.multipart?).to eq true
+      expect(req.multipart.empty?).to eq false
+      expect(req.multipart[PART_NAME][:complete]).to eq true
+      expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
     end
-
-    raise ex if ex
   end
 end
