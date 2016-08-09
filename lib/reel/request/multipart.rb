@@ -36,10 +36,10 @@ module Reel
         @boundary = boundary
         @reader = MultipartParser::Reader.new(@boundary)
 
-        # configuring MultipartParser::Reader callbacks
+        # configuring MultipartParser::Reader
         @reader.on_part do |part|
           # Streaming API So each file blob will contain information
-          # regarding: data,part (for header and other information) and ended?
+          # regarding: data,part (for header and other information) and complete
           blob = {:data => Tempfile.new(part.name), :complete => false, :part => part }
 
           # adding file blob associating it with part.name
@@ -47,19 +47,18 @@ module Reel
 
           # registering callback
           part.on_data { |data_chunk| blob[:data] << data_chunk }
-          part.on_end {
+          part.on_end do
             blob[:complete] = true
             blob[:data].rewind
-
             #TODO : expose part information if needed
-          }
+
+          end
         end
 
         @reader.on_error{|msg| warn msg }
 
       end
 
-      # delegating MultipartParser::Reader to write and parse chunks
       def_delegators :@reader, :write
 
       def decode
