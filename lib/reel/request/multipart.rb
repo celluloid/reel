@@ -8,12 +8,27 @@ module Reel
 
     CONTENT_TYPE = 'Content-Type'.freeze
 
+    # if multipart type
+    #   return Hash :
+    #   {
+    #     key1 => {
+    #       :data => Tempfile object,
+    #       :complete => true/false,
+    #       :part => part object (header info etc)
+    #     },
+    #    key2 => {...}
+    #   }
+    # if not multipart type
+    #   return nil
     def multipart
       @multipart.decode if multipart?
     end
 
+    # utility function to check if Content-Type is a multipart type
+    # and initializing @multipart
     def multipart?
       return @multipart.is_a? Reel::Request::Multipart if @multipart
+      # extract boundary
       boundary = extract_boundary self.headers[CONTENT_TYPE]
       # initializing Multipart
       @multipart = Reel::Request::Multipart.new @body, boundary if boundary
