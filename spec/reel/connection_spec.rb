@@ -351,10 +351,11 @@ RSpec.describe Reel::Connection do
   it "returns friendlier inspect output" do
     with_socket_pair do |client, peer|
       connection = Reel::Connection.new(peer)
-      client << ExampleRequest.new.to_s
+      example_request = ExampleRequest.new
+      client << example_request.to_s
       request = connection.request
 
-      expect(request.inspect).to eq '#<Reel::Request GET / HTTP/1.1 @headers={"Host"=>"www.example.com", "Connection"=>"keep-alive", "User-Agent"=>"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/17.0.963.78 S", "Accept"=>"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "Accept-Encoding"=>"gzip,deflate,sdch", "Accept-Language"=>"en-US,en;q=0.8", "Accept-Charset"=>"ISO-8859-1,utf-8;q=0.7,*;q=0.3"}>'
+      expect(request.inspect).to eq example_request.inspect_method
     end
   end
 
