@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 gem 'celluloid'
 gem 'celluloid-io'
 gem 'http'
-gem 'multipart-parser',	github: 'pulkit4tech/multipart-parser'
+gem 'multipart-parser', '~> 0.1.1'
 
 gem 'jruby-openssl' if defined? JRUBY_VERSION
 gem 'coveralls', require: false
