@@ -118,7 +118,7 @@ RSpec.describe Reel::Session do
       key = (resp['set-cookie'].split(';').first.split('='))[1]
       expect(key).to_not eq nil
       expect(Reel::Session.store.key? key).to eq true
-      sleep 0.01
+      sleep 0.02
       expect(Reel::Session.store.key? key).to eq false
     end
 
