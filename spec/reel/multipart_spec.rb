@@ -126,7 +126,7 @@ RSpec.describe Reel::Request::Multipart do
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(File.read(req.multipart[PART_NAME][:data])).to eq File.read(txt_filepath)
+        expect(req.multipart[PART_NAME][:data]).to eq File.read(txt_filepath)
       end
     end
     it "Parsing error for wrong boundary value" do
@@ -165,7 +165,7 @@ RSpec.describe Reel::Request::Multipart do
         expect(req.multipart?).to eq true
         expect(req.multipart.empty?).to eq false
         expect(req.multipart[PART_NAME][:complete]).to eq true
-        expect(File.read(req.multipart[PART_NAME][:data])).to eq "temp"
+        expect(req.multipart[PART_NAME][:data]).to eq "temp"
       end
     end
     it "Parses data if content is multipart type (Boundary with quotes)" do
