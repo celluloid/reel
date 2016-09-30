@@ -2,6 +2,7 @@ require 'spec_helper'
 
 RSpec.describe Reel::Connection do
   let(:fixture_path) { File.expand_path("../../fixtures/example.txt", __FILE__) }
+  let(:reactor) { Class.new { include Celluloid::IO }.new }
 
   it "reads requests without bodies" do
     with_socket_pair do |client, peer|
@@ -58,7 +59,7 @@ RSpec.describe Reel::Connection do
 
   it "enumerates requests with #each_request" do
     with_socket_pair do |client, peer|
-      connection = Reel::Connection.new(peer)
+      connection = Reel::Connection.new(peer, nil, reactor)
       client << ExampleRequest.new.to_s
 
       request_count = 0
@@ -100,7 +101,7 @@ RSpec.describe Reel::Connection do
 
     it "with keep-alive" do
       with_socket_pair do |client, peer|
-        connection = Reel::Connection.new(peer)
+        connection = Reel::Connection.new(peer, nil, reactor)
         client << ExampleRequest.new.to_s
         request = connection.request
 
@@ -111,7 +112,7 @@ RSpec.describe Reel::Connection do
 
     it "without keep-alive" do
       with_socket_pair do |client, peer|
-        connection = Reel::Connection.new(peer)
+        connection = Reel::Connection.new(peer, nil, reactor)
         client << ExampleRequest.new.tap{ |r|
           r['Connection'] = 'close'
         }.to_s
@@ -124,7 +125,7 @@ RSpec.describe Reel::Connection do
 
     it "with pipelined requests" do
       with_socket_pair do |client, peer|
-        connection = Reel::Connection.new(peer)
+        connection = Reel::Connection.new(peer, nil, reactor)
 
         2.times do
           client << ExampleRequest.new.to_s
@@ -335,6 +336,19 @@ RSpec.describe Reel::Connection do
       end
       expect(request).to be_finished_reading
       expect(rebuilt).to eq(["I'm data", " you can", " stream!"])
+    end
+  end
+
+  it "allows access to server instance" do
+    with_socket_pair do |client, peer|
+      server = Object.new
+      connection = Reel::Connection.new(peer, nil, server)
+      example_request = ExampleRequest.new
+
+      client << example_request.to_s
+      request = connection.request
+
+      expect(request.connection.server).to eq server
     end
   end
 
