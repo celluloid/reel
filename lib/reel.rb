@@ -2,6 +2,7 @@ require 'uri'
 
 require 'http/parser'
 require 'http'
+require 'celluloid/current'
 require 'celluloid/io'
 
 require 'reel/version'

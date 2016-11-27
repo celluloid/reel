@@ -7,12 +7,10 @@ gem 'jruby-openssl' if defined? JRUBY_VERSION
 # Specify your gem's dependencies in reel.gemspec
 gemspec
 
-group :development do
-  gem 'guard-rspec'
-end
-
 group :development, :test do
-  gem 'pry'
+  gem 'coveralls', require: false
+  gem 'guard-rspec', require: false
+  gem 'pry-byebug'
 end
 
 group :test do
@@ -21,4 +19,5 @@ group :test do
   gem 'rake'
   gem 'rspec'
   gem 'coveralls', require: false
+  gem 'h2', git: 'https://github.com/kenichi/h2'
 end
