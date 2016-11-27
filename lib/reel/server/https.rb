@@ -56,6 +56,7 @@ module Reel
             retry
           end
 
+          socket = Reel::Spy.new(socket, @spy) if @spy
           async.handle_connection socket
         end
       end
