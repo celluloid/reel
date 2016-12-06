@@ -48,7 +48,7 @@ client_cert.subject.common_name  = '127.0.0.1'
 client_cert.serial_number.number = 1
 client_cert.key_material.generate_key
 client_cert.parent = ca
-client_cert.sign!
+client_cert.sign! 'extensions' => { 'keyUsage' => { 'usage' => %w(digitalSignature) } }
 
 client_cert_path = File.join(certs_dir, 'client.crt')
 client_key_path  = File.join(certs_dir, 'client.key')
