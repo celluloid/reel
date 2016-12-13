@@ -95,7 +95,6 @@ module Reel
         rescue => e
           Logger.error "Exception: #{e.message} - closing socket"
           STDERR.puts e.backtrace
-          binding.pry
           close
 
         end
@@ -113,6 +112,8 @@ module Reel
         # N.B. this is the important bit
         #
         @socket.write bytes
+      rescue IOError
+        close
       end
 
       def on_frame_sent f

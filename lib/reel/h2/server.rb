@@ -28,7 +28,7 @@ module Reel
       # async goaway
       #
       def goaway connection
-        sleep 0.1
+        sleep 0.25
         connection.parser.goaway unless connection.closed?
       end
 

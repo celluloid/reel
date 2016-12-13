@@ -14,6 +14,24 @@ RSpec.describe Reel::H2::Server::HTTP do
     ENV['CONNECTIONS'] ? Integer(ENV['CONNECTIONS']) : 32
   end
 
+  def with_server handler = nil, &block
+    handler ||= proc do |stream|
+      stream.respond :ok
+      stream.connection.goaway
+    end
+
+    block ||= ->{ H2.get url: url, tls: false }
+
+    begin
+      server = Reel::H2::Server::HTTP.new host: addr, port: port, spy: false do |c|
+        c.each_stream &handler
+      end
+      block[server]
+    ensure
+      server.terminate if server && server.alive?
+    end
+  end
+
   before :each do
     @valid = double 'valid'
   end
@@ -35,10 +53,12 @@ RSpec.describe Reel::H2::Server::HTTP do
         expect(stream).to be_instance_of(Reel::H2::Stream)
         r = stream.request
         expect(r).to be_instance_of(Reel::H2::Stream::Request)
+        expect(r.method).to be :post
         expect(r.headers['test-header']).to eq('test_value')
         expect(r.body).to eq('test_body')
         @valid.tap
       rescue RSpec::Expectations::ExpectationNotMetError => ex
+      rescue => ex
       ensure
         stream.respond :ok
         stream.connection.goaway
@@ -46,9 +66,10 @@ RSpec.describe Reel::H2::Server::HTTP do
     end
 
     with_server handler do
-      ::H2.post url: url,
+      ::H2.post(url: url,
                 headers: {'test-header' => 'test_value'},
-                body: 'test_body'
+                body: 'test_body',
+                tls: false).block!
       @valid.tap
     end
 
@@ -65,7 +86,8 @@ RSpec.describe Reel::H2::Server::HTTP do
     end
 
     with_server handler do
-      s = H2.get url: url
+      s = H2.get url: url, tls: false
+      s.block!
       expect(s).to be_closed
       expect(s.headers[':status']).to eq('200')
       expect(s.headers['content-length']).to eq('test_body'.bytesize.to_s)
@@ -86,7 +108,7 @@ RSpec.describe Reel::H2::Server::HTTP do
 
     with_server handler do
       clients = Array.new(connections).map do
-        c = H2::Client.new addr: addr, port: port
+        c = H2::Client.new addr: addr, port: port, tls: false
         c.get path: '/'
         c
       end
@@ -112,7 +134,7 @@ RSpec.describe Reel::H2::Server::HTTP do
     end
 
     with_server handler do
-      c = H2::Client.new addr: addr, port: port
+      c = H2::Client.new addr: addr, port: port, tls: false
       streams.times { c.get path: '/' }
       c.block!
       expect(count).to eq 0
@@ -133,7 +155,7 @@ RSpec.describe Reel::H2::Server::HTTP do
     end
 
     with_server handler do
-      clients = Array.new(connections).map { H2::Client.new addr: addr, port: port }
+      clients = Array.new(connections).map { H2::Client.new addr: addr, port: port, tls: false }
       clients.each {|c| streams.times { c.get path: '/' }}
       clients.each &:block!
       count.each {|_,v| expect(v).to eq 0}

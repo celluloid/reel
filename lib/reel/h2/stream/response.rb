@@ -86,12 +86,11 @@ module Reel
 
         def stringify_headers hash
           hash.keys.each do |k|
+            hash[k] = hash[k].to_s unless String === hash[k]
             if Symbol === k
               key = k.to_s.gsub '_', '-'
               hash[key] = hash.delete k
-              k = key
             end
-            hash[k] = hash[k].to_s unless String === hash[k]
           end
           hash
         end
