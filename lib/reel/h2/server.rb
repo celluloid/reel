@@ -25,6 +25,12 @@ module Reel
         stream.connection.each_stream[stream]
       end
 
+      # async push promise
+      #
+      def handle_push_promise push_promise
+        push_promise.keep
+      end
+
       # async goaway
       #
       def goaway connection

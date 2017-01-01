@@ -28,6 +28,7 @@ end
 
 require 'reel'
 require 'reel/h2/connection'
+require 'reel/h2/push_promise'
 require 'reel/h2/server'
 require 'reel/h2/server/https'
 require 'reel/h2/stream'

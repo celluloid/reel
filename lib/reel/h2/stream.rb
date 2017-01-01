@@ -28,9 +28,11 @@ module Reel
                   :stream
 
       def initialize connection:, stream:
+        @completed     = false
         @connection    = connection
-        @stream        = stream
         @push_promises = Set.new
+        @responded     = false
+        @stream        = stream
 
         bind_events
       end
@@ -62,8 +64,85 @@ module Reel
                     else raise TypeError, "invalid response: #{response.inspect}"
                     end
 
-        @response.respond_on(@stream)
-        log :info, @response
+        response.respond_on(stream)
+        log :info, response
+
+        @responded = true
+        on_complete
+      end
+
+      # create a push promise, send the headers, then queue an asynchronous
+      # task on the reactor to deliver the data
+      #
+      def push_promise *args
+        pp = push_promise_for *args
+        make_promise pp
+        @connection.server.async.handle_push_promise pp
+      end
+
+      # create a push promise - mimicing Reel::Connection#respond
+      #
+      def push_promise_for path, body_or_headers = {}, body = nil
+
+        # :/
+        #
+        case body_or_headers
+        when Hash
+          headers = body_or_headers
+        else
+          headers = {}
+          body = body_or_headers
+        end
+
+        headers.merge! AUTHORITY_KEY => @request.authority,
+                       SCHEME_KEY    => @request.scheme
+
+        PushPromise.new path, headers, body
+      end
+
+      # begin the new push promise stream from this +@stream+ by sending the
+      # initial headers frame
+      #
+      # @see +PushPromise#make_on!+
+      # @see +HTTP2::Stream#promise+
+      #
+      def make_promise p
+        p.make_on self
+        push_promises << p
+        p
+      end
+
+      # set or call +@complete+ callback
+      #
+      def on_complete &block
+        return true if @completed
+        if block
+          @complete = block
+        elsif @completed = (@responded and push_promises_complete?)
+          @complete[] if Proc === @complete
+          true
+        else
+          false
+        end
+      end
+
+      # check for push promises completion
+      #
+      def push_promises_complete?
+        @push_promises.empty? or @push_promises.all? {|p| p.kept? or p.canceled?}
+      end
+
+      # trigger a GOAWAY frame when this stream is responded to and any/all push
+      # promises are complete
+      #
+      def goaway_on_complete
+        on_complete { connection.goaway }
+      end
+
+      # logging helper
+      #
+      def log level, msg
+        Logger.__send__ level, "[stream #{@stream.id}] #{msg}"
       end
 
       protected
@@ -115,14 +194,6 @@ module Reel
       def on_half_close
         log :debug, 'half_close' if Reel::H2.verbose?
         connection.server.async.handle_stream self
-      end
-
-      private
-
-      # --- logging helpers
-
-      def log level, msg
-        Logger.__send__ level, "[stream #{@stream.id}] #{msg}"
       end
 
     end

@@ -112,7 +112,8 @@ module Reel
         # N.B. this is the important bit
         #
         @socket.write bytes
-      rescue IOError
+      rescue IOError, Errno::EPIPE => e
+        Logger.error e.message
         close
       end
 
