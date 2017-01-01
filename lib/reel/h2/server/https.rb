@@ -10,6 +10,7 @@ module Reel
 
         ALPN_PROTOCOL        = 'h2'
         ALPN_SELECT_CALLBACK = ->(ps){ ps.find { |p| ALPN_PROTOCOL == p }}
+        ECDH_CURVES          = 'P-256'
         TMP_ECDH_CALLBACK    = ->(*_){ OpenSSL::PKey::EC.new 'prime256v1' }
 
         # create a new h2 server that uses SNI to determine TLS cert/key to use
@@ -78,23 +79,33 @@ module Reel
         # builds a new SSLContext suitable for use in 'h2' connections
         #
         def create_ssl_context **opts
-          ctx                   = OpenSSL::SSL::SSLContext.new
-          ctx.alpn_protocols    = [ALPN_PROTOCOL]
-          ctx.alpn_select_cb    = ALPN_SELECT_CALLBACK
-          ctx.ca_file           = opts[:ca_file] if opts[:ca_file]
-          ctx.ca_path           = opts[:ca_path] if opts[:ca_path]
-          ctx.cert              = context_cert opts[:cert]
-          ctx.ciphers           = opts[:ciphers] || OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers]
-          ctx.extra_chain_cert  = context_extra_chain_cert opts[:extra_chain_cert]
-          ctx.key               = context_key opts[:key]
-          ctx.options           = opts[:options] || OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options]
-          ctx.servername_cb     = @sni_callback
-          ctx.ssl_version       = :TLSv1_2
-          ctx.tmp_ecdh_callback = TMP_ECDH_CALLBACK
+          ctx                  = OpenSSL::SSL::SSLContext.new
+          ctx.alpn_protocols   = [ALPN_PROTOCOL]
+          ctx.alpn_select_cb   = ALPN_SELECT_CALLBACK
+          ctx.ca_file          = opts[:ca_file] if opts[:ca_file]
+          ctx.ca_path          = opts[:ca_path] if opts[:ca_path]
+          ctx.cert             = context_cert opts[:cert]
+          ctx.ciphers          = opts[:ciphers] || OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:ciphers]
+          ctx.extra_chain_cert = context_extra_chain_cert opts[:extra_chain_cert]
+          ctx.key              = context_key opts[:key]
+          ctx.options          = opts[:options] || OpenSSL::SSL::SSLContext::DEFAULT_PARAMS[:options]
+          ctx.servername_cb    = @sni_callback
+          ctx.ssl_version      = :TLSv1_2
+          context_ecdh ctx
           ctx
         end
 
         private
+
+        if OpenSSL::VERSION >= '2.0'
+          def context_ecdh ctx
+            ctx.ecdh_curves = ECDH_CURVES
+          end
+        else
+          def context_ecdh ctx
+            ctx.tmp_ecdh_callback = TMP_ECDH_CALLBACK
+          end
+        end
 
         def context_cert cert
           case cert
