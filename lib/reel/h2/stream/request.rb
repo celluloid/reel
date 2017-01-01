@@ -26,11 +26,17 @@ module Reel
           @addr ||= @stream.connection.socket.peeraddr[3] rescue nil
         end
 
+        # retreive the authority from the stream request headers
+        #
+        def authority
+          @authority ||= headers[AUTHORITY_KEY]
+        end
+
         # retreive the HTTP method as a lowercase +Symbol+
         #
         def method
           return @method unless @method.nil?
-          @method = headers[Reel::H2::METHOD_KEY]
+          @method = headers[METHOD_KEY]
           @method = @method.downcase.to_sym if @method
           @method
         end
@@ -38,7 +44,13 @@ module Reel
         # retreive the path from the stream request headers
         #
         def path
-          @path ||= headers[Reel::H2::PATH_KEY]
+          @path ||= headers[PATH_KEY]
+        end
+
+        # retreive the scheme from the stream request headers
+        #
+        def scheme
+          @scheme ||= headers[SCHEME_KEY]
         end
 
         # respond to this request on its stream
