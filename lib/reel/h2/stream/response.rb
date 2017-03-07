@@ -43,11 +43,11 @@ module Reel
           stream.request
         end
 
-        # send the headers and body out on +stream+
+        # send the headers and body out on +s+, an +HTTP2::Stream+ object
         #
         # NOTE: +:status+ must come first?
         #
-        def respond_on s = stream
+        def respond_on s
           headers = { Reel::H2::STATUS_KEY => @status.to_s }.merge @headers
           s.headers stringify_headers(headers)
           case @body

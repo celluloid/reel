@@ -28,6 +28,7 @@ module Reel
                   :stream
 
       def initialize connection:, stream:
+        @closed        = false
         @completed     = false
         @connection    = connection
         @push_promises = Set.new
@@ -64,11 +65,13 @@ module Reel
                     else raise TypeError, "invalid response: #{response.inspect}"
                     end
 
-        response.respond_on(stream)
-        log :info, response
-
-        @responded = true
-        on_complete
+        if @closed
+          log :warn, 'stream closed before response sent'
+        else
+          response.respond_on(stream)
+          log :info, response
+          @responded = true
+        end
       end
 
       # create a push promise, send the headers, then queue an asynchronous
@@ -171,6 +174,8 @@ module Reel
       #
       def on_close
         log :debug, 'close' if Reel::H2.verbose?
+        on_complete
+        @closed = true
       end
 
       # called by +@stream+ with a +Hash+

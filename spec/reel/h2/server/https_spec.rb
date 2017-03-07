@@ -90,7 +90,6 @@ RSpec.describe Reel::H2::Server::HTTPS do
       @valid.tap
     end
 
-    puts "ex: #{ex}"
     raise ex if ex
   end
 
