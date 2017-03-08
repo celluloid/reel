@@ -1,9 +1,6 @@
 require File.expand_path '../spec_helper', __FILE__
 require 'colored'
 
-# Reel::Logger.logger.level = ::Logger::DEBUG
-# Reel::H2.verbose!
-
 RSpec.describe Reel::H2::Stream do
 
   let(:addr) { '127.0.0.1' }

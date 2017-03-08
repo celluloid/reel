@@ -45,6 +45,7 @@ module Reel
         @stream.stream.promise(@promise_headers) do |push|
           push.headers @push_headers
           @push_stream = push
+          @push_stream.on(:close){|err| cancel! if err == :cancel}
         end
         @fsm.transition :made
         self
@@ -95,6 +96,7 @@ module Reel
       #
       def cancel!
         @fsm.transition :canceled
+        @stream.on_complete
       end
 
       def log level, msg

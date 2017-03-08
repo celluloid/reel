@@ -47,7 +47,7 @@ RSpec.describe Reel::H2::Stream::Response do
     expect(r.headers['content-length']).to eq(4)
     expect(r.headers[:content_type]).to eq('text/plain')
     expect(r.body).to eq('ohai')
-    r.respond_on
+    r.respond_on s
   end
 
 end
