@@ -36,6 +36,7 @@ module Reel
 
     def run
       loop { async.handle_connection @server.accept }
+    rescue IOError
     end
 
     def handle_connection(socket)
