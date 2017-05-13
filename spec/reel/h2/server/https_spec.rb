@@ -6,6 +6,8 @@ RSpec.describe Reel::H2::Server::HTTPS do
   let(:port) { 1234 }
   let(:url)  { "https://#{addr}:#{port}/" }
 
+  let(:alpn) { OpenSSL::OPENSSL_VERSION_NUMBER >= Reel::H2::Server::HTTPS::ALPN_OPENSSL_MIN_VERSION }
+
   let(:ca_file)              { certs_dir.join('ca.crt').to_s }
   let(:server_cert)          { certs_dir.join("server.crt")         .read }
   let(:server_key)           { certs_dir.join("server.key")         .read }
@@ -46,7 +48,7 @@ RSpec.describe Reel::H2::Server::HTTPS do
     with_tls_server do
       s = TCPSocket.new addr, port
       ctx = OpenSSL::SSL::SSLContext.new
-      ctx.alpn_protocols = ['h2']
+      ctx.__send__((alpn ? :alpn_protocols= : :npn_protocols=), ['h2'])
       ctx.ca_file = ca_file
       ctx.ssl_version = :TLSv1_2
       ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER

@@ -13,6 +13,9 @@ module Reel
         ECDH_CURVES          = 'P-256'
         TMP_ECDH_CALLBACK    = ->(*_){ OpenSSL::PKey::EC.new 'prime256v1' }
 
+        ECDH_OPENSSL_MIN_VERSION = '2.0'
+        ALPN_OPENSSL_MIN_VERSION = 0x10002001
+
         # create a new h2 server that uses SNI to determine TLS cert/key to use
         #
         # @see https://en.wikipedia.org/wiki/Server_Name_Indication
@@ -87,8 +90,6 @@ module Reel
         #
         def create_ssl_context **opts
           ctx                  = OpenSSL::SSL::SSLContext.new
-          ctx.alpn_protocols   = [ALPN_PROTOCOL]
-          ctx.alpn_select_cb   = ALPN_SELECT_CALLBACK
           ctx.ca_file          = opts[:ca_file] if opts[:ca_file]
           ctx.ca_path          = opts[:ca_path] if opts[:ca_path]
           ctx.cert             = context_cert opts[:cert]
@@ -99,12 +100,13 @@ module Reel
           ctx.servername_cb    = @sni_callback
           ctx.ssl_version      = :TLSv1_2
           context_ecdh ctx
+          context_set_protocols ctx
           ctx
         end
 
         private
 
-        if OpenSSL::VERSION >= '2.0'
+        if OpenSSL::VERSION >= ECDH_OPENSSL_MIN_VERSION
           def context_ecdh ctx
             ctx.ecdh_curves = ECDH_CURVES
           end
@@ -143,6 +145,18 @@ module Reel
             [chain]
           when Array
             chain
+          end
+        end
+
+        if OpenSSL::OPENSSL_VERSION_NUMBER >= ALPN_OPENSSL_MIN_VERSION
+          def context_set_protocols ctx
+            ctx.alpn_protocols = [ALPN_PROTOCOL]
+            ctx.alpn_select_cb = ALPN_SELECT_CALLBACK
+          end
+        else
+          def context_set_protocols ctx
+            ctx.npn_protocols = [ALPN_PROTOCOL]
+            ctx.npn_select_cb = ALPN_SELECT_CALLBACK
           end
         end
 
