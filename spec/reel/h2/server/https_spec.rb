@@ -18,26 +18,17 @@ RSpec.describe Reel::H2::Server::HTTPS do
     @valid = double 'valid'
   end
 
-  def with_tls_server handler = nil, &block
+  def with_tls_server handler = nil
     handler ||= proc do |stream|
       stream.respond :ok
       stream.connection.goaway
     end
 
-    block ||= ->{ H2::Client.get url: url }
-
-    sni = {
-      '127.0.0.1' => {
-        :cert => server_cert,
-        :key  => server_key
-      }
-    }
-
     begin
-      server = Reel::H2::Server::HTTPS.new host: addr, port: port, sni: sni do |c|
+      server = Reel::H2::Server::HTTPS.new host: addr, port: port, cert: server_cert, key: server_key do |c|
         c.each_stream &handler
       end
-      block[server]
+      yield server
     ensure
       server.terminate if server && server.alive?
     end
@@ -88,6 +79,45 @@ RSpec.describe Reel::H2::Server::HTTPS do
       s = H2.get url: url, headers: {'hi' => 'yo'}, tls: tls_opts
       expect(s.body).to eq('boo')
       @valid.tap
+    end
+
+    raise ex if ex
+  end
+
+  it 'uses SNI for SSLContext' do
+    ex = nil
+    expect(@valid).to receive(:tap).twice
+
+    sni = {
+      'localhost' => {
+        :cert => server_cert,
+        :key  => server_key
+      }
+    }
+
+    # resolve 'localhost' as H2::Client will and bind to that
+    #
+    host = Socket.getaddrinfo('localhost', port).first[3]
+
+    begin
+      server = Reel::H2::Server::HTTPS.new host: host, port: port, sni: sni do |c|
+        c.each_stream do |stream|
+          begin
+            expect(stream.request.headers['hi']).to eq('yo')
+            @valid.tap
+          rescue RSpec::Expectations::ExpectationNotMetError => ex
+          rescue => ex
+          ensure
+            stream.respond :ok, 'boo'
+            stream.connection.goaway
+          end
+        end
+      end
+      s = H2.get url: "https://localhost:#{port}/", headers: {'hi' => 'yo'}, tls: tls_opts
+      expect(s.body).to eq('boo')
+      @valid.tap
+    ensure
+      server.terminate if server && server.alive?
     end
 
     raise ex if ex

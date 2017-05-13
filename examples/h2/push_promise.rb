@@ -8,14 +8,15 @@ require 'reel/h2'
 Reel::Logger.logger.level = ::Logger::DEBUG
 Reel::H2.verbose!
 
-addr, port   = '127.0.0.1', 1234
+port         = 1234
+addr         = Socket.getaddrinfo('localhost', port).first[3]
 certs_dir    = File.expand_path '../../../tmp/certs', __FILE__
 logo_png     = File.read File.expand_path '../../../logo.png', __FILE__
 push_promise = '<html>wait for it...<img src="/logo.png"/><script src="/pushed.js"></script></html>'
 pushed_js    = '(()=>{ alert("hello h2 push promise!"); })();'
 
 sni = {
-  '127.0.0.1' => {
+  'localhost' => {
     :cert => certs_dir + '/server.crt',
     :key  => certs_dir + '/server.key',
     # :extra_chain_cert => certs_dir + '/chain.pem'

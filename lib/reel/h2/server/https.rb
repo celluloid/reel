@@ -22,6 +22,10 @@ module Reel
         # @param [Hash] sni the SNI option hash with certs/keys for domains
         # @param [Hash] options
         #
+        # @option [String] :cert TLS certificate
+        # @option [String] :extra_chain_cert TLS certificate
+        # @option [String] :key TLS key
+        #
         # == SNI options with default callback
         #
         # [:sni] Hash with domain name +String+ keys and +Hash+ values:
@@ -35,11 +39,11 @@ module Reel
         #     [:callback] +Proc+ creates +OpenSSL::SSL::SSLContext+ for each
         #                        connection
         #
-        def initialize host:, port:, sni:, **options, &on_connection
+        def initialize host:, port:, sni: {}, **options, &on_connection
           @sni          = sni
           @sni_callback = @sni[:callback] || method(:sni_callback)
           @tcpserver    = Celluloid::IO::TCPServer.new host, port
-          @sslserver    = Celluloid::IO::SSLServer.new @tcpserver, create_ssl_context
+          @sslserver    = Celluloid::IO::SSLServer.new @tcpserver, create_ssl_context(options)
           options.merge! host: host, port: port, sni: sni
           super @sslserver, options, &on_connection
         end
@@ -69,8 +73,11 @@ module Reel
         #
         def sni_callback args
           socket, name = args
-          if sni_opts = @sni[name] and Hash === sni_opts
-            create_ssl_context **sni_opts
+          @contexts ||= {}
+          if @contexts[name]
+            @contexts[name]
+          elsif sni_opts = @sni[name] and Hash === sni_opts
+            @contexts[name] = create_ssl_context sni_opts
           else
             socket.context
           end
