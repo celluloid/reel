@@ -1,23 +1,19 @@
-script: rake ci
+script: bundle exec rake
 cache: bundler
 language: ruby
 rvm:
-- rbx
-- jruby-1.7.25
-- 2.2.2
-- rbx-2
-- jruby-9.1.2.0
-- 2.1.8
-- 2.3.0
+- jruby-1.7.27
+- 2.2.7
+- jruby-9.1.9.0
+- 2.3.4
 - ruby-head
 - jruby-head
 matrix:
   fast_finish: true
   allow_failures:
-  - rvm: rbx-2
-  - rvm: jruby-9.1.2.0
+  - rvm: jruby-9.1.9.0
   - rvm: 2.1.8
-  - rvm: 2.3.0
+  - rvm: 2.3.4
   - rvm: ruby-head
   - rvm: jruby-head
   - env: CELLULOID_BACKPORTED=true
@@ -38,4 +34,7 @@ notifications:
   slack:
     secure: uJ8uoiNgiEDoRewbH6gj9mphUGVDtjXeEy8++vSTQkLqIkkoZ3M+mr0yldL2/ECaG8wHLH2035DHM4d54GyeVEU/8UG80UVAnYTctlzzjn1rfXPfCIsZDXYMUjXe3wvOouN+b4hjiyXe7ZsssdRoeKw6rHIU8/tUHgC3IfZel7s=
 sudo: false
+before_install:
+  - gem update --system
+  - gem i bundler --pre
 install: bundle install --without=development
