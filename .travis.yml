@@ -4,14 +4,14 @@ language: ruby
 rvm:
 - jruby-1.7.27
 - 2.2.7
-- jruby-9.1.9.0
+- jruby-9.1.10.0
 - 2.3.4
 - ruby-head
 - jruby-head
 matrix:
   fast_finish: true
   allow_failures:
-  - rvm: jruby-9.1.9.0
+  - rvm: jruby-9.1.10.0
   - rvm: 2.1.8
   - rvm: 2.3.4
   - rvm: ruby-head
