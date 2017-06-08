@@ -1,22 +1,24 @@
 source 'https://rubygems.org'
 
-gem 'celluloid'
-gem 'celluloid-io'
-gem 'http'
+ruby RUBY_VERSION
 
 gem 'jruby-openssl' if defined? JRUBY_VERSION
-gem 'coveralls', require: false
 
 # Specify your gem's dependencies in reel.gemspec
 gemspec
 
 group :development do
   gem 'guard-rspec'
+end
+
+group :development, :test do
   gem 'pry'
 end
 
-platforms :rbx do
-  gem 'racc'
-  gem 'rubinius-coverage'
-  gem 'rubysl', '~> 2.0'
+group :test do
+  gem 'certificate_authority'
+  gem 'websocket_parser', '>= 0.1.6'
+  gem 'rake'
+  gem 'rspec'
+  gem 'coveralls', require: false
 end
