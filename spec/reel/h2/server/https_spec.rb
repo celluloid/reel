@@ -48,7 +48,10 @@ RSpec.describe Reel::H2::Server::HTTPS do
     with_tls_server do
       s = TCPSocket.new addr, port
       ctx = OpenSSL::SSL::SSLContext.new
-      ctx.__send__((alpn ? :alpn_protocols= : :npn_protocols=), ['h2'])
+
+      # https://github.com/jruby/jruby-openssl/issues/99
+      ctx.__send__((alpn ? :alpn_protocols= : :npn_protocols=), ['h2']) unless RUBY_ENGINE == 'jruby'
+
       ctx.ca_file = ca_file
       ctx.ssl_version = :TLSv1_2
       ctx.verify_mode = OpenSSL::SSL::VERIFY_PEER

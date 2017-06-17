@@ -8,7 +8,8 @@ gem 'jruby-openssl' if defined? JRUBY_VERSION
 gemspec
 
 group :development, :test do
+  gem 'h2', git: 'https://github.com/kenichi/h2'
   gem 'coveralls', require: false
   gem 'guard-rspec', require: false
-  gem 'pry-byebug'
+  gem 'pry-byebug', platforms: [:mri]
 end

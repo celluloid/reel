@@ -100,7 +100,10 @@ module Reel
           ctx.servername_cb    = @sni_callback
           ctx.ssl_version      = :TLSv1_2
           context_ecdh ctx
-          context_set_protocols ctx
+
+          # https://github.com/jruby/jruby-openssl/issues/99
+          context_set_protocols ctx unless RUBY_ENGINE == 'jruby'
+
           ctx
         end
 
@@ -111,8 +114,14 @@ module Reel
             ctx.ecdh_curves = ECDH_CURVES
           end
         else
-          def context_ecdh ctx
-            ctx.tmp_ecdh_callback = TMP_ECDH_CALLBACK
+          if RUBY_ENGINE == 'jruby'
+            def context_ecdh ctx
+              ctx.tmp_dh_callback = TMP_ECDH_CALLBACK
+            end
+          else
+            def context_ecdh ctx
+              ctx.tmp_ecdh_callback = TMP_ECDH_CALLBACK
+            end
           end
         end
 
