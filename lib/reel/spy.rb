@@ -5,7 +5,7 @@ module Reel
   class Spy
     extend Forwardable
 
-    def_delegators :@socket, :closed?
+    def_delegators :@socket, :closed?, :eof?
     def_delegators :@socket, :addr, :peeraddr, :setsockopt, :getsockname
 
     def initialize(socket, logger = STDOUT)
@@ -58,7 +58,7 @@ module Reel
     module Colors
       module_function
 
-      def escape(n); "\033[#{n}m"; end      
+      def escape(n); "\033[#{n}m"; end
       def reset; escape 0; end
       def color(n); escape "1;#{n}"; end
       def colorize(n, str); "#{color(n)}#{str}#{reset}"; end

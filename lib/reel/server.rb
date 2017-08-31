@@ -20,7 +20,10 @@ module Reel
     finalizer :shutdown
 
     def initialize(server, options={}, &callback)
-      @spy      = STDOUT if options[:spy]
+      if options[:spy]
+        require 'reel/spy'
+        @spy = STDOUT
+      end
       @options  = options
       @callback = callback
       @server   = server
@@ -35,16 +38,15 @@ module Reel
     end
 
     def run
-      loop { async.handle_connection @server.accept }
+      loop do
+        socket = @server.accept
+        socket = Reel::Spy.new(socket, @spy) if @spy
+        async.handle_connection socket
+      end
     end
 
     def handle_connection(socket)
-      if @spy
-        require 'reel/spy'
-        socket = Reel::Spy.new(socket, @spy)
-      end
-
-      connection = Connection.new(socket)
+      connection = Connection.new(socket, nil, self)
 
       begin
         @callback.call(connection)
