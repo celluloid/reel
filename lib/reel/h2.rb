@@ -12,15 +12,30 @@ module Reel
     SCHEME_KEY    = ':scheme'
     STATUS_KEY    = ':status'
 
-    # turn on extra verbose debug logging
-    #
-    def self.verbose!
-      @verbose = true
-    end
+    ALPN_OPENSSL_MIN_VERSION = 0x10002001
 
-    def self.verbose?
-      @verbose = false unless defined?(@verbose)
-      @verbose
+    class << self
+
+      def alpn?
+        !jruby? && OpenSSL::OPENSSL_VERSION_NUMBER >= ALPN_OPENSSL_MIN_VERSION && RUBY_VERSION >= '2.3'
+      end
+
+      def jruby?
+        return @jruby if defined? @jruby
+        @jruby = RUBY_ENGINE == 'jruby'
+      end
+
+      # turn on extra verbose debug logging
+      #
+      def verbose!
+        @verbose = true
+      end
+
+      def verbose?
+        @verbose = false unless defined?(@verbose)
+        @verbose
+      end
+
     end
 
   end

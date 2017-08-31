@@ -102,21 +102,20 @@ module Reel
           context_ecdh ctx
 
           # https://github.com/jruby/jruby-openssl/issues/99
-          context_set_protocols ctx unless RUBY_ENGINE == 'jruby'
+          context_set_protocols ctx unless Reel::H2.jruby?
 
           ctx
         end
 
         private
 
-        if OpenSSL::VERSION >= ECDH_OPENSSL_MIN_VERSION
+        if OpenSSL::VERSION >= ECDH_OPENSSL_MIN_VERSION && RUBY_VERSION >= '2.3'
           def context_ecdh ctx
             ctx.ecdh_curves = ECDH_CURVES
           end
         else
-          if RUBY_ENGINE == 'jruby'
+          if Reel::H2.jruby? || RUBY_VERSION < '2.3'
             def context_ecdh ctx
-              ctx.tmp_dh_callback = TMP_ECDH_CALLBACK
             end
           else
             def context_ecdh ctx
@@ -157,7 +156,7 @@ module Reel
           end
         end
 
-        if OpenSSL::OPENSSL_VERSION_NUMBER >= ALPN_OPENSSL_MIN_VERSION
+        if Reel::H2.alpn?
           def context_set_protocols ctx
             ctx.alpn_protocols = [ALPN_PROTOCOL]
             ctx.alpn_select_cb = ALPN_SELECT_CALLBACK

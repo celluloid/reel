@@ -106,18 +106,24 @@ RSpec.describe Reel::H2::Server::HTTP do
       @valid.tap
     end
 
+    mutex = Mutex.new
+
     with_server handler do
       clients = Array.new(connections).map do
-        c = H2::Client.new addr: addr, port: port, tls: false
-        c.get path: '/'
-        c
+        mutex.synchronize do
+          c = H2::Client.new addr: addr, port: port, tls: false
+          c.get path: '/'
+          c
+        end
       end
 
       clients.each do |c|
-        c.block!
-        expect(c.last_stream).to be_ok
-        expect(c).to be_closed
-        @valid.tap
+        mutex.synchronize do
+          c.block!
+          expect(c.last_stream).to be_ok
+          expect(c).to be_closed
+          @valid.tap
+        end
       end
     end
   end
