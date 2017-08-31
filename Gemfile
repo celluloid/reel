@@ -12,7 +12,7 @@ group :development do
 end
 
 group :development, :test do
-  gem 'h2', git: 'https://github.com/kenichi/h2'
+  gem 'h2', '0.4.0'
   gem 'pry'
 end
 
