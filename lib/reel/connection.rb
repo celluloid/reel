@@ -98,7 +98,7 @@ module Reel
       end
 
       case response
-      when Symbol, Fixnum, Integer
+      when Symbol, Integer
         response = Response.new(response, headers, body)
       when Response
       else raise TypeError, "invalid response: #{response.inspect}"
