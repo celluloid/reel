@@ -1,10 +1,9 @@
 ![Reel](https://github.com/celluloid/reel/raw/master/logo.png)
 =======
 [![Gem Version](https://badge.fury.io/rb/reel.svg)](http://rubygems.org/gems/reel)
-[![Build Status](https://secure.travis-ci.org/celluloid/reel.svg?branch=master)](http://travis-ci.org/celluloid/reel)
-[![Code Climate](https://codeclimate.com/github/celluloid/reel.svg)](https://codeclimate.com/github/celluloid/reel)
-[![Coverage Status](https://coveralls.io/repos/celluloid/reel/badge.svg?branch=master)](https://coveralls.io/r/celluloid/reel)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/celluloid/reel/master/LICENSE.txt)
+[![Build Status](https://secure.travis-ci.org/celluloid/reel.svg?branch=master)](http://travis-ci.org/celluloid/reel)
+[![Maintained: no](https://img.shields.io/maintenance/no/2016.svg)](https://github.com/celluloid/celluloid/issues/779)
 
 > "A dizzying lifetime... reeling by on celluloid" _-- Rush / Between The Wheels_
 
