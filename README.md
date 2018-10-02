@@ -32,7 +32,7 @@ primarily I/O bound, and threads for where you're compute bound.
 
 ### Is it any good?
 
-[Yes](http://news.ycombinator.com/item?id=3067434)
+[Yes](https://news.ycombinator.com/item?id=7913158)
 
 Documentation
 -------------
