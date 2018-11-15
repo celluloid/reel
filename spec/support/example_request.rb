@@ -31,4 +31,8 @@ class ExampleRequest
     @headers.map { |k, v| "#{k}: #{v}" }.join("\r\n") << "\r\n\r\n" <<
     (@body ? @body : '')
   end
+
+  def inspect_method
+    "#<Reel::Request #{@method} #{path} HTTP/#{version} @headers=#{@headers}>"
+  end
 end

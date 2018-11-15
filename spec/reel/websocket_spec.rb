@@ -122,6 +122,23 @@ RSpec.describe Reel::WebSocket do
     end
   end
 
+  it "writes array messages" do
+    with_websocket_pair do |client, websocket|
+      websocket.write Array.new(2) { |e| e = e * 2}
+
+      parser = WebSocket::Parser.new
+
+      parser.append client.readpartial(4096) until first_message = parser.next_message
+      expect(first_message).to eq("\x00\x02")
+    end
+  end
+
+  it "it raises exception when trying to write besides string or array messages" do
+      with_websocket_pair do |client, websocket|
+          expect { websocket.write 1 }.to raise_exception('Can only send byte array or string over driver.')
+      end
+  end
+
   it "closes" do
     with_websocket_pair do |_, websocket|
       expect(websocket).not_to be_closed

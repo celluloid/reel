@@ -338,6 +338,40 @@ RSpec.describe Reel::Connection do
     end
   end
 
+  it "detaches a connection properly" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << ExampleRequest.new.to_s
+
+      expect(connection.detach).to be_a Reel::Connection
+      expect(connection.attached?).to eq(false)
+    end
+  end
+
+  it "returns friendlier inspect output" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      example_request = ExampleRequest.new
+      client << example_request.to_s
+      request = connection.request
+
+      expect(request.inspect).to eq example_request.inspect_method
+    end
+  end
+
+  it "raises an exception if not in chunked body mode" do
+    with_socket_pair do |client, peer|
+      connection = Reel::Connection.new(peer)
+      client << ExampleRequest.new.tap{ |r|
+        r['Connection'] = 'keep-alive'
+      }.to_s
+      request = connection.request
+      request.respond :ok, :transfer_encoding => ''
+
+      expect {request << "Hello"}.to raise_error(Reel::StateError)
+    end
+  end
+
   context "#readpartial" do
     it "streams request bodies" do
       with_socket_pair do |client, peer|
